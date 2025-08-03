@@ -253,7 +253,7 @@ export function TeamSelectionSystem({
                             <div className="flex items-center gap-1 mt-1">
                               <Star className="w-3 h-3 text-yellow-400 fill-current" />
                               <span className="text-xs text-gray-400">{prof.rating}</span>
-                              {prof.isDemo && (
+                              {(prof as any).isDemo && (
                                 <Badge variant="outline" className="text-xs ml-2 bg-amber-500/10 text-amber-400 border-amber-500/30">
                                   Demo
                                 </Badge>
@@ -291,7 +291,7 @@ export function TeamSelectionSystem({
         <TeamHiringModal
           isOpen={showHiringModal}
           onClose={() => setShowHiringModal(false)}
-          professionals={selectedProfessionals}
+          professionals={selectedProfessionals as any}
           totalTokens={discountInfo.finalAmount}
           userId={userId}
         />

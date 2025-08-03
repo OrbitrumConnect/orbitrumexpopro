@@ -9,7 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import ServiceTrackingButton from "./ServiceTrackingButton";
 import { TeamSelectionSystem } from "./team-selection-system";
-import type { Professional, User, ProfessionalService } from "@shared/schema";
+import type { Professional, User } from "@shared/schema";
 
 interface ProfessionalModalProps {
   isOpen: boolean;
@@ -228,7 +228,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onAddToTeam
             </div>
 
             {/* Demo Professional Notice */}
-            {professional.isDemo && (
+            {(professional as any).isDemo && (
               <div className="bg-amber-500 bg-opacity-20 border border-amber-400 rounded-lg p-4 mb-6">
                 <h3 className="text-amber-300 text-sm font-semibold text-center mb-2">
                   🤖 Agente IA Demonstrativo
@@ -253,7 +253,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onAddToTeam
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
                     <h2 className="font-bold text-lg sm:text-xl md:text-2xl neon-text truncate">{professional.name}</h2>
-                    {professional.isDemo && (
+                    {(professional as any).isDemo && (
                       <div className="flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full self-start">
                         <svg className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />

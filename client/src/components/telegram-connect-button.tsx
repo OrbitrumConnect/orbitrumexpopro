@@ -38,7 +38,10 @@ export function TelegramConnectButton() {
 
   const { data: telegramCode } = useQuery<TelegramCode>({
     queryKey: ['telegram-code'],
-    queryFn: () => generateCodeMutation.mutateAsync(),
+    queryFn: async () => {
+      const result = await generateCodeMutation.mutateAsync();
+      return result as TelegramCode;
+    },
     enabled: false,
     staleTime: 10 * 60 * 1000 // 10 minutos
   });
@@ -89,12 +92,12 @@ export function TelegramConnectButton() {
             <div className="bg-slate-800 p-4 rounded-lg border border-cyan-500/30">
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-mono text-cyan-400 tracking-wider">
-                  {telegramCode?.code || 'ABC123'}
+                  {(telegramCode as any)?.code || 'ABC123'}
                 </span>
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => copyToClipboard(telegramCode?.code || 'ABC123')}
+                  onClick={() => copyToClipboard((telegramCode as any)?.code || 'ABC123')}
                   className="text-cyan-400 hover:text-cyan-300"
                 >
                   {copied ? <Check size={16} /> : <Copy size={16} />}
@@ -103,7 +106,7 @@ export function TelegramConnectButton() {
             </div>
             
             <p className="text-sm text-gray-400 mt-2">
-              ⏰ Expira em {Math.floor((telegramCode?.expires_in || 600) / 60)} minutos
+              ⏰ Expira em {Math.floor(((telegramCode as any)?.expires_in || 600) / 60)} minutos
             </p>
           </div>
 
@@ -111,7 +114,7 @@ export function TelegramConnectButton() {
             <h4 className="font-medium text-white">📱 Passos:</h4>
             <ol className="text-sm text-gray-300 space-y-2 list-decimal list-inside">
               <li>Abra o Telegram e procure por @orbitrum_bot</li>
-              <li>Digite: <code className="bg-slate-800 px-2 py-1 rounded text-cyan-400">/login {telegramCode?.code || 'ABC123'}</code></li>
+              <li>Digite: <code className="bg-slate-800 px-2 py-1 rounded text-cyan-400">/login {(telegramCode as any)?.code || 'ABC123'}</code></li>
               <li>Pronto! Sua conta estará conectada</li>
             </ol>
           </div>

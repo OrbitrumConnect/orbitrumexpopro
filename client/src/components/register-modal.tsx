@@ -258,7 +258,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
             <Checkbox
               id="terms"
               checked={formData.acceptTerms}
-              onCheckedChange={(checked) => updateField('acceptTerms', checked as boolean)}
+              onCheckedChange={(checked: any) => updateField('acceptTerms', checked as boolean)}
               className="border-[var(--neon-cyan)]"
             />
             <Label htmlFor="terms" className="text-sm text-gray-300">

@@ -50,7 +50,7 @@ declare global {
 
 export function useTelegramWebApp() {
   const [isInTelegram, setIsInTelegram] = useState(false);
-  const [webApp, setWebApp] = useState<Window['Telegram']['WebApp'] | null>(null);
+  const [webApp, setWebApp] = useState<any>(null);
 
   useEffect(() => {
     // Verificar se está rodando no Telegram WebApp
