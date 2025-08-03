@@ -26,7 +26,7 @@ const TokensPurchaseTrigger: React.FC<TokensPurchaseTriggerProps> = ({ onClose, 
         body: JSON.stringify({
           packageId: selectedPackage.id,
           amount: selectedPackage.price,
-          tokens: selectedPackage.tokens,
+          tokens: selectedPackage.totalTokens,
           userId: user?.id
         }),
       })
@@ -93,7 +93,7 @@ const TokensPurchaseTrigger: React.FC<TokensPurchaseTriggerProps> = ({ onClose, 
             {user && (
               <div className="mb-6 p-4 bg-blue-50 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Usuário atual:</p>
-                <p className="font-semibold">{user.name || user.email}</p>
+                <p className="font-semibold">{user.username || user.email}</p>
               </div>
             )}
 
@@ -115,11 +115,11 @@ const TokensPurchaseTrigger: React.FC<TokensPurchaseTriggerProps> = ({ onClose, 
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-semibold text-gray-900">{pkg.name}</h4>
-                      <p className="text-sm text-gray-600">{pkg.description}</p>
+                      <p className="text-sm text-gray-600">Pacote {pkg.name}</p>
                       <div className="flex items-center mt-2">
                         <Zap className="w-4 h-4 text-yellow-500 mr-1" />
                         <span className="text-sm font-medium">
-                          {formatTokens(pkg.tokens)} tokens
+                          {formatTokens(pkg.totalTokens)} tokens
                         </span>
                       </div>
                     </div>
@@ -227,7 +227,7 @@ const TokensPurchaseTrigger: React.FC<TokensPurchaseTriggerProps> = ({ onClose, 
                   <div className="flex justify-between items-center mt-1">
                     <span className="text-sm text-gray-600">Tokens:</span>
                     <span className="font-semibold">
-                      {formatTokens(selectedPackage.tokens)}
+                      {formatTokens(selectedPackage.totalTokens)}
                     </span>
                   </div>
                 </div>
