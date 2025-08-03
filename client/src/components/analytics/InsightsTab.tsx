@@ -84,18 +84,18 @@ export function InsightsTab({ userType, userId, realTimeData }: InsightsTabProps
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-white">{data.profileViews}</div>
+              <div className="text-2xl font-bold text-white">{data && 'profileViews' in data ? data.profileViews : 0}</div>
               <div className="text-sm text-gray-400 flex items-center justify-center gap-1">
                 <Eye className="h-3 w-3" />
                 Visualizações
               </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">{data.contactsReceived}</div>
+              <div className="text-2xl font-bold text-green-400">{data && 'contactsReceived' in data ? data.contactsReceived : 0}</div>
               <div className="text-sm text-gray-400">Contatos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">{data.servicesCompleted}</div>
+              <div className="text-2xl font-bold text-blue-400">{data && 'servicesCompleted' in data ? data.servicesCompleted : 0}</div>
               <div className="text-sm text-gray-400">Serviços</div>
             </div>
             <div className="text-center">
