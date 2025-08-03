@@ -30,6 +30,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const [emailConfirmationError, setEmailConfirmationError] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [showAlternativeEmail, setShowAlternativeEmail] = useState(false);
+  const [alternativeEmail, setAlternativeEmail] = useState("");
   
   // Estado para notificações bonitas
   const [notification, setNotification] = useState<{
@@ -62,6 +64,34 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
   const closeNotification = () => {
     setNotification(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleQuickLogin = async (userType: 'admin' | 'client' | 'professional') => {
+    try {
+      setLoading(true);
+      
+      // Simular login rápido para desenvolvimento
+      const mockUser = {
+        id: 1,
+        email: `admin@orbitrum.com`,
+        username: `Admin ${userType}`,
+        userType: userType,
+        tokens: 10000,
+        plan: 'max'
+      };
+      
+      if (typeof onSuccess === 'function') {
+        onSuccess(mockUser, true);
+      }
+      
+      showNotification('success', 'Login rápido', `Logado como ${userType}`);
+      
+    } catch (error) {
+      console.error('Erro no login rápido:', error);
+      showNotification('error', 'Erro no login rápido', (error as any)?.message || 'Erro ao fazer login rápido');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = async (userType: 'client' | 'professional' = 'client') => {
@@ -165,7 +195,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       setLoading(false);
       
       // Tratamento específico de diferentes tipos de erro
-      if (error.name === 'AbortError') {
+      if ((error as any).name === 'AbortError') {
         showNotification('error', 'Timeout', 'Conexão muito lenta. Tente novamente.');
       } else if (error.message?.includes('fetch')) {
         showNotification('error', 'Erro de rede', 'Verifique sua conexão e tente novamente.');

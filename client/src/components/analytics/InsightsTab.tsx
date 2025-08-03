@@ -262,11 +262,11 @@ export function InsightsTab({ userType, userId, realTimeData }: InsightsTabProps
               <div className="text-sm text-gray-400">Crescimento</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">{data.userRetention}%</div>
+              <div className="text-2xl font-bold text-blue-400">{data && 'userRetention' in data ? data.userRetention : 0}%</div>
               <div className="text-sm text-gray-400">Retenção</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-400">R$ {data.revenueProjection}</div>
+              <div className="text-2xl font-bold text-yellow-400">R$ {data && 'revenueProjection' in data ? data.revenueProjection : 0}</div>
               <div className="text-sm text-gray-400">Projeção</div>
             </div>
           </div>
