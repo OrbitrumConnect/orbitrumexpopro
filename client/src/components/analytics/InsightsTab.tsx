@@ -181,11 +181,11 @@ export function InsightsTab({ userType, userId, realTimeData }: InsightsTabProps
               <div className="text-sm text-gray-400">Serviços Contratados</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-cyan-400">{data.tokensSpent}</div>
+              <div className="text-2xl font-bold text-cyan-400">{data && 'tokensSpent' in data ? data.tokensSpent : 0}</div>
               <div className="text-sm text-gray-400">Tokens Gastos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">R$ {data.averageTicket}</div>
+              <div className="text-2xl font-bold text-green-400">R$ {data && 'averageTicket' in data ? data.averageTicket : 0}</div>
               <div className="text-sm text-gray-400">Ticket Médio</div>
             </div>
           </div>
