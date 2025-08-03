@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -89,7 +89,7 @@ export function TeamHiringModal({
 
   const createTeamHiringMutation = useMutation({
     mutationFn: async (data: TeamHiringForm) => {
-      return apiRequest("/api/team-hiring", {
+      const response = await fetch("/api/team-hiring", {
         method: "POST",
         body: JSON.stringify({
           userId,
@@ -111,11 +111,12 @@ export function TeamHiringModal({
           "Content-Type": "application/json",
         },
       });
+      return response.json();
     },
     onSuccess: (data) => {
       toast({
         title: "🤝 Equipe Contratada!",
-        description: data.message || "Sua equipe foi contratada com sucesso",
+        description: (data as any)?.message || "Sua equipe foi contratada com sucesso",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/users", userId, "team-hirings"] });
       onClose();
