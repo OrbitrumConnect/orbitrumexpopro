@@ -450,7 +450,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
   };
 
   // Sistema inteligente: usar dados da API com fallback
-  const availableProfessionals = allProfessionals.length > 0 ? allProfessionals : fallbackProfessionals;
+  const availableProfessionals = (allProfessionals as any[]).length > 0 ? allProfessionals : fallbackProfessionals;
 
   // Update search results when query changes - usar API real
   useEffect(() => {

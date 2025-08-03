@@ -86,12 +86,12 @@ export function CleanProfessionalDashboard({ user }: ProfessionalDashboardProps)
   });
 
   const pendingCount = pendingRequests?.length || 0;
-  const acceptedCount = acceptedServices?.length || 0;
+  const acceptedCount = (acceptedServices as any[])?.length || 0;
   const tokensTotal = wallet?.saldoTotal || 0;
   const tokensComprados = wallet?.tokensComprados || 0;
   const tokensPlano = wallet?.tokensPlano || 0;
   const tokensEarned = wallet?.tokensGanhos || 0;
-  const rating = stats?.averageRating || 0;
+  const rating = (stats as any)?.averageRating || 0;
 
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
@@ -287,8 +287,11 @@ export function CleanProfessionalDashboard({ user }: ProfessionalDashboardProps)
           {/* IA Insights Tab */}
           {activeTab === 'insights' && (
             <ProfessionalInsights 
-              professionalId={user?.id} 
-              professionalName={user?.username}
+              professionalId={user?.id}
+              category="Tecnologia"
+              currentRating={rating}
+              completedServices={acceptedCount}
+              averagePrice={1500}
             />
           )}
 
@@ -296,7 +299,8 @@ export function CleanProfessionalDashboard({ user }: ProfessionalDashboardProps)
           {activeTab === 'calendar-insights' && (
             <ProfessionalCalendarInsights 
               professionalId={user?.id}
-              professionalName={user?.username}
+              category="Tecnologia"
+              currentRating={rating}
             />
           )}
 
@@ -531,6 +535,8 @@ export function CleanProfessionalDashboard({ user }: ProfessionalDashboardProps)
                   professionalId={user?.id || 1}
                   category="Tecnologia"
                   currentRating={rating}
+                  completedServices={acceptedCount}
+                  averagePrice={1500}
                 />
               </CardContent>
             </Card>
