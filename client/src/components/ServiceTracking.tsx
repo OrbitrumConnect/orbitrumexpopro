@@ -140,7 +140,7 @@ const ServiceTracking: React.FC<ServiceTrackingProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {activeServices?.map((service: ServiceStatus) => (
+          {Array.isArray(activeServices) ? activeServices.map((service: ServiceStatus) => (
             <div key={service.id} className="bg-gray-700/50 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-center">
                 <div>
@@ -206,7 +206,7 @@ const ServiceTracking: React.FC<ServiceTrackingProps> = ({
                 </div>
               )}
             </div>
-          ))}
+          )) : null}
 
           {(!activeServices || activeServices.length === 0) && (
             <div className="text-center py-8 text-gray-400">
