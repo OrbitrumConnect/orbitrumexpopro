@@ -321,7 +321,7 @@ export function PlansModal({ isOpen, onClose, onOpenLogin }: PlansModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {planData.map((plan) => {
                 const Icon = plan.icon;
-                const cashbackData = calculateCashbackData(plan.data);
+                const cashbackData = calculateCashbackData(plan.data as any);
                 
                 return (
                   <motion.div

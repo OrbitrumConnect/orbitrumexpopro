@@ -38,7 +38,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onAddToTeam
   });
 
   // Buscar serviços do profissional
-  const { data: services, isLoading: servicesLoading } = useQuery<ProfessionalService[]>({
+  const { data: services, isLoading: servicesLoading } = useQuery<any[]>({
     queryKey: ["/api/professionals", professionalId, "services"],
     enabled: isOpen && !!professionalId,
   });

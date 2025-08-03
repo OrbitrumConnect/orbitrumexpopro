@@ -27,10 +27,10 @@ export function PlanExpiryNotification() {
     const checkNotifications = async () => {
       try {
         const response = await apiRequest("GET", "/api/notifications");
-        const data = response.json();
+        const data = await response.json();
         
-        if (data.success && data.notifications.length > 0) {
-          const unreadNotifications = data.notifications.filter((n: NotificationData) => !n.isRead);
+        if ((data as any).success && (data as any).notifications?.length > 0) {
+          const unreadNotifications = (data as any).notifications.filter((n: NotificationData) => !n.isRead);
           
           if (unreadNotifications.length > 0) {
             const latestNotification = unreadNotifications[0];
@@ -150,7 +150,7 @@ export function PlanExpiryNotification() {
         </div>
       </div>
       
-      <style jsx>{`
+      <style>{`
         @keyframes notification-progress {
           from { width: 100%; }
           to { width: 0%; }

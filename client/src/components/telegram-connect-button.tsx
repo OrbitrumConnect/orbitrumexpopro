@@ -40,7 +40,7 @@ export function TelegramConnectButton() {
     queryKey: ['telegram-code'],
     queryFn: async () => {
       const result = await generateCodeMutation.mutateAsync();
-      return result as TelegramCode;
+      return result as unknown as TelegramCode;
     },
     enabled: false,
     staleTime: 10 * 60 * 1000 // 10 minutos
