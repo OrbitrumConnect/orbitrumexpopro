@@ -48,13 +48,12 @@ app.use(limiter)
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
-// Health check
+// Health check endpoint for Railway
 app.get('/api/health', (req, res) => {
   res.json({ 
-    status: 'OK', 
+    status: 'ok', 
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    uptime: process.uptime()
   })
 })
 
