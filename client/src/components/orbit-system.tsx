@@ -462,25 +462,25 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
           if (response.ok) {
             const apiResults = await response.json();
             console.log(`🔍 BUSCA API: "${debouncedQuery}" retornou ${apiResults.length} profissionais`);
-            console.log('📋 Profissionais encontrados:', apiResults.map(p => `${p.name} - ${p.title}`));
+            console.log('📋 Profissionais encontrados:', apiResults.map((p: any) => `${p.name} - ${p.title}`));
             setSearchResults(apiResults.slice(0, 6)); // Máximo 6 profissionais
           } else {
             console.error('Erro na busca API:', response.status);
             // Busca fallback nos dados locais como backup
-            const filtered = availableProfessionals.filter(p =>
+            const filtered = (availableProfessionals as any[]).filter((p: any) =>
               smartSearch(p.name, debouncedQuery) ||
               smartSearch(p.title, debouncedQuery) ||
-              p.skills?.some(skill => smartSearch(skill, debouncedQuery))
+              p.skills?.some((skill: any) => smartSearch(skill, debouncedQuery))
             ).slice(0, 6);
             setSearchResults(filtered);
           }
         } catch (error) {
           console.error('Erro ao buscar profissionais:', error);
           // Fallback para dados locais
-          const filtered = availableProfessionals.filter(p =>
+          const filtered = (availableProfessionals as any[]).filter((p: any) =>
             smartSearch(p.name, debouncedQuery) ||
             smartSearch(p.title, debouncedQuery) ||
-            p.skills?.some(skill => smartSearch(skill, debouncedQuery))
+            p.skills?.some((skill: any) => smartSearch(skill, debouncedQuery))
           ).slice(0, 6);
           setSearchResults(filtered);
         }
@@ -511,42 +511,42 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
   };
   
   // Separar profissionais reais dos demonstrativos
-  const realProfessionals = availableProfessionals.filter(p => !p.isDemo);
-  const demoProfessionals = availableProfessionals.filter(p => p.isDemo);
+  const realProfessionals = (availableProfessionals as any[]).filter((p: any) => !p.isDemo);
+  const demoProfessionals = (availableProfessionals as any[]).filter((p: any) => p.isDemo);
   
   let topProfessionals;
   if (realProfessionals.length >= 20) {
     // Se temos profissionais reais suficientes, usar apenas eles
     topProfessionals = realProfessionals
-      .sort((a, b) => b.rating - a.rating)
+      .sort((a: any, b: any) => b.rating - a.rating)
       .slice(0, 20);
   } else if (realProfessionals.length > 0) {
     // Se temos alguns profissionais reais, completar com demonstrativos
-    const sortedReal = realProfessionals.sort((a, b) => b.rating - a.rating);
-    const sortedDemo = demoProfessionals.sort((a, b) => b.rating - a.rating);
+    const sortedReal = realProfessionals.sort((a: any, b: any) => b.rating - a.rating);
+    const sortedDemo = demoProfessionals.sort((a: any, b: any) => b.rating - a.rating);
     const needed = 20 - sortedReal.length;
     topProfessionals = [...sortedReal, ...sortedDemo.slice(0, needed)];
   } else {
     // Se não temos profissionais reais, usar demonstrativos
     topProfessionals = demoProfessionals
-      .sort((a, b) => b.rating - a.rating)
+      .sort((a: any, b: any) => b.rating - a.rating)
       .slice(0, 20);
   }
   
   const displayProfessionals = (hasSearched ? accumulatedProfessionals : topProfessionals)
-    .filter(prof => !removedProfessionals.has(prof.id));
+    .filter((prof: any) => !removedProfessionals.has(prof.id));
   
   // Sistema funcionando: 10 melhores inicialmente, pesquisa substitui tudo
 
   // Distribute accumulated professionals across orbit rings
-  let orbit1, orbit2, orbit3;
+  let orbit1: any[] = [], orbit2: any[] = [], orbit3: any[] = [];
   
   // Distribuir profissionais igualmente nos 3 rings
   orbit1 = [];
   orbit2 = [];
   orbit3 = [];
   
-  displayProfessionals.forEach((prof, index) => {
+  displayProfessionals.forEach((prof: any, index: number) => {
     const ring = (index % 3) + 1;
     if (ring === 1) orbit1.push(prof);
     else if (ring === 2) orbit2.push(prof);
