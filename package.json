@@ -22,9 +22,5 @@
   "license": "proprietary",
   "devDependencies": {
     "concurrently": "^8.2.2"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.44.4",
-    "drizzle-zod": "^0.8.2"
   }
 }
