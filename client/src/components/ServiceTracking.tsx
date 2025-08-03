@@ -208,7 +208,7 @@ const ServiceTracking: React.FC<ServiceTrackingProps> = ({
             </div>
           )) : null}
 
-          {(!activeServices || activeServices.length === 0) && (
+          {(!activeServices || (activeServices as any[]).length === 0) && (
             <div className="text-center py-8 text-gray-400">
               <Navigation className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>Nenhum serviço ativo no momento</p>
@@ -230,7 +230,7 @@ const ServiceTracking: React.FC<ServiceTrackingProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {activeServices?.map((service: ServiceStatus) => (
+          {Array.isArray(activeServices) ? activeServices.map((service: ServiceStatus) => (
             <div key={service.id} className="bg-gray-700/50 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-center">
                 <div>
@@ -324,7 +324,7 @@ const ServiceTracking: React.FC<ServiceTrackingProps> = ({
                 </div>
               )}
             </div>
-          ))}
+          )) : null}
         </CardContent>
       </Card>
     </div>
@@ -341,7 +341,7 @@ const ServiceTracking: React.FC<ServiceTrackingProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {activeServices?.map((service: ServiceStatus) => (
+          {Array.isArray(activeServices) ? activeServices.map((service: ServiceStatus) => (
             <div key={service.id} className="bg-gray-700/50 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-center">
                 <div>
@@ -386,7 +386,7 @@ const ServiceTracking: React.FC<ServiceTrackingProps> = ({
                 </div>
               )}
             </div>
-          ))}
+          )) : null}
         </CardContent>
       </Card>
     </div>
