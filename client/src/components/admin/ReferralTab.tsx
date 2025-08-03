@@ -79,7 +79,7 @@ export function ReferralTab() {
     onSuccess: (data) => {
       toast({
         title: "📧 Convites Enviados",
-        description: `${Array.isArray(data?.success) ? data.success.length : 0} clientes convidados com sucesso!`,
+        description: `${Array.isArray((data as any)?.success) ? (data as any).success.length : 0} clientes convidados com sucesso!`,
       });
       setClientEmails("");
       setShowEmailBulk(false);
@@ -100,7 +100,7 @@ export function ReferralTab() {
     onSuccess: (data) => {
       toast({
         title: "⏰ Expiração Processada",
-        description: `${data?.clientsRemoved || 0} clientes removidos, ${data?.professionalsRestricted || 0} profissionais restritos`,
+        description: `${(data as any)?.clientsRemoved || 0} clientes removidos, ${(data as any)?.professionalsRestricted || 0} profissionais restritos`,
       });
       refetchStats();
     }
