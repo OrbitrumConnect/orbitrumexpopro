@@ -11,7 +11,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Route, Switch } from "wouter";
 import Home from "@/pages/home";
-import Landing from "@/pages/landing";
+// import Landing from "@/pages/landing";
 import Teams from "@/pages/teams";
 import Termos from "@/pages/termos";
 import Privacidade from "@/pages/privacidade";
@@ -29,7 +29,7 @@ import ClientDashboard from "@/pages/dashboard-client";
 import ProfessionalDashboard from "@/pages/dashboard-professional";
 import DocumentVerification from "@/pages/DocumentVerification";
 import ChatWindow from "@/pages/ChatWindow";
-import TrackingDemo from "@/pages/tracking-demo";
+// import TrackingDemo from "@/pages/tracking-demo";
 import ProfessionalTracking from "@/pages/professional-tracking";
 import TeamHirings from "@/pages/team-hirings";
 import { GamePage } from "@/pages/game";
@@ -37,7 +37,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { LoginModal } from "@/components/login-modal";
 import { TelegramThemeProvider } from "@/components/telegram-integration";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
-import EmergencyFix from "@/pages/emergency-fix";
+// import EmergencyFix from "@/pages/emergency-fix";
 import { useState, useEffect } from "react";
 
 function AppContent() {
@@ -90,9 +90,9 @@ function AppContent() {
         <Route path="/cadastro" component={Cadastro} />
         <Route path="/verificacao-documentos" component={DocumentVerification} />
         <Route path="/team-hirings" component={TeamHirings} />
-        <Route path="/rastreamento" component={TrackingDemo} />
+        {/* <Route path="/rastreamento" component={TrackingDemo} /> */}
         <Route path="/controle-gps" component={ProfessionalTracking} />
-        <Route path="/emergency-fix" component={EmergencyFix} />
+        {/* <Route path="/emergency-fix" component={EmergencyFix} /> */}
         <Route path="/chat/:chatId">
           {(params) => <ChatWindow chatId={params.chatId} />}
         </Route>
