@@ -180,7 +180,7 @@ const ServiceHistory: React.FC<ServiceHistoryProps> = ({ userId, userType }) => 
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {history?.map((service: HistoryService) => (
+          {(history as HistoryService[])?.map((service: HistoryService) => (
             <div key={service.id} className="bg-gray-700/50 rounded-lg p-4">
               <div className="flex justify-between items-start mb-3">
                 <div>
@@ -228,7 +228,7 @@ const ServiceHistory: React.FC<ServiceHistoryProps> = ({ userId, userType }) => 
             </div>
           ))}
 
-          {(!history || history.length === 0) && (
+          {(!history || (history as any[]).length === 0) && (
             <div className="text-center py-12">
               <Calendar className="w-16 h-16 text-gray-500 mx-auto mb-4" />
               <h3 className="text-white font-medium mb-2">Nenhum serviço ainda</h3>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Calendar, Upload, FileText, Camera, MapPin, Clock, Plus, Edit3, Trash2, Save, Sync } from 'lucide-react';
+import { Calendar, Upload, FileText, Camera, MapPin, Clock, Plus, Edit3, Trash2, Save, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
