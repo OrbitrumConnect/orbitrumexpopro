@@ -80,7 +80,7 @@ export default function TokenStore() {
     enabled: isAuthenticated
   });
   
-  const userTokens = userWallet ? (userWallet.tokensPlano + userWallet.tokensComprados + userWallet.tokensGanhos) : 0;
+  const userTokens = userWallet ? ((userWallet as any).tokensPlano + (userWallet as any).tokensComprados + (userWallet as any).tokensGanhos) : 0;
 
   const purchaseMutation = useMutation({
     mutationFn: async (packageId: string) => {
