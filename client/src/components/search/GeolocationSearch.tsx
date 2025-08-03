@@ -65,7 +65,7 @@ export default function GeolocationSearch() {
         );
       });
 
-      const location = {
+      const location: SearchLocation = {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude
       };
