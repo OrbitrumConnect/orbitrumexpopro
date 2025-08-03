@@ -177,7 +177,7 @@ export function InsightsTab({ userType, userId, realTimeData }: InsightsTabProps
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-white">{data.servicesContracted}</div>
+              <div className="text-2xl font-bold text-white">{data && 'servicesContracted' in data ? data.servicesContracted : 0}</div>
               <div className="text-sm text-gray-400">Serviços Contratados</div>
             </div>
             <div className="text-center">

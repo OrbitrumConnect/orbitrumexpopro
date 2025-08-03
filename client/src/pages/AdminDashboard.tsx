@@ -126,7 +126,7 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/stats"],
     retry: 3,
     staleTime: 0, // Sem cache - sempre buscar dados atualizados
-    cacheTime: 0, // Não manter cache
+    gcTime: 0, // Não manter cache
   });
 
   // Query para carteira administrativa separada
@@ -174,14 +174,14 @@ export default function AdminDashboard() {
     {
       id: 2,
       type: "user",
-      message: `${stats.totalUsers} usuários registrados na plataforma`,
+      message: `${(stats as any)?.totalUsers || 0} usuários registrados na plataforma`,
       time: "há 15 minutos",
       urgent: false
     },
     {
       id: 3,
       type: "system",
-      message: `Pool de saques configurada: R$ ${stats.withdrawalPool?.totalAccumulated?.toFixed(2).replace('.', ',') || '0,00'}`,
+              message: `Pool de saques configurada: R$ ${(stats as any)?.withdrawalPool?.totalAccumulated?.toFixed(2).replace('.', ',') || '0,00'}`,
       time: "há 30 minutos",
       urgent: false
     }
@@ -694,8 +694,8 @@ export default function AdminDashboard() {
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 text-cyan-400" />
                 </CardHeader>
                 <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-white">{(currentStats.totalUsers || 0).toLocaleString()}</div>
-                  <p className="text-[9px] sm:text-xs text-green-400">+{currentStats.monthlyStats.newUsers} mês</p>
+                  <div className="text-sm sm:text-2xl font-bold text-white">{((currentStats as any)?.totalUsers || 0).toLocaleString()}</div>
+                  <p className="text-[9px] sm:text-xs text-green-400">+{(currentStats as any)?.monthlyStats?.newUsers || 0} mês</p>
                 </CardContent>
               </Card>
 
@@ -705,7 +705,7 @@ export default function AdminDashboard() {
                   <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-green-400" />
                 </CardHeader>
                 <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-green-400">{(currentStats.activeUsers || 0).toLocaleString()}</div>
+                  <div className="text-sm sm:text-2xl font-bold text-green-400">{((currentStats as any)?.activeUsers || 0).toLocaleString()}</div>
                   <p className="text-[9px] sm:text-xs text-gray-400">Online</p>
                 </CardContent>
               </Card>
@@ -716,7 +716,7 @@ export default function AdminDashboard() {
                   <UserX className="h-3 w-3 sm:h-4 sm:w-4 text-red-400" />
                 </CardHeader>
                 <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-red-400">{(currentStats.offlineUsers || 0).toLocaleString()}</div>
+                  <div className="text-sm sm:text-2xl font-bold text-red-400">{((currentStats as any)?.offlineUsers || 0).toLocaleString()}</div>
                   <p className="text-[9px] sm:text-xs text-gray-400">Inativos</p>
                 </CardContent>
               </Card>
@@ -727,8 +727,8 @@ export default function AdminDashboard() {
                   <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-400" />
                 </CardHeader>
                 <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-yellow-400">R$ {(currentStats.totalRevenue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                  <p className="text-[9px] sm:text-xs text-green-400">+R$ {(currentStats.monthlyStats.revenue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} mês</p>
+                  <div className="text-sm sm:text-2xl font-bold text-yellow-400">R$ {(((currentStats as any)?.totalRevenue || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                                      <p className="text-[9px] sm:text-xs text-green-400">+R$ {(((currentStats as any)?.monthlyStats?.revenue || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} mês</p>
                 </CardContent>
               </Card>
             </div>
