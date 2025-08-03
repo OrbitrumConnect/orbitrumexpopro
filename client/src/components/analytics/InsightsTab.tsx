@@ -121,14 +121,14 @@ export function InsightsTab({ userType, userId, realTimeData }: InsightsTabProps
           <div className="flex justify-between items-center">
             <span className="text-gray-300">Taxa de Conversão</span>
             <div className="flex items-center gap-2">
-              <Progress value={data.conversionRate} className="w-20" />
-              <span className="text-white font-bold">{data.conversionRate}%</span>
+              <Progress value={data && 'conversionRate' in data ? data.conversionRate : 0} className="w-20" />
+                              <span className="text-white font-bold">{data && 'conversionRate' in data ? data.conversionRate : 0}%</span>
             </div>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-300">Tempo de Resposta</span>
             <Badge variant="outline" className="text-green-400 border-green-400">
-              {data.responseTime}
+              {data && 'responseTime' in data ? data.responseTime : '0min'}
             </Badge>
           </div>
         </CardContent>
