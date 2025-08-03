@@ -99,7 +99,7 @@ export function InsightsTab({ userType, userId, realTimeData }: InsightsTabProps
               <div className="text-sm text-gray-400">Serviços</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-400">{data.averageRating.toFixed(1)}</div>
+              <div className="text-2xl font-bold text-yellow-400">{(data && 'averageRating' in data ? data.averageRating : 0).toFixed(1)}</div>
               <div className="text-sm text-gray-400 flex items-center justify-center gap-1">
                 <Star className="h-3 w-3" />
                 Avaliação
