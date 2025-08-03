@@ -205,11 +205,11 @@ export function InsightsTab({ userType, userId, realTimeData }: InsightsTabProps
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-300">Recontratar Serviços</span>
-                <span className="text-green-400">{data.recontractionRate}%</span>
+                <span className="text-green-400">{data && 'recontractionRate' in data ? data.recontractionRate : 0}%</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-300">Satisfação Geral</span>
-                <span className="text-yellow-400">{data.satisfactionScore}/5</span>
+                <span className="text-yellow-400">{data && 'satisfactionScore' in data ? data.satisfactionScore : 0}/5</span>
               </div>
             </div>
           ) : (
@@ -254,11 +254,11 @@ export function InsightsTab({ userType, userId, realTimeData }: InsightsTabProps
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-white">{data.totalInteractions}</div>
+              <div className="text-2xl font-bold text-white">{data && 'totalInteractions' in data ? data.totalInteractions : 0}</div>
               <div className="text-sm text-gray-400">Interações Totais</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">+{data.platformGrowth}%</div>
+              <div className="text-2xl font-bold text-green-400">+{data && 'platformGrowth' in data ? data.platformGrowth : 0}%</div>
               <div className="text-sm text-gray-400">Crescimento</div>
             </div>
             <div className="text-center">
