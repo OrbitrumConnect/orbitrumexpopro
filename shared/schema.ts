@@ -1,679 +1,78 @@
-import { pgTable, text, varchar, serial, integer, boolean, real, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+// import { pgTable, text, varchar, serial, integer, boolean, real, timestamp } from "drizzle-orm/pg-core";
+// import { createInsertSchema } from "drizzle-zod";
+// import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").notNull().default(false),
-  emailVerificationToken: text("email_verification_token"),
-  passwordHash: text("password_hash"), // Para autenticação local
-  supabaseId: text("supabase_id").unique(), // ID do Supabase Auth
-  // Campo para identificar tipo de usuário
-  userType: text("user_type").notNull().default("client"), // client, professional, admin
-  // Novos campos obrigatórios para clientes
-  phone: text("phone"), // Telefone com DDD
-  fullName: text("full_name"), // Nome completo
-  profilePhoto: text("profile_photo"), // Foto de perfil (opcional)
-  pixKey: text("pix_key"), // Chave Pix para receber cashback
-  pixKeyValidated: boolean("pix_key_validated").notNull().default(false),
-  termsAccepted: boolean("terms_accepted").notNull().default(false),
-  termsAcceptedAt: timestamp("terms_accepted_at"),
-  tokens: integer("tokens").notNull().default(20), // Manter compatibilidade
-  plan: text("plan").notNull().default("free"), // free, freeOrbitrum, basic, pro, max
-  planActivatedAt: timestamp("plan_activated_at"),
-  planExpiryDate: timestamp("plan_expiry_date"),
-  credits: integer("credits").notNull().default(20),
-  maxCredits: integer("max_credits").notNull().default(20),
-  gamesPlayedToday: integer("games_played_today").notNull().default(0),
-  lastGameDate: text("last_game_date"),
-  highScore: integer("high_score").notNull().default(0),
-  // Novo sistema de tokens expandido
-  tokensPlano: integer("tokens_plano").notNull().default(0),
-  tokensGanhos: integer("tokens_ganhos").notNull().default(0),
-  tokensComprados: integer("tokens_comprados").notNull().default(0),
-  tokensUsados: integer("tokens_usados").notNull().default(0),
-  creditosAcumulados: integer("creditos_acumulados").notNull().default(0),
-  creditosSacados: integer("creditos_sacados").notNull().default(0),
-  dataInicioPlano: text("data_inicio_plano"),
-  ultimoSaque: timestamp("ultimo_saque"), // Controle do último saque
-  saqueDisponivel: integer("saque_disponivel").notNull().default(0), // Valor disponível para saque no dia 3
-  notificacaoSaque: boolean("notificacao_saque").default(true), // Se recebe notificações
-  // Para administradores
-  adminLevel: integer("admin_level").default(0), // 0=normal, 1=moderator, 2=admin, 3=super_admin
-  adminPermissions: text("admin_permissions").array().default([]),
-  // Verificação de documentos obrigatória
-  documentsStatus: text("documents_status").notNull().default("pending"), // pending, submitted, approved, rejected
-  documentsSubmittedAt: timestamp("documents_submitted_at"),
-  documentsApprovedAt: timestamp("documents_approved_at"),
-  canMakePurchases: boolean("can_make_purchases").notNull().default(false), // Só true após aprovação
-  // Administração de usuários
-  suspended: boolean("suspended").notNull().default(false),
-  suspendedReason: text("suspended_reason"),
-  suspendedAt: timestamp("suspended_at"),
-  banned: boolean("banned").notNull().default(false),
-  bannedReason: text("banned_reason"),
-  bannedAt: timestamp("banned_at"),
-  bannedUntil: timestamp("banned_until"),
-  // Sistema de Referral Promocional
-  isPromotionalUser: boolean("is_promotional_user").notNull().default(false),
-  promotionalCode: text("promotional_code"), // Código único de referral
-  referredBy: text("referred_by"), // Código de quem convidou
-  referralCount: integer("referral_count").notNull().default(0), // Quantos convidou
-  promotionalPlanExpiry: timestamp("promotional_plan_expiry"), // Expiry do plano promocional
-  promotionalBonusMonths: integer("promotional_bonus_months").notNull().default(0), // Meses extras ganhos
-  promotionalPhase: text("promotional_phase").default("active"), // active, expired, converted
-  // Free Orbitrum Plan Limits
-  freePlanMonthlyReset: text("free_plan_monthly_reset"), // Mês do último reset (YYYY-MM)
-  freePlanAiSearches: integer("free_plan_ai_searches").notNull().default(10), // Buscas IA restantes
-  freePlanPlanetViews: integer("free_plan_planet_views").notNull().default(2), // Visualizações planeta a cada 3 dias
-  freePlanProfileViews: integer("free_plan_profile_views").notNull().default(1), // Visualizações perfil diárias
-  freePlanMessages: integer("free_plan_messages").notNull().default(2), // Mensagens recebidas mensais
-  freePlanLastDailyReset: text("free_plan_last_daily_reset"), // Data do último reset diário (YYYY-MM-DD)
-  freePlanLastPlanetReset: text("free_plan_last_planet_reset") // Data do último reset de planetas (a cada 3 dias)
-});
-
-// Nova tabela para sistema de referral
-export const referralCampaigns = pgTable("referral_campaigns", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(), // "Campanha 100 Clientes Iniciais"
-  description: text("description"),
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
-  maxParticipants: integer("max_participants").notNull().default(100),
-  currentParticipants: integer("current_participants").notNull().default(0),
-  requiredReferrals: integer("required_referrals").notNull().default(3), // Quantos precisa convidar
-  bonusMonths: integer("bonus_months").notNull().default(1), // Meses extras por atingir meta
-  planOffered: text("plan_offered").notNull().default("max"), // Plano oferecido
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow()
-});
-
-// Tabela para tracking de referrals
-export const referrals = pgTable("referrals", {
-  id: serial("id").primaryKey(),
-  campaignId: integer("campaign_id").notNull().references(() => referralCampaigns.id),
-  referrerId: integer("referrer_id").notNull().references(() => users.id), // Quem convidou
-  referredId: integer("referred_id").notNull().references(() => users.id), // Quem foi convidado
-  referralCode: text("referral_code").notNull(), // Código usado
-  referredType: text("referred_type").notNull(), // client ou professional
-  status: text("status").notNull().default("pending"), // pending, confirmed, expired
-  createdAt: timestamp("created_at").defaultNow(),
-  confirmedAt: timestamp("confirmed_at"),
-  bonusAppliedAt: timestamp("bonus_applied_at")
-});
-
-// Tabela para armazenar documentos dos usuários
-export const userDocuments = pgTable("user_documents", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  documentType: text("document_type").notNull(), // selfie, id_document, proof_residence, professional_portfolio
-  fileName: text("file_name").notNull(),
-  fileSize: integer("file_size"),
-  mimeType: text("mime_type"),
-  uploadedAt: timestamp("uploaded_at").defaultNow(),
-  status: text("status").notNull().default("pending"), // pending, approved, rejected
-  rejectionReason: text("rejection_reason"),
-  reviewedBy: integer("reviewed_by").references(() => users.id), // Admin que analisou
-  reviewedAt: timestamp("reviewed_at"),
-});
-
-// Categorias profissionais disponíveis
-export const professionalCategories = pgTable("professional_categories", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-  icon: text("icon"), // Lucide icon name
-  color: text("color"), // Tailwind color class
-  skills: text("skills").array().default([]), // Skills/services disponíveis
-  active: boolean("active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const professionals = pgTable("professionals", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id), // Link com usuário
-  categoryId: integer("category_id").references(() => professionalCategories.id), // Categoria escolhida
-  name: text("name").notNull(),
-  title: text("title").notNull(),
-  email: text("email").notNull().unique(),
-  phone: text("phone"), // Telefone com DDD
-  // Dados obrigatórios conforme regras da plataforma
-  cpf: text("cpf").notNull(), // CPF obrigatório
-  cep: text("cep").notNull(), // CEP obrigatório  
-  address: text("address"), // Endereço completo
-  proofOfResidence: text("proof_of_residence"), // Comprovante de residência (URL)
-  pixKey: text("pix_key").notNull(), // Chave Pix obrigatória
-  pixKeyValidated: boolean("pix_key_validated").notNull().default(false),
-  documentsValidated: boolean("documents_validated").notNull().default(false),
-  termsAccepted: boolean("terms_accepted").notNull().default(false),
-  termsAcceptedAt: timestamp("terms_accepted_at"),
-  rating: real("rating").notNull().default(0),
-  reviewCount: integer("review_count").notNull().default(0),
-  avatar: text("avatar").notNull(),
-  orbitRing: integer("orbit_ring").notNull(), // 1, 2, or 3
-  orbitPosition: integer("orbit_position").notNull(), // position in ring
-  services: text("services").array().notNull().default([]),
-  servicesPricing: text("services_pricing").array().notNull().default([]), // Array de preços correspondentes
-  hourlyRate: integer("hourly_rate").notNull(),
-  available: boolean("available").notNull().default(true),
-  // Sistema de tokens para profissionais
-  tokensReceived: integer("tokens_received").notNull().default(0),
-  tokensWithdrawn: integer("tokens_withdrawn").notNull().default(0),
-  lastWithdrawal: timestamp("last_withdrawal"),
-  // Status profissional
-  verified: boolean("verified").notNull().default(false),
-  suspended: boolean("suspended").notNull().default(false),
-  suspensionReason: text("suspension_reason"),
-  isDemo: boolean("is_demo").notNull().default(false), // Profissionais demonstrativos IA
-  // Geolocalização para proximity matching
-  latitude: real("latitude"), // Coordenada GPS latitude
-  longitude: real("longitude"), // Coordenada GPS longitude
-  city: text("city"), // Cidade extraída do CEP
-  state: text("state"), // Estado (SP, RJ, MG...)
-  country: text("country").default("Brasil"), // País
-  workRadius: integer("work_radius").default(20), // Raio de atendimento em KM
-  // IA Matching System 
-  skills: text("skills").array().default([]), // Skills técnicas detalhadas
-  experienceYears: integer("experience_years").default(0), // Anos de experiência
-  completedProjects: integer("completed_projects").default(0), // Projetos finalizados
-  responseTimeHours: integer("response_time_hours").default(24), // Tempo médio de resposta
-  workPreferences: text("work_preferences").array().default([]), // ["presencial", "remoto", "hibrido"]
-  specializations: text("specializations").array().default([]), // Especializações técnicas
-  // Sistema de Auto-Aceitar Solicitações
-  autoAcceptRequests: boolean("auto_accept_requests").notNull().default(false), // Liga/desliga auto-aceitar
-  autoAcceptEnabled: boolean("auto_accept_enabled").notNull().default(false), // Status atual
-  autoAcceptTimeoutHours: integer("auto_accept_timeout_hours").notNull().default(1), // Prazo em horas (padrão 1h)
-  autoAcceptLastUsed: timestamp("auto_accept_last_used"), // Última vez que foi usado
-  autoAcceptCount: integer("auto_accept_count").notNull().default(0), // Contador de usos
-  portfolioUrl: text("portfolio_url"), // URL do portfólio
-  linkedinUrl: text("linkedin_url"), // URL do LinkedIn
-  // Algoritmo IA Score
-  aiMatchScore: real("ai_match_score").default(0), // Score calculado pela IA 0-100
-  personalityType: text("personality_type"), // DISC, Myers-Briggs etc
-  communicationStyle: text("communication_style"), // "formal", "casual", "técnico"
-  workMethodology: text("work_methodology"), // "agile", "waterfall", "kanban"
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Tabela de serviços oferecidos pelos profissionais com preços em tokens
-export const professionalServices = pgTable("professional_services", {
-  id: serial("id").primaryKey(),
-  professionalId: integer("professional_id").notNull().references(() => professionals.id),
-  serviceName: text("service_name").notNull(), // "Consultoria Inicial", "Desenvolvimento Web", etc
-  description: text("description"), // Descrição detalhada do serviço
-  tokenPrice: integer("token_price").notNull(), // Preço em tokens (1500, 2000, 2500, 3000)
-  estimatedDuration: text("estimated_duration"), // "1-2 horas", "1 semana", etc
-  serviceType: text("service_type").notNull(), // "consultation", "development", "design", etc
-  active: boolean("active").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertProfessionalServiceSchema = createInsertSchema(professionalServices).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const gameScores = pgTable("game_scores", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  score: integer("score").notNull(),
-  tokensEarned: real("tokens_earned").notNull(),
-  duration: integer("duration").notNull(), // in seconds
-  createdAt: text("created_at").notNull(),
-});
-
-export const teams = pgTable("teams", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  name: text("name").notNull(),
-  professionalIds: text("professional_ids").array().notNull().default([]),
-  totalCost: integer("total_cost").default(0), // Custo total sem desconto
-  discountPercentage: integer("discount_percentage").default(0), // 15% ou 20%
-  finalCost: integer("final_cost").default(0), // Custo final com desconto
-  memberCount: integer("member_count").default(0), // Número de profissionais
-  createdAt: text("created_at").notNull(),
-});
-
-// Tabela de contratações de equipes com preços e descontos
-export const teamHiring = pgTable("team_hiring", {
-  id: serial("id").primaryKey(),
-  teamId: integer("team_id").notNull().references(() => teams.id),
-  userId: integer("user_id").notNull(), // Cliente que está contratando
-  professionals: text("professionals").array().notNull().default([]), // IDs dos profissionais selecionados
-  totalTokens: integer("total_tokens").notNull(), // Custo total sem desconto
-  discountPercentage: integer("discount_percentage").default(0), // 15% (5+) ou 20% (10+)
-  finalTokens: integer("final_tokens").notNull(), // Custo final com desconto
-  status: text("status").notNull().default("pending"), // "pending", "paid", "active", "completed"
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertTeamHiringSchema = createInsertSchema(teamHiring).omit({
-  id: true,
-  createdAt: true,
-});
-
-// Tabela de solicitações de equipe enviadas pelos clientes aos profissionais
-export const teamRequests = pgTable("team_requests", {
-  id: serial("id").primaryKey(),
-  clientId: integer("client_id").notNull(), // ID do cliente que fez a solicitação
-  professionalId: integer("professional_id").notNull(), // ID do profissional solicitado
-  teamId: integer("team_id").notNull(), // ID da equipe do cliente
-  projectTitle: varchar("project_title", { length: 255 }).notNull(),
-  projectDescription: text("project_description").notNull(),
-  estimatedBudget: integer("estimated_budget"), // Em centavos
-  estimatedDuration: varchar("estimated_duration", { length: 100 }), // "2 semanas", "1 mês", etc.
-  urgency: varchar("urgency", { length: 50 }).notNull().default("normal"), // "baixa", "normal", "alta", "urgente"
-  status: varchar("status", { length: 50 }).notNull().default("pending"), // "pending", "accepted", "rejected", "completed", "trashed"
-  professionalResponse: text("professional_response"), // Resposta do profissional
-  contactInfo: text("contact_info"), // Info de contato após aceitar
-  trashedAt: timestamp("trashed_at"), // Quando foi movido para lixeira
-  expiresAt: timestamp("expires_at"), // Quando expira da lixeira (5 minutos após trashedAt)
-  createdAt: timestamp("created_at").defaultNow(),
-  respondedAt: timestamp("responded_at"),
-});
-
-// Tabela de conversas entre cliente e profissional após aceitar solicitação
-export const teamMessages = pgTable("team_messages", {
-  id: serial("id").primaryKey(),
-  requestId: integer("request_id").notNull(), // ID da solicitação da equipe
-  senderId: integer("sender_id").notNull(), // ID de quem enviou (cliente ou profissional)
-  senderType: varchar("sender_type", { length: 20 }).notNull(), // "client" ou "professional"
-  message: text("message").notNull(),
-  attachments: text("attachments").array().default([]), // URLs de arquivos anexos
-  isRead: boolean("is_read").notNull().default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const tokenOperations = pgTable("token_operations", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  tipo: text("tipo").notNull(), // 'consumo', 'saque', 'ganho', 'compra', 'cashback'
-  motivo: text("motivo").notNull(),
-  valor: integer("valor").notNull(),
-  saldoAnterior: integer("saldo_anterior").notNull(),
-  saldoPosterior: integer("saldo_posterior").notNull(),
-  createdAt: text("created_at").notNull(),
-});
-
-// Nova tabela para ações administrativas
-export const adminActions = pgTable("admin_actions", {
-  id: serial("id").primaryKey(),
-  adminId: integer("admin_id").notNull(),
-  targetType: text("target_type").notNull(), // 'user', 'professional', 'platform'
-  targetId: integer("target_id"),
-  action: text("action").notNull(), // 'suspend', 'validate', 'moderate', 'approve', etc.
-  reason: text("reason"),
-  details: text("details"),
-  reversible: boolean("reversible").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Tabela para validações de documentos profissionais
-export const professionalValidations = pgTable("professional_validations", {
-  id: serial("id").primaryKey(),
-  professionalId: integer("professional_id").notNull(),
-  documentType: text("document_type").notNull(), // 'cpf', 'address', 'pix', 'identity'
-  status: text("status").notNull().default("pending"), // 'pending', 'approved', 'rejected'
-  validatedBy: integer("validated_by"), // ID do admin que validou
-  validatedAt: timestamp("validated_at"),
-  rejectionReason: text("rejection_reason"),
-  documentUrl: text("document_url"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Sistema de saques automáticos 8.7%
-export const withdrawalRequests = pgTable("withdrawal_requests", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  amount: integer("amount").notNull(), // Valor em tokens (ex: 1000 = R$ 1,00)
-  pixKey: text("pix_key").notNull(),
-  status: text("status").notNull().default("pending"), // 'pending', 'completed', 'expired'
-  windowDate: text("window_date").notNull(), // Data da janela (ex: "2025-07-03")
-  requestedAt: timestamp("requested_at").defaultNow(),
-  processedAt: timestamp("processed_at"),
-  expiresAt: timestamp("expires_at").notNull(), // Expira às 00:00 do dia 4
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Notificações para usuários
-export const userNotifications = pgTable("user_notifications", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  type: text("type").notNull(), // 'withdrawal_available', 'withdrawal_reminder', 'plan_update', 'system'
-  urgent: boolean("urgent").notNull().default(false),
-  read: boolean("read").notNull().default(false),
-  readAt: timestamp("read_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Eventos do sistema para auditoria
-export const systemEvents = pgTable("system_events", {
-  id: serial("id").primaryKey(),
-  eventType: text("event_type").notNull(), // 'WITHDRAWAL_WINDOW_OPENED', 'WITHDRAWAL_WINDOW_CLOSED'
-  description: text("description").notNull(),
-  metadata: text("metadata"), // JSON com dados adicionais
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Tabela para equipes profissionais (empresas/CNPJs)
-export const professionalTeams = pgTable("professional_teams", {
-  id: serial("id").primaryKey(),
-  professionalId: integer("professional_id").notNull().references(() => users.id), // Profissional que criou a equipe
-  teamName: text("team_name").notNull(),
-  description: text("description"),
-  companyType: text("company_type").notNull().default("individual"), // individual, empresa, cnpj
-  cnpj: text("cnpj"), // CNPJ se for empresa
-  professionalDiscount: real("professional_discount").notNull().default(0.10), // 10% desconto padrão
-  status: text("status").notNull().default("active"), // active, inactive, suspended
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Tabela para funcionários das equipes profissionais
-export const teamEmployees = pgTable("team_employees", {
-  id: serial("id").primaryKey(),
-  teamId: integer("team_id").notNull().references(() => professionalTeams.id),
-  name: text("name").notNull(),
-  cpf: text("cpf").notNull(),
-  email: text("email"), // Se for usuário da plataforma
-  userId: integer("user_id").references(() => users.id), // Se for usuário existente da plataforma
-  photoUrl: text("photo_url"),
-  documentsUrl: text("documents_url"),
-  fromPlatform: boolean("from_platform").notNull().default(false), // Se veio da busca da plataforma
-  status: text("status").notNull().default("active"), // active, inactive, pending
-  role: text("role").default("employee"), // employee, coordinator, manager
-  invitedAt: timestamp("invited_at"),
-  acceptedAt: timestamp("accepted_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Tabela para convites de equipe enviados via plataforma
-export const teamInvitations = pgTable("team_invitations", {
-  id: serial("id").primaryKey(),
-  teamId: integer("team_id").notNull().references(() => professionalTeams.id),
-  inviterId: integer("inviter_id").notNull().references(() => users.id), // Quem enviou o convite
-  invitedUserId: integer("invited_user_id").notNull().references(() => users.id), // Quem foi convidado
-  message: text("message"),
-  status: text("status").notNull().default("pending"), // pending, accepted, rejected, expired
-  expiresAt: timestamp("expires_at").notNull(), // Convites expiram em 7 dias
-  sentAt: timestamp("sent_at").defaultNow(),
-  respondedAt: timestamp("responded_at"),
-});
-
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  tokens: true,
-  gamesPlayedToday: true,
-  lastGameDate: true,
-  highScore: true,
-  tokensPlano: true,
-  tokensGanhos: true,
-  tokensComprados: true,
-  tokensUsados: true,
-  creditosAcumulados: true,
-  creditosSacados: true,
-  ultimoSaque: true,
-  adminLevel: true,
-  adminPermissions: true,
-});
-
-export const insertTokenOperationSchema = createInsertSchema(tokenOperations).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertProfessionalSchema = createInsertSchema(professionals).omit({
-  id: true,
-  rating: true,
-  reviewCount: true,
-  pixKeyValidated: true,
-  documentsValidated: true,
-  termsAcceptedAt: true,
-  tokensReceived: true,
-  tokensWithdrawn: true,
-  lastWithdrawal: true,
-  verified: true,
-  suspended: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertGameScoreSchema = createInsertSchema(gameScores).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertTeamSchema = createInsertSchema(teams).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertAdminActionSchema = createInsertSchema(adminActions).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertProfessionalValidationSchema = createInsertSchema(professionalValidations).omit({
-  id: true,
-  validatedAt: true,
-  createdAt: true,
-});
-
-// Schemas para categorias profissionais
-export const insertProfessionalCategorySchema = createInsertSchema(professionalCategories).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertProfessionalTeamSchema = createInsertSchema(professionalTeams).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertTeamEmployeeSchema = createInsertSchema(teamEmployees).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertTeamInvitationSchema = createInsertSchema(teamInvitations).omit({
-  id: true,
-  sentAt: true,
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type UpsertUser = typeof users.$inferInsert;
-export type User = typeof users.$inferSelect;
-
-export type Professional = typeof professionals.$inferSelect;
-export type InsertProfessional = typeof professionals.$inferInsert;
-
-export type ProfessionalCategory = typeof professionalCategories.$inferSelect;
-export type InsertProfessionalCategory = typeof professionalCategories.$inferInsert;
-
-export type GameScore = typeof gameScores.$inferSelect;
-export type InsertGameScore = typeof gameScores.$inferInsert;
-
-export type ProfessionalTeam = typeof professionalTeams.$inferSelect;
-export type InsertProfessionalTeam = typeof professionalTeams.$inferInsert;
-
-export type TeamEmployee = typeof teamEmployees.$inferSelect;
-export type InsertTeamEmployee = typeof teamEmployees.$inferInsert;
-
-export type TeamInvitation = typeof teamInvitations.$inferSelect;
-export type InsertTeamInvitation = typeof teamInvitations.$inferInsert;
-
-export type Team = typeof teams.$inferSelect;
-export type InsertTeam = typeof teams.$inferInsert;
-
-export type TeamRequest = typeof teamRequests.$inferSelect;
-export type InsertTeamRequest = typeof teamRequests.$inferInsert;
-
-export type TeamMessage = typeof teamMessages.$inferSelect;
-export type InsertTeamMessage = typeof teamMessages.$inferInsert;
-
-// Schemas Zod para validação das novas tabelas
-export const insertTeamRequestSchema = createInsertSchema(teamRequests).omit({
-  id: true,
-  createdAt: true,
-  respondedAt: true,
-});
-
-export const insertTeamMessageSchema = createInsertSchema(teamMessages).omit({
-  id: true,
-  createdAt: true,
-});
-
-export type InsertTeamRequestForm = z.infer<typeof insertTeamRequestSchema>;
-export type InsertTeamMessageForm = z.infer<typeof insertTeamMessageSchema>;
-export type ProfessionalService = typeof professionalServices.$inferSelect;
-export type InsertProfessionalService = z.infer<typeof insertProfessionalServiceSchema>;
-export type InsertTokenOperation = z.infer<typeof insertTokenOperationSchema>;
-export type TokenOperation = typeof tokenOperations.$inferSelect;
-export type InsertAdminAction = z.infer<typeof insertAdminActionSchema>;
-export type AdminAction = typeof adminActions.$inferSelect;
-export type InsertProfessionalValidation = z.infer<typeof insertProfessionalValidationSchema>;
-export type TeamHiring = typeof teamHiring.$inferSelect;
-export type InsertTeamHiring = z.infer<typeof insertTeamHiringSchema>;
-export type ProfessionalValidation = typeof professionalValidations.$inferSelect;
-
-export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
-export type InsertWithdrawalRequest = typeof withdrawalRequests.$inferInsert;
-
-export type UserNotification = typeof userNotifications.$inferSelect;
-export type InsertUserNotification = typeof userNotifications.$inferInsert;
-
-export type SystemEvent = typeof systemEvents.$inferSelect;
-export type InsertSystemEvent = typeof systemEvents.$inferInsert;
-
-// Service requests table for dashboard system
-export const serviceRequests = pgTable("service_requests", {
-  id: text("id").primaryKey().notNull(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  professionalId: integer("professional_id").references(() => professionals.id).notNull(),
-  description: text("description").notNull(),
-  location: varchar("location"),
-  urgency: varchar("urgency").notNull(), // "baixa", "media", "alta"
-  suggestedTokens: integer("suggested_tokens").notNull(),
-  status: varchar("status").notNull().default("pendente"), // "pendente", "aceito", "recusado", "em_andamento", "concluido"
-  responseDeadline: timestamp("response_deadline").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  respondedAt: timestamp("responded_at"),
-  completedAt: timestamp("completed_at"),
-});
-
-export type ServiceRequest = typeof serviceRequests.$inferSelect;
-export type InsertServiceRequest = typeof serviceRequests.$inferInsert;
-
-export const insertServiceRequestSchema = createInsertSchema(serviceRequests).omit({
-  id: true,
-  createdAt: true,
-  respondedAt: true,
-  completedAt: true,
-});
-
-export type InsertServiceRequestForm = z.infer<typeof insertServiceRequestSchema>;
-
-// Certificações profissionais obrigatórias (NR 35, CREA, etc.)
-export const professionalCertifications = pgTable("professional_certifications", {
-  id: serial("id").primaryKey(),
-  professionalId: integer("professional_id").notNull(),
-  certificationType: varchar("certification_type", { length: 50 }).notNull(), // NR35, NR10, NR18, CREA, AWS, etc.
-  certificationNumber: varchar("certification_number", { length: 100 }).notNull(),
-  issuingEntity: varchar("issuing_entity", { length: 200 }).notNull(), // SENAI, CREA, MTE, etc.
-  issueDate: timestamp("issue_date").notNull(),
-  expiryDate: timestamp("expiry_date"),
-  documentUrl: varchar("document_url", { length: 500 }), // Upload do certificado
-  validationStatus: varchar("validation_status", { length: 20 }).default("pending"), // pending, approved, rejected
-  adminNotes: text("admin_notes"),
-  validatedBy: varchar("validated_by", { length: 100 }),
-  validatedAt: timestamp("validated_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Requisitos de certificação por categoria profissional
-export const professionCertificationRequirements = pgTable("profession_certification_requirements", {
-  id: serial("id").primaryKey(),
-  category: varchar("category", { length: 100 }).notNull(), // "Casa e Construção", "Tecnologia", etc.
-  specialty: varchar("specialty", { length: 100 }).notNull(), // "Pintor", "Eletricista", etc.
-  certificationType: varchar("certification_type", { length: 50 }).notNull(), // NR35, NR10, etc.
-  isRequired: boolean("is_required").default(true),
-  riskLevel: varchar("risk_level", { length: 20 }).notNull(), // high, medium, low
-  description: text("description"),
-  legalBasis: varchar("legal_basis", { length: 200 }), // "NR 35 item 35.1.1"
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export type ProfessionalCertification = typeof professionalCertifications.$inferSelect;
-export type InsertProfessionalCertification = typeof professionalCertifications.$inferInsert;
-
-export type ProfessionCertificationRequirement = typeof professionCertificationRequirements.$inferSelect;
-export type InsertProfessionCertificationRequirement = typeof professionCertificationRequirements.$inferInsert;
-
-export const insertProfessionalCertificationSchema = createInsertSchema(professionalCertifications).omit({
-  id: true,
-  validatedAt: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertProfessionCertificationRequirementSchema = createInsertSchema(professionCertificationRequirements).omit({
-  id: true,
-  createdAt: true,
-});
-
-export type InsertProfessionalCertificationForm = z.infer<typeof insertProfessionalCertificationSchema>;
-export type InsertProfessionCertificationRequirementForm = z.infer<typeof insertProfessionCertificationRequirementSchema>;
-
-// Dados de exemplo para desenvolvimento
-export const SAMPLE_USERS: User[] = [
+// Dados mock para desenvolvimento - sem dependências de banco
+export const SAMPLE_USERS = [
   {
     id: 1,
     username: "admin",
     email: "passosmir4@gmail.com",
-    emailVerified: true,
     userType: "admin",
-    tokens: 10000,
+    tokens: 999999,
     plan: "max",
-    credits: 100,
-    maxCredits: 100,
-    adminLevel: 3,
-    documentsStatus: "approved",
-    canMakePurchases: true,
-    suspended: false,
-    banned: false,
-    isPromotionalUser: false,
-    referralCount: 0,
-    freePlanAiSearches: 10,
-    freePlanPlanetViews: 2,
-    freePlanProfileViews: 1,
-    freePlanMessages: 2,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 2,
-    username: "cliente1",
-    email: "cliente1@test.com",
-    emailVerified: true,
-    userType: "client",
-    fullName: "João Silva",
-    phone: "(11) 99999-9999",
-    pixKey: "joao@test.com",
+    fullName: "Administrador",
+    phone: "+55 11 99999-9999",
+    profilePhoto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    pixKey: "admin@orbitrum.com",
     pixKeyValidated: true,
     termsAccepted: true,
-    tokens: 500,
-    plan: "basic",
-    credits: 50,
-    maxCredits: 50,
+    termsAcceptedAt: new Date(),
+    credits: 999999,
+    maxCredits: 999999,
+    gamesPlayedToday: 0,
+    highScore: 0,
+    tokensPlano: 999999,
+    tokensGanhos: 999999,
+    tokensComprados: 999999,
+    tokensUsados: 0,
+    creditosAcumulados: 999999,
+    creditosSacados: 0,
+    saqueDisponivel: 999999,
+    notificacaoSaque: true,
+    adminLevel: 3,
+    adminPermissions: ["all"],
     documentsStatus: "approved",
     canMakePurchases: true,
+    suspended: false,
+    banned: false,
+    isPromotionalUser: false,
+    referralCount: 0,
+    freePlanAiSearches: 999,
+    freePlanPlanetViews: 999,
+    freePlanProfileViews: 999,
+    freePlanMessages: 999
+  },
+  {
+    id: 2,
+    username: "cliente_demo",
+    email: "cliente@demo.com",
+    userType: "client",
+    tokens: 150,
+    plan: "free",
+    fullName: "Cliente Demo",
+    phone: "+55 11 88888-8888",
+    profilePhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    pixKey: "cliente@demo.com",
+    pixKeyValidated: false,
+    termsAccepted: true,
+    termsAcceptedAt: new Date(),
+    credits: 20,
+    maxCredits: 20,
+    gamesPlayedToday: 0,
+    highScore: 0,
+    tokensPlano: 0,
+    tokensGanhos: 20,
+    tokensComprados: 0,
+    tokensUsados: 0,
+    creditosAcumulados: 20,
+    creditosSacados: 0,
+    saqueDisponivel: 0,
+    notificacaoSaque: true,
+    adminLevel: 0,
+    adminPermissions: [],
+    documentsStatus: "pending",
+    canMakePurchases: false,
     suspended: false,
     banned: false,
     isPromotionalUser: false,
@@ -681,556 +80,744 @@ export const SAMPLE_USERS: User[] = [
     freePlanAiSearches: 10,
     freePlanPlanetViews: 2,
     freePlanProfileViews: 1,
-    freePlanMessages: 2,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    freePlanMessages: 2
   }
 ];
 
-export const SAMPLE_PROFESSIONALS: Professional[] = [
-  // ADVOGADOS (5 opções)
+export const SAMPLE_PROFESSIONALS = [
   {
-    id: 1,
+    id: 100,
     userId: 100,
-    name: "Roberto Silva",
-    title: "Advogado Civil",
-    email: "roberto.silva@email.com",
-    phone: "(11) 99999-1111",
-    rating: 4.8,
-    reviewCount: 127,
-    skills: ["Direito Civil", "Contratos", "Direito do Consumidor"],
-    hourlyRate: 2500,
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 1,
-    orbitPosition: 1,
-    available: true,
-    latitude: -23.5505,
-    longitude: -46.6333,
+    name: "Maria Silva",
+    title: "Advogada Especialista em Direito Civil",
+    description: "Advogada com mais de 10 anos de experiência em direito civil, trabalhista e previdenciário. Especializada em contratos, divórcios e questões trabalhistas.",
+    skills: ["Direito Civil", "Direito Trabalhista", "Contratos", "Divórcio", "Direito Previdenciário"],
     city: "São Paulo",
     state: "SP",
-    workRadius: 35,
-    services: ["Consultoria Jurídica", "Elaboração de Contratos", "Mediação"],
-    servicesPricing: ["1500", "2000", "1800"],
-    isDemo: true
+    available: true,
+    rating: 4.8,
+    reviewCount: 45,
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 1,
+    orbitPosition: 1,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 25,
+    hourlyRate: 150,
+    verified: true,
+    experience: "10+ anos",
+    education: "Direito - USP",
+    languages: ["Português", "Inglês"],
+    specializations: ["Direito Civil", "Direito Trabalhista"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: false, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
   },
   {
-    id: 2,
+    id: 101,
     userId: 101,
-    name: "Lucia Mendes",
-    title: "Advogada Trabalhista",
-    email: "lucia.mendes@email.com",
-    phone: "(11) 99999-2222",
+    name: "João Santos",
+    title: "Eletricista Residencial e Industrial",
+    description: "Eletricista profissional com certificação e experiência em instalações residenciais e industriais. Trabalho com segurança e garantia.",
+    skills: ["Instalação Elétrica", "Manutenção", "Automação", "Painéis Elétricos", "Iluminação"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
     rating: 4.9,
-    reviewCount: 89,
-    skills: ["Direito Trabalhista", "Recursos", "Acordos"],
-    hourlyRate: 2800,
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    reviewCount: 67,
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
     orbitRing: 1,
     orbitPosition: 2,
-    available: true,
-    latitude: -23.5605,
-    longitude: -46.6433,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 30,
-    services: ["Processo Trabalhista", "Acordo Extrajudicial", "Consultoria"],
-    servicesPricing: ["2000", "2500", "1800"],
-    isDemo: true
-  },
-  {
-    id: 3,
-    userId: 102,
-    name: "Carlos Oliveira",
-    title: "Advogado Criminal",
-    email: "carlos.oliveira@email.com",
-    phone: "(11) 99999-3333",
-    rating: 4.7,
-    reviewCount: 156,
-    skills: ["Direito Penal", "Processo Criminal", "Habeas Corpus"],
-    hourlyRate: 3200,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 1,
-    orbitPosition: 3,
-    available: true,
-    latitude: -23.5405,
-    longitude: -46.6233,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 40,
-    services: ["Defesa Criminal", "Habeas Corpus", "Recursos"],
-    servicesPricing: ["3000", "2500", "2800"],
-    isDemo: true
-  },
-  {
-    id: 4,
-    userId: 103,
-    name: "Ana Costa",
-    title: "Advogada Tributária",
-    email: "ana.costa@email.com",
-    phone: "(11) 99999-4444",
-    rating: 4.6,
-    reviewCount: 73,
-    skills: ["Direito Tributário", "Planejamento Fiscal", "Recursos"],
-    hourlyRate: 3500,
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 1,
-    orbitPosition: 4,
-    available: true,
-    latitude: -23.5705,
-    longitude: -46.6533,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 25,
-    services: ["Planejamento Tributário", "Defesa em Execução", "Consultoria"],
-    servicesPricing: ["3500", "3000", "2500"],
-    isDemo: true
-  },
-  {
-    id: 5,
-    userId: 104,
-    name: "Fernando Santos",
-    title: "Advogado Empresarial",
-    email: "fernando.santos@email.com",
-    phone: "(11) 99999-5555",
-    rating: 4.8,
-    reviewCount: 94,
-    skills: ["Direito Empresarial", "Fusões e Aquisições", "Compliance"],
-    hourlyRate: 4000,
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 1,
-    orbitPosition: 5,
-    available: true,
-    latitude: -23.5305,
-    longitude: -46.6133,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 50,
-    services: ["Consultoria Empresarial", "Due Diligence", "Compliance"],
-    servicesPricing: ["4000", "5000", "3500"],
-    isDemo: true
-  },
-
-  // ELETRICISTAS (5 opções)
-  {
-    id: 6,
-    userId: 105,
-    name: "Carlos Mendes",
-    title: "Eletricista Residencial",
-    email: "carlos.mendes@email.com",
-    phone: "(11) 99999-6666",
-    rating: 4.7,
-    reviewCount: 203,
-    skills: ["Instalação Elétrica", "Manutenção", "Quadros de Distribuição"],
-    hourlyRate: 800,
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 2,
-    orbitPosition: 1,
-    available: true,
-    latitude: -23.5455,
-    longitude: -46.6383,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 20,
-    services: ["Instalação Residencial", "Manutenção Elétrica", "Aterramento"],
-    servicesPricing: ["800", "600", "1000"],
-    isDemo: true
-  },
-  {
-    id: 7,
-    userId: 106,
-    name: "João Pereira",
-    title: "Eletricista Industrial",
-    email: "joao.pereira@email.com",
-    phone: "(11) 99999-7777",
-    rating: 4.9,
-    reviewCount: 167,
-    skills: ["Instalação Industrial", "Automação", "Painéis Elétricos"],
-    hourlyRate: 1200,
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 2,
-    orbitPosition: 2,
-    available: true,
-    latitude: -23.5555,
-    longitude: -46.6483,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 35,
-    services: ["Instalação Industrial", "Manutenção Preventiva", "Automação"],
-    servicesPricing: ["1200", "1000", "1500"],
-    isDemo: true
-  },
-  {
-    id: 8,
-    userId: 107,
-    name: "Pedro Almeida",
-    title: "Eletricista Predial",
-    email: "pedro.almeida@email.com",
-    phone: "(11) 99999-8888",
-    rating: 4.6,
-    reviewCount: 145,
-    skills: ["Instalação Predial", "Iluminação", "SPDA"],
-    hourlyRate: 900,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 2,
-    orbitPosition: 3,
-    available: true,
-    latitude: -23.5355,
-    longitude: -46.6283,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 25,
-    services: ["Instalação Predial", "Iluminação", "Para-raios"],
-    servicesPricing: ["900", "700", "1200"],
-    isDemo: true
-  },
-  {
-    id: 9,
-    userId: 108,
-    name: "Miguel Costa",
-    title: "Eletricista de Manutenção",
-    email: "miguel.costa@email.com",
-    phone: "(11) 99999-9999",
-    rating: 4.8,
-    reviewCount: 189,
-    skills: ["Manutenção Elétrica", "Diagnóstico", "Reparos"],
-    hourlyRate: 750,
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 2,
-    orbitPosition: 4,
-    available: true,
-    latitude: -23.5655,
-    longitude: -46.6583,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 30,
-    services: ["Manutenção Preventiva", "Diagnóstico", "Reparos Urgentes"],
-    servicesPricing: ["750", "600", "1000"],
-    isDemo: true
-  },
-  {
-    id: 10,
-    userId: 109,
-    name: "Rafael Silva",
-    title: "Eletricista Especializado",
-    email: "rafael.silva@email.com",
-    phone: "(11) 99999-0000",
-    rating: 4.7,
-    reviewCount: 134,
-    skills: ["Instalações Especiais", "Sistemas de Segurança", "Cabeamento"],
-    hourlyRate: 1100,
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 2,
-    orbitPosition: 5,
-    available: true,
-    latitude: -23.5255,
-    longitude: -46.6183,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 40,
-    services: ["Sistemas de Segurança", "Cabeamento Estruturado", "Instalações Especiais"],
-    servicesPricing: ["1100", "1300", "1600"],
-    isDemo: true
-  },
-
-  // PROGRAMADORES (5 opções)
-  {
-    id: 11,
-    userId: 110,
-    name: "Bruno Santos",
-    title: "Programador Python",
-    email: "bruno.santos@email.com",
-    phone: "(11) 98888-1111",
-    rating: 4.9,
-    reviewCount: 78,
-    skills: ["Python", "Django", "Flask", "Data Science"],
-    hourlyRate: 1500,
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 3,
-    orbitPosition: 1,
-    available: true,
     latitude: -23.5505,
     longitude: -46.6333,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 100,
-    services: ["Desenvolvimento Web", "API REST", "Análise de Dados"],
-    servicesPricing: ["1500", "1800", "2000"],
-    isDemo: true
+    workRadius: 30,
+    hourlyRate: 80,
+    verified: true,
+    experience: "8+ anos",
+    education: "Técnico em Eletrotécnica",
+    languages: ["Português"],
+    specializations: ["Instalação Residencial", "Instalação Industrial"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
   },
   {
-    id: 12,
-    userId: 111,
-    name: "Mariana Lima",
-    title: "Desenvolvedora Frontend",
-    email: "mariana.lima@email.com",
-    phone: "(11) 98888-2222",
-    rating: 4.8,
-    reviewCount: 92,
-    skills: ["React", "TypeScript", "Next.js", "UI/UX"],
-    hourlyRate: 1400,
+    id: 102,
+    userId: 102,
+    name: "Ana Costa",
+    title: "Designer de Interiores",
+    description: "Designer de interiores criativa e experiente, especializada em projetos residenciais e comerciais. Transformo espaços com estilo e funcionalidade.",
+    skills: ["Design de Interiores", "Projeto Residencial", "Projeto Comercial", "Decoração", "Consultoria"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.7,
+    reviewCount: 19,
     avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
     orbitRing: 3,
-    orbitPosition: 2,
-    available: true,
-    latitude: -23.5605,
-    longitude: -46.6433,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 100,
-    services: ["Desenvolvimento Frontend", "Interface de Usuário", "Otimização"],
-    servicesPricing: ["1400", "1600", "1800"],
-    isDemo: true
-  },
-  {
-    id: 13,
-    userId: 112,
-    name: "Lucas Oliveira",
-    title: "Desenvolvedor Full Stack",
-    email: "lucas.oliveira@email.com",
-    phone: "(11) 98888-3333",
-    rating: 4.7,
-    reviewCount: 156,
-    skills: ["JavaScript", "Node.js", "React", "PostgreSQL"],
-    hourlyRate: 1800,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 3,
-    orbitPosition: 3,
-    available: true,
-    latitude: -23.5405,
-    longitude: -46.6233,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 100,
-    services: ["Desenvolvimento Full Stack", "Sistemas Web", "APIs"],
-    servicesPricing: ["1800", "2200", "2500"],
-    isDemo: true
-  },
-  {
-    id: 14,
-    userId: 113,
-    name: "Camila Costa",
-    title: "Desenvolvedora Mobile",
-    email: "camila.costa@email.com",
-    phone: "(11) 98888-4444",
-    rating: 4.6,
-    reviewCount: 67,
-    skills: ["React Native", "Flutter", "iOS", "Android"],
-    hourlyRate: 1600,
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 3,
-    orbitPosition: 4,
-    available: true,
-    latitude: -23.5705,
-    longitude: -46.6533,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 100,
-    services: ["Desenvolvimento Mobile", "Apps Nativos", "Manutenção"],
-    servicesPricing: ["1600", "1900", "2100"],
-    isDemo: true
-  },
-  {
-    id: 15,
-    userId: 114,
-    name: "Diego Martins",
-    title: "Desenvolvedor Backend",
-    email: "diego.martins@email.com",
-    phone: "(11) 98888-5555",
-    rating: 4.8,
-    reviewCount: 89,
-    skills: ["Java", "Spring Boot", "Microservices", "AWS"],
-    hourlyRate: 1700,
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 3,
     orbitPosition: 5,
-    available: true,
-    latitude: -23.5305,
-    longitude: -46.6133,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 100,
-    services: ["Desenvolvimento Backend", "Microservices", "Cloud"],
-    servicesPricing: ["1700", "2000", "2300"],
-    isDemo: true
-  },
-
-  // PINTORES (5 opções)
-  {
-    id: 16,
-    userId: 115,
-    name: "Antonio Ferreira",
-    title: "Pintor Residencial",
-    email: "antonio.ferreira@email.com",
-    phone: "(11) 97777-1111",
-    rating: 4.7,
-    reviewCount: 234,
-    skills: ["Pintura Residencial", "Texturas", "Acabamentos"],
-    hourlyRate: 600,
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 3,
-    orbitPosition: 6,
-    available: true,
-    latitude: -23.5455,
-    longitude: -46.6383,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 25,
-    services: ["Pintura Residencial", "Texturas", "Acabamentos"],
-    servicesPricing: ["600", "800", "1000"],
-    isDemo: true
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 20,
+    hourlyRate: 120,
+    verified: true,
+    experience: "6+ anos",
+    education: "Design de Interiores - Belas Artes",
+    languages: ["Português", "Inglês"],
+    specializations: ["Design Residencial", "Design Comercial"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
   },
   {
-    id: 17,
-    userId: 116,
-    name: "Roberto Alves",
-    title: "Pintor Comercial",
-    email: "roberto.alves@email.com",
-    phone: "(11) 97777-2222",
-    rating: 4.8,
-    reviewCount: 189,
-    skills: ["Pintura Comercial", "Sinalização", "Grafite"],
-    hourlyRate: 700,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 3,
-    orbitPosition: 7,
-    available: true,
-    latitude: -23.5555,
-    longitude: -46.6483,
+    id: 103,
+    userId: 103,
+    name: "Carlos Oliveira",
+    title: "Encanador Profissional",
+    description: "Encanador experiente com especialização em hidráulica. Atendo emergências e faço manutenção preventiva em residências e empresas.",
+    skills: ["Hidráulica", "Manutenção", "Reparo", "Instalação", "Emergências"],
     city: "São Paulo",
     state: "SP",
-    workRadius: 35,
-    services: ["Pintura Comercial", "Sinalização", "Grafite"],
-    servicesPricing: ["700", "900", "1200"],
-    isDemo: true
-  },
-  {
-    id: 18,
-    userId: 117,
-    name: "Carlos Eduardo",
-    title: "Pintor Especializado",
-    email: "carlos.eduardo@email.com",
-    phone: "(11) 97777-3333",
-    rating: 4.9,
-    reviewCount: 145,
-    skills: ["Pintura Artística", "Decoração", "Técnicas Especiais"],
-    hourlyRate: 900,
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 3,
-    orbitPosition: 8,
     available: true,
-    latitude: -23.5355,
-    longitude: -46.6283,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 30,
-    services: ["Pintura Artística", "Decoração", "Técnicas Especiais"],
-    servicesPricing: ["900", "1100", "1400"],
-    isDemo: true
-  },
-  {
-    id: 19,
-    userId: 118,
-    name: "João Paulo",
-    title: "Pintor Industrial",
-    email: "joao.paulo@email.com",
-    phone: "(11) 97777-4444",
     rating: 4.6,
-    reviewCount: 167,
-    skills: ["Pintura Industrial", "Impermeabilização", "Proteção"],
-    hourlyRate: 800,
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-    orbitRing: 3,
-    orbitPosition: 9,
-    available: true,
-    latitude: -23.5655,
-    longitude: -46.6583,
-    city: "São Paulo",
-    state: "SP",
-    workRadius: 40,
-    services: ["Pintura Industrial", "Impermeabilização", "Proteção"],
-    servicesPricing: ["800", "1000", "1300"],
-    isDemo: true
+    reviewCount: 34,
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 2,
+    orbitPosition: 3,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 25,
+    hourlyRate: 70,
+    verified: true,
+    experience: "12+ anos",
+    education: "Técnico em Hidráulica",
+    languages: ["Português"],
+    specializations: ["Hidráulica Residencial", "Hidráulica Industrial"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
   },
   {
-    id: 20,
-    userId: 119,
-    name: "Juliana Mendes",
-    title: "Pintora Decorativa",
-    email: "juliana.mendes@email.com",
-    phone: "(11) 97777-5555",
+    id: 104,
+    userId: 104,
+    name: "Fernanda Lima",
+    title: "Psicóloga Clínica",
+    description: "Psicóloga clínica especializada em terapia cognitivo-comportamental. Atendo adultos, adolescentes e casais.",
+    skills: ["Psicologia Clínica", "TCC", "Terapia Individual", "Terapia de Casal", "Ansiedade"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.9,
+    reviewCount: 28,
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 1,
+    orbitPosition: 4,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 15,
+    hourlyRate: 200,
+    verified: true,
+    experience: "7+ anos",
+    education: "Psicologia - PUC-SP",
+    languages: ["Português", "Inglês"],
+    specializations: ["TCC", "Terapia Individual", "Terapia de Casal"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 105,
+    userId: 105,
+    name: "Roberto Almeida",
+    title: "Personal Trainer",
+    description: "Personal trainer certificado com especialização em musculação e funcional. Ajudo a alcançar seus objetivos de forma segura e eficiente.",
+    skills: ["Musculação", "Funcional", "Emagrecimento", "Hipertrofia", "Reabilitação"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.8,
+    reviewCount: 42,
+    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 2,
+    orbitPosition: 1,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 20,
+    hourlyRate: 100,
+    verified: true,
+    experience: "5+ anos",
+    education: "Educação Física - UNIFESP",
+    languages: ["Português", "Inglês"],
+    specializations: ["Musculação", "Funcional", "Emagrecimento"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 106,
+    userId: 106,
+    name: "Patrícia Souza",
+    title: "Nutricionista Esportiva",
+    description: "Nutricionista especializada em nutrição esportiva e emagrecimento. Elaboro planos alimentares personalizados para seus objetivos.",
+    skills: ["Nutrição Esportiva", "Emagrecimento", "Hipertrofia", "Consultoria", "Planos Alimentares"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
     rating: 4.7,
-    reviewCount: 98,
-    skills: ["Pintura Decorativa", "Murais", "Decoração"],
-    hourlyRate: 750,
+    reviewCount: 31,
     avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
     orbitRing: 3,
-    orbitPosition: 10,
-    available: true,
-    latitude: -23.5255,
-    longitude: -46.6183,
+    orbitPosition: 2,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 18,
+    hourlyRate: 150,
+    verified: true,
+    experience: "6+ anos",
+    education: "Nutrição - USP",
+    languages: ["Português", "Inglês"],
+    specializations: ["Nutrição Esportiva", "Emagrecimento"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 107,
+    userId: 107,
+    name: "Marcelo Ferreira",
+    title: "Técnico em Informática",
+    description: "Técnico em informática com experiência em manutenção de computadores, notebooks e redes. Atendo residências e empresas.",
+    skills: ["Manutenção de PC", "Notebooks", "Redes", "Software", "Hardware"],
     city: "São Paulo",
     state: "SP",
+    available: true,
+    rating: 4.5,
+    reviewCount: 56,
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 2,
+    orbitPosition: 4,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 30,
+    hourlyRate: 90,
+    verified: true,
+    experience: "9+ anos",
+    education: "Técnico em Informática",
+    languages: ["Português", "Inglês"],
+    specializations: ["Manutenção de PC", "Redes", "Notebooks"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 108,
+    userId: 108,
+    name: "Lucia Mendes",
+    title: "Fisioterapeuta",
+    description: "Fisioterapeuta especializada em fisioterapia ortopédica e esportiva. Tratamento de lesões e reabilitação funcional.",
+    skills: ["Fisioterapia Ortopédica", "Fisioterapia Esportiva", "Reabilitação", "Pilates", "Acupuntura"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.8,
+    reviewCount: 38,
+    avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 1,
+    orbitPosition: 5,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 22,
+    hourlyRate: 120,
+    verified: true,
+    experience: "8+ anos",
+    education: "Fisioterapia - UNIFESP",
+    languages: ["Português", "Inglês"],
+    specializations: ["Fisioterapia Ortopédica", "Fisioterapia Esportiva"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 109,
+    userId: 109,
+    name: "Ricardo Santos",
+    title: "Pintor Profissional",
+    description: "Pintor profissional com experiência em pintura residencial e comercial. Trabalho com qualidade e pontualidade.",
+    skills: ["Pintura Residencial", "Pintura Comercial", "Texturas", "Acabamentos", "Preparação"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.6,
+    reviewCount: 29,
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 3,
+    orbitPosition: 3,
+    latitude: -23.5505,
+    longitude: -46.6333,
     workRadius: 25,
-    services: ["Pintura Decorativa", "Murais", "Decoração"],
-    servicesPricing: ["750", "950", "1200"],
-    isDemo: true
+    hourlyRate: 60,
+    verified: true,
+    experience: "11+ anos",
+    education: "Técnico em Pintura",
+    languages: ["Português"],
+    specializations: ["Pintura Residencial", "Pintura Comercial"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 110,
+    userId: 110,
+    name: "Camila Rodrigues",
+    title: "Dentista",
+    description: "Dentista especializada em odontologia estética e restauradora. Atendo com carinho e tecnologia de ponta.",
+    skills: ["Odontologia Estética", "Restauração", "Limpeza", "Clareamento", "Ortodontia"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.9,
+    reviewCount: 47,
+    avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 1,
+    orbitPosition: 3,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 20,
+    hourlyRate: 300,
+    verified: true,
+    experience: "12+ anos",
+    education: "Odontologia - USP",
+    languages: ["Português", "Inglês"],
+    specializations: ["Odontologia Estética", "Restauração"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 111,
+    userId: 111,
+    name: "André Costa",
+    title: "Mestre de Obras",
+    description: "Mestre de obras com experiência em construção civil e reformas. Coordeno equipes e garanto qualidade na execução.",
+    skills: ["Construção Civil", "Reformas", "Coordenação", "Orçamentos", "Fiscalização"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.7,
+    reviewCount: 33,
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 2,
+    orbitPosition: 5,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 35,
+    hourlyRate: 120,
+    verified: true,
+    experience: "15+ anos",
+    education: "Técnico em Edificações",
+    languages: ["Português"],
+    specializations: ["Construção Civil", "Reformas"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 112,
+    userId: 112,
+    name: "Juliana Alves",
+    title: "Fotógrafa Profissional",
+    description: "Fotógrafa especializada em ensaios fotográficos, eventos e fotografia corporativa. Capturo momentos especiais com criatividade.",
+    skills: ["Ensaio Fotográfico", "Eventos", "Fotografia Corporativa", "Edição", "Retrato"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.8,
+    reviewCount: 25,
+    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 3,
+    orbitPosition: 1,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 40,
+    hourlyRate: 180,
+    verified: true,
+    experience: "6+ anos",
+    education: "Fotografia - SENAC",
+    languages: ["Português", "Inglês"],
+    specializations: ["Ensaio Fotográfico", "Eventos", "Corporativa"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: true, evening: true },
+      sunday: { morning: true, afternoon: true, evening: false }
+    }
+  },
+  {
+    id: 113,
+    userId: 113,
+    name: "Pedro Martins",
+    title: "Consultor Financeiro",
+    description: "Consultor financeiro especializado em planejamento financeiro pessoal e empresarial. Ajudo a organizar e multiplicar seu dinheiro.",
+    skills: ["Planejamento Financeiro", "Investimentos", "Consultoria", "Orçamento", "Educação Financeira"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.9,
+    reviewCount: 41,
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 1,
+    orbitPosition: 2,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 30,
+    hourlyRate: 250,
+    verified: true,
+    experience: "10+ anos",
+    education: "Administração - FGV",
+    languages: ["Português", "Inglês"],
+    specializations: ["Planejamento Financeiro", "Investimentos"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 114,
+    userId: 114,
+    name: "Tatiana Silva",
+    title: "Professora de Inglês",
+    description: "Professora de inglês com certificação internacional e experiência em aulas particulares e em grupo. Metodologia personalizada.",
+    skills: ["Inglês", "Conversação", "Gramática", "Preparação para Exames", "Business English"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.7,
+    reviewCount: 36,
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 2,
+    orbitPosition: 2,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 25,
+    hourlyRate: 80,
+    verified: true,
+    experience: "8+ anos",
+    education: "Letras - USP",
+    languages: ["Português", "Inglês", "Espanhol"],
+    specializations: ["Conversação", "Business English", "Preparação para Exames"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 115,
+    userId: 115,
+    name: "Gabriel Oliveira",
+    title: "Desenvolvedor Web",
+    description: "Desenvolvedor web full-stack especializado em React, Node.js e aplicações modernas. Crio soluções digitais inovadoras.",
+    skills: ["React", "Node.js", "JavaScript", "TypeScript", "Full-Stack"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.8,
+    reviewCount: 52,
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 1,
+    orbitPosition: 1,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 50,
+    hourlyRate: 150,
+    verified: true,
+    experience: "7+ anos",
+    education: "Sistemas de Informação - USP",
+    languages: ["Português", "Inglês"],
+    specializations: ["React", "Node.js", "Full-Stack"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 116,
+    userId: 116,
+    name: "Mariana Costa",
+    title: "Arquiteta",
+    description: "Arquiteta especializada em projetos residenciais e comerciais. Crio espaços funcionais e esteticamente agradáveis.",
+    skills: ["Projetos Residenciais", "Projetos Comerciais", "Interiores", "Maquetes", "3D"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.9,
+    reviewCount: 29,
+    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 2,
+    orbitPosition: 3,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 35,
+    hourlyRate: 200,
+    verified: true,
+    experience: "9+ anos",
+    education: "Arquitetura - FAU-USP",
+    languages: ["Português", "Inglês"],
+    specializations: ["Projetos Residenciais", "Projetos Comerciais"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 117,
+    userId: 117,
+    name: "Rafael Santos",
+    title: "Mecânico Automotivo",
+    description: "Mecânico automotivo especializado em motores, transmissão e elétrica. Diagnóstico preciso e reparo de qualidade.",
+    skills: ["Motores", "Transmissão", "Elétrica", "Diagnóstico", "Manutenção"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.6,
+    reviewCount: 48,
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 3,
+    orbitPosition: 4,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 30,
+    hourlyRate: 85,
+    verified: true,
+    experience: "13+ anos",
+    education: "Técnico em Mecânica Automotiva",
+    languages: ["Português"],
+    specializations: ["Motores", "Transmissão", "Elétrica"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: true, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 118,
+    userId: 118,
+    name: "Isabela Ferreira",
+    title: "Designer Gráfico",
+    description: "Designer gráfico criativo especializado em identidade visual, logos e material promocional. Crio designs que impactam.",
+    skills: ["Identidade Visual", "Logos", "Material Promocional", "Social Media", "Ilustração"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.7,
+    reviewCount: 34,
+    avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 2,
+    orbitPosition: 4,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 40,
+    hourlyRate: 120,
+    verified: true,
+    experience: "5+ anos",
+    education: "Design Gráfico - Belas Artes",
+    languages: ["Português", "Inglês"],
+    specializations: ["Identidade Visual", "Logos", "Social Media"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: true },
+      tuesday: { morning: true, afternoon: true, evening: true },
+      wednesday: { morning: true, afternoon: true, evening: true },
+      thursday: { morning: true, afternoon: true, evening: true },
+      friday: { morning: true, afternoon: true, evening: true },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
+  },
+  {
+    id: 119,
+    userId: 119,
+    name: "Thiago Lima",
+    title: "Advogado Trabalhista",
+    description: "Advogado especializado em direito trabalhista e previdenciário. Defendo seus direitos com ética e competência.",
+    skills: ["Direito Trabalhista", "Direito Previdenciário", "Recursos", "Consultoria", "Acordos"],
+    city: "São Paulo",
+    state: "SP",
+    available: true,
+    rating: 4.8,
+    reviewCount: 39,
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+    orbitRing: 1,
+    orbitPosition: 6,
+    latitude: -23.5505,
+    longitude: -46.6333,
+    workRadius: 25,
+    hourlyRate: 180,
+    verified: true,
+    experience: "11+ anos",
+    education: "Direito - PUC-SP",
+    languages: ["Português", "Inglês"],
+    specializations: ["Direito Trabalhista", "Direito Previdenciário"],
+    availability: {
+      monday: { morning: true, afternoon: true, evening: false },
+      tuesday: { morning: true, afternoon: true, evening: false },
+      wednesday: { morning: true, afternoon: true, evening: false },
+      thursday: { morning: true, afternoon: true, evening: false },
+      friday: { morning: true, afternoon: true, evening: false },
+      saturday: { morning: true, afternoon: false, evening: false },
+      sunday: { morning: false, afternoon: false, evening: false }
+    }
   }
 ];
 
+// Pacotes de tokens para a loja
 export const TOKEN_PACKAGES = [
   {
-    id: 1,
-    name: "Pacote Básico",
-    tokens: 1000,
-    price: 10.00,
-    bonus: 0,
-    popular: false
+    id: "starter",
+    name: "Starter Pack",
+    price: 3,
+    baseTokens: 1800,
+    bonusTokens: 600,
+    totalTokens: 2400,
+    icon: "coins"
   },
   {
-    id: 2,
-    name: "Pacote Popular",
-    tokens: 2500,
-    price: 20.00,
-    bonus: 250,
+    id: "pro",
+    name: "Pro Boost",
+    price: 6,
+    baseTokens: 3600,
+    bonusTokens: 1650,
+    totalTokens: 5250,
+    icon: "zap"
+  },
+  {
+    id: "max",
+    name: "Max Expansion",
+    price: 9,
+    baseTokens: 5400,
+    bonusTokens: 2600,
+    totalTokens: 8000,
+    icon: "star",
     popular: true
   },
   {
-    id: 3,
-    name: "Pacote Pro",
-    tokens: 5000,
-    price: 35.00,
-    bonus: 750,
-    popular: false
+    id: "premium",
+    name: "Orbit Premium",
+    price: 18,
+    baseTokens: 10800,
+    bonusTokens: 5700,
+    totalTokens: 16500,
+    icon: "sparkles"
   },
   {
-    id: 4,
-    name: "Pacote Max",
-    tokens: 10000,
-    price: 60.00,
-    bonus: 2000,
-    popular: false
+    id: "galaxy",
+    name: "Galaxy Vault",
+    price: 31,
+    baseTokens: 18600,
+    bonusTokens: 9650,
+    totalTokens: 28250,
+    icon: "crown"
   }
 ];
 
-export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
-};
-
-export const formatTokens = (tokens: number): string => {
-  return `${tokens.toLocaleString('pt-BR')} tokens`;
-};
-
-// Função para calcular total de tokens de um usuário
+// Função para calcular tokens totais
 export const getTotalTokens = (user: any): number => {
-  if (!user) return 0;
-  return (
-    (user.tokens || 0) +
-    (user.tokensPlano || 0) +
-    (user.tokensGanhos || 0) +
-    (user.tokensComprados || 0) -
-    (user.tokensUsados || 0)
-  );
+  return (user.tokensPlano || 0) + (user.tokensGanhos || 0) + (user.tokensComprados || 0) - (user.tokensUsados || 0);
 }; 
