@@ -19,11 +19,6 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://orbitrum-backend.railway.app"
-  },
-  "functions": {
-    "client/dist/**/*.js": {
-      "maxDuration": 30
-    }
+    "VITE_API_URL": "http://localhost:5001"
   }
 } 
