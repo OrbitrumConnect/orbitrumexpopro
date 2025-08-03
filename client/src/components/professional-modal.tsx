@@ -402,7 +402,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onAddToTeam
             {/* Fallback Services Grid for backwards compatibility */}
             <h3 className="text-lg sm:text-xl mb-3 sm:mb-4 neon-text">Serviços Disponíveis</h3>
             <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-4 sm:mb-6">
-              {professional.services.map((service, index) => {
+              {(professional.services || professional.skills || []).map((service, index) => {
                 // Definir preços baseado no tipo de serviço
                 let price = 1500; // padrão
                 let description = `Serviço especializado em ${service.toLowerCase()}`;

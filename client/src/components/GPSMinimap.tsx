@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MapPin, Navigation, Maximize2, Minimize2 } from "lucide-react";
+
+// Declaração de tipos para Leaflet
+declare global {
+  interface Window {
+    L: any;
+  }
+}
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 

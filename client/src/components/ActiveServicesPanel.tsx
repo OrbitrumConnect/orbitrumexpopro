@@ -37,7 +37,7 @@ export default function ActiveServicesPanel({ userId }: ActiveServicesPanelProps
     refetchInterval: 30000 // Atualizar a cada 30s
   });
 
-  const services = activeServices || [];
+  const services = (activeServices as ActiveService[]) || [];
 
   const getStatusLabel = (status: string) => {
     switch(status) {

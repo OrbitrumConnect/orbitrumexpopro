@@ -130,12 +130,13 @@ router.get('/:id/services', (req, res) => {
     }
     
     // Mock services based on professional skills
-    const services = professional.services.map((service, index) => ({
+    const services = (professional.services || professional.skills || []).map((service, index) => ({
       id: index + 1,
-      name: service,
-      price: professional.servicesPricing[index] || '2000',
-      description: `Serviço de ${service}`,
-      duration: '1-2 horas',
+      serviceName: service,
+      serviceType: `servico_${service.toLowerCase().replace(/\s+/g, '_')}`,
+      tokenPrice: professional.servicesPricing?.[index] || 2000,
+      description: `Serviço especializado em ${service}`,
+      estimatedDuration: '1-2 horas',
       type: 'consultation'
     }))
     

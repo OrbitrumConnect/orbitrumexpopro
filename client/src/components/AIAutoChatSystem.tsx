@@ -59,7 +59,8 @@ const AIAutoChatSystem: React.FC<AIAutoChatSystemProps> = ({
   const tokenCosts = {
     basic_message: 10,
     medium_message: 20,
-    long_message: 40
+    long_message: 40,
+    ai_response: 25
   };
 
   // Configurações de planos para chat com IA contextual
