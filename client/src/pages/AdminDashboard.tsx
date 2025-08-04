@@ -681,9 +681,9 @@ export default function AdminDashboard() {
                 <p className="text-gray-400 text-xs sm:text-sm">Dados em tempo real</p>
               </div>
             </div>
-            
+
             {/* Stats Cards - Grid Mobile Otimizado */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4" key="stats-grid" {...({} as React.HTMLAttributes<HTMLDivElement>)}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
               <div className="bg-black/30 border border-gray-700 rounded-lg p-4">
                 <div className="text-center">
                   <div className="text-sm sm:text-2xl font-bold text-white">0</div>
