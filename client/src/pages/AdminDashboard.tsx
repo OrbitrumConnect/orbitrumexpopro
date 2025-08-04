@@ -701,7 +701,7 @@ export default function AdminDashboard() {
                   <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-green-400" />
                 </CardHeader>
                 <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-green-400">{((currentStats as any)?.activeUsers || 0).toLocaleString()}</div>
+                  <div className="text-sm sm:text-2xl font-bold text-green-400">{String((currentStats as any)?.activeUsers || 0).toLocaleString()}</div>
                   <p className="text-[9px] sm:text-xs text-gray-400">Online</p>
                 </CardContent>
               </Card>
@@ -712,7 +712,7 @@ export default function AdminDashboard() {
                   <UserX className="h-3 w-3 sm:h-4 sm:w-4 text-red-400" />
                 </CardHeader>
                 <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-red-400">{((currentStats as any)?.offlineUsers || 0).toLocaleString()}</div>
+                  <div className="text-sm sm:text-2xl font-bold text-red-400">{String((currentStats as any)?.offlineUsers || 0).toLocaleString()}</div>
                   <p className="text-[9px] sm:text-xs text-gray-400">Inativos</p>
                 </CardContent>
               </Card>
