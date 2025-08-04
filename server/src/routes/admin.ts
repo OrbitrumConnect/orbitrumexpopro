@@ -91,9 +91,9 @@ router.get('/users/:userId', (req, res) => {
         {
           id: 1,
           type: 'purchase',
-          amount: user.pixPago || 0,
-          tokens: user.tokensComprados,
-          date: user.createdAt,
+          amount: (user as any).pixPago || 0,
+          tokens: (user as any).tokensComprados || 0,
+          date: (user as any).createdAt || new Date(),
           status: 'completed'
         }
       ]
@@ -158,22 +158,22 @@ router.delete('/users/:userId', (req, res) => {
 router.get('/financial', (req, res) => {
   try {
     const totalRevenue = SAMPLE_USERS.reduce((sum, user) => {
-      return sum + (user.pixPago || 0) + (user.galaxyVault || 0)
+      return sum + ((user as any).pixPago || 0) + ((user as any).galaxyVault || 0)
     }, 0)
     
     const financialData = {
       totalRevenue: totalRevenue * 100, // Convert to cents
-      transactions: SAMPLE_USERS.filter(u => u.pixPago || u.galaxyVault).map(user => ({
+      transactions: SAMPLE_USERS.filter(u => (u as any).pixPago || (u as any).galaxyVault).map(user => ({
         id: user.id,
         email: user.email,
-        name: user.name,
-        amount: (user.pixPago || 0) + (user.galaxyVault || 0),
-        tokens: user.tokensComprados,
-        date: user.createdAt,
+        name: (user as any).name || user.username,
+        amount: ((user as any).pixPago || 0) + ((user as any).galaxyVault || 0),
+        tokens: (user as any).tokensComprados || 0,
+        date: (user as any).createdAt || new Date(),
         method: 'PIX'
       })),
       metrics: {
-        averageTicket: totalRevenue > 0 ? totalRevenue / SAMPLE_USERS.filter(u => u.pixPago || u.galaxyVault).length : 0,
+        averageTicket: totalRevenue > 0 ? totalRevenue / SAMPLE_USERS.filter(u => (u as any).pixPago || (u as any).galaxyVault).length : 0,
         ltv: totalRevenue / SAMPLE_USERS.length,
         cac: 0, // Customer acquisition cost
         roi: totalRevenue > 0 ? '∞' : 0
