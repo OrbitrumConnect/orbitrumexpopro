@@ -50,22 +50,11 @@ app.use(express.urlencoded({ extended: true }))
 
 // Health check endpoint for Railway
 app.get('/api/health', (req, res) => {
-  try {
-    res.json({ 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      port: port,
-      environment: process.env.NODE_ENV || 'development',
-      memory: process.memoryUsage()
-    })
-  } catch (error) {
-    res.status(500).json({ 
-      status: 'error', 
-      message: error.message,
-      timestamp: new Date().toISOString()
-    })
-  }
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  })
 })
 
 // Simple health check for Railway
@@ -110,12 +99,9 @@ app.get('/api/professionals', (req, res) => {
 
 // WebSocket connection handling
 wss.on('connection', (ws) => {
-  console.log('New WebSocket connection')
-
   ws.on('message', (message) => {
     try {
       const data = JSON.parse(message.toString())
-      console.log('Received:', data)
       
       // Handle different message types
       switch (data.type) {
@@ -136,7 +122,6 @@ wss.on('connection', (ws) => {
           }))
       }
     } catch (error) {
-      console.error('WebSocket message error:', error)
       ws.send(JSON.stringify({ 
         type: 'error', 
         message: 'Invalid message format' 
@@ -145,11 +130,9 @@ wss.on('connection', (ws) => {
   })
 
   ws.on('close', () => {
-    console.log('WebSocket connection closed')
   })
 
   ws.on('error', (error) => {
-    console.error('WebSocket error:', error)
   })
 
   // Send welcome message
@@ -162,7 +145,6 @@ wss.on('connection', (ws) => {
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err)
   res.status(500).json({ 
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
