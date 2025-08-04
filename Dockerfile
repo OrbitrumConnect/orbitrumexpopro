@@ -10,8 +10,8 @@ COPY server/package*.json ./server/
 
 # Install dependencies including TypeScript
 RUN npm install -g typescript
-RUN npm install
-RUN cd server && npm install
+RUN npm install --legacy-peer-deps
+RUN cd server && npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
