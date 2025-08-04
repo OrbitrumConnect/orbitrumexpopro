@@ -23,4 +23,4 @@ RUN cd server && npm run build
 EXPOSE 8080
 
 # Start the application
-CMD ["npm", "run", "start:prod"] 
+CMD ["sh", "-c", "cd server && npm run start:prod"] 
