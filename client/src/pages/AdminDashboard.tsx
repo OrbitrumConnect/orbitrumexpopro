@@ -2414,10 +2414,10 @@ export default function AdminDashboard() {
                       </Card>
                     </div>
 
-                    {/* Lista Detalhada de Planos */}
-                    <div className="space-y-3">
+                    {/* Lista Detalhada de Planos - TEMPORARILY DISABLED */}
+                    {/* <div className="space-y-3">
                       <h4 className="text-white font-medium">Detalhamento por Plano:</h4>
-                      {(planDistribution as any).planStats.map((plan: any, index: number) => (
+                      {((planDistribution as any)?.planStats || []).map((plan: any, index: number) => (
                         <Card key={index} className={`glassmorphism ${
                           plan.planName === 'freeOrbitrum' ? 'border-cyan-500/30' :
                           plan.planName === 'explorador' ? 'border-yellow-500/30' :
