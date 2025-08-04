@@ -50,11 +50,27 @@ app.use(express.urlencoded({ extended: true }))
 
 // Health check endpoint for Railway
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  })
+  try {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      port: port,
+      environment: process.env.NODE_ENV || 'development',
+      memory: process.memoryUsage()
+    })
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: error.message,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+// Simple health check for Railway
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' })
 })
 
 // API Routes
