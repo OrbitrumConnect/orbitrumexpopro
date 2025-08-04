@@ -38,7 +38,7 @@ router.post('/login', (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
     
-    res.json({
+    return res.json({
       user: user,
       token: 'mock-jwt-token-' + Date.now(),
       message: 'Login successful',
@@ -54,7 +54,7 @@ router.post('/login', (req, res) => {
 router.post('/logout', (req, res) => {
   try {
     // In a real app, invalidate JWT token
-    res.json({ message: 'Logout successful' })
+    return res.json({ message: 'Logout successful' })
   } catch (error) {
     console.error('Logout error:', error)
     res.status(500).json({ error: 'Internal server error' })

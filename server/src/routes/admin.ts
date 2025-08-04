@@ -203,12 +203,12 @@ router.get('/analytics', (req, res) => {
       conversion: 100, // 100% since all users have paid
       distribution: {
         clients: SAMPLE_USERS.filter(u => u.userType === 'client').length,
-        professionals: SAMPLE_USERS.filter(u => u.userType === 'professional').length,
+        professionals: SAMPLE_USERS.filter(u => (u as any).userType === 'professional').length,
         admins: SAMPLE_USERS.filter(u => u.userType === 'admin').length
       },
       revenueBySegment: {
-        basic: SAMPLE_USERS.filter(u => u.pixPago && u.pixPago <= 6).reduce((sum, u) => sum + (u.pixPago || 0), 0),
-        galaxy: SAMPLE_USERS.filter(u => u.galaxyVault).reduce((sum, u) => sum + (u.galaxyVault || 0), 0)
+        basic: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago <= 6).reduce((sum, u) => sum + ((u as any).pixPago || 0), 0),
+        galaxy: SAMPLE_USERS.filter(u => (u as any).galaxyVault).reduce((sum, u) => sum + ((u as any).galaxyVault || 0), 0)
       },
       projections: {
         august: 100,
@@ -311,8 +311,8 @@ router.post('/reports/generate', (req, res) => {
       },
       breakdown: SAMPLE_USERS.map(user => ({
         email: user.email,
-        name: user.name,
-        amount: (user.pixPago || 0) + (user.galaxyVault || 0),
+        name: (user as any).name || user.username,
+        amount: ((user as any).pixPago || 0) + ((user as any).galaxyVault || 0),
         tokens: user.tokensComprados
       }))
     }
