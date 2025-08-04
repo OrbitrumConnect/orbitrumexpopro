@@ -30,7 +30,11 @@ export const SAMPLE_USERS = [
     freePlanAiSearches: 999,
     freePlanPlanetViews: 999,
     freePlanProfileViews: 999,
-    freePlanMessages: 999
+    freePlanMessages: 999,
+    pixPago: 0,
+    galaxyVault: 0,
+    name: "Admin",
+    createdAt: new Date()
   },
   {
     id: 2,
