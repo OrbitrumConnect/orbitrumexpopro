@@ -143,7 +143,7 @@ router.post('/register', (req, res) => {
     }
     
     // In a real app, save to database
-    SAMPLE_USERS.push(newUser)
+    SAMPLE_USERS.push(newUser as any)
     
     res.status(201).json({
       user: newUser,
