@@ -99,10 +99,10 @@ router.get('/users/:userId', (req, res) => {
       ]
     }
     
-    res.json(userDetails)
+    return res.json(userDetails)
   } catch (error) {
     console.error('Get user details error:', error)
-    res.status(500).json({ error: 'Failed to get user details' })
+    return res.status(500).json({ error: 'Failed to get user details' })
   }
 })
 
@@ -127,10 +127,10 @@ router.put('/users/:userId', (req, res) => {
     // const index = SAMPLE_USERS.findIndex(u => u.id === parseInt(userId))
     // SAMPLE_USERS[index] = updatedUser
     
-    res.json(updatedUser)
+    return res.json(updatedUser)
   } catch (error) {
     console.error('Update user error:', error)
-    res.status(500).json({ error: 'Failed to update user' })
+    return res.status(500).json({ error: 'Failed to update user' })
   }
 })
 
@@ -147,10 +147,10 @@ router.delete('/users/:userId', (req, res) => {
     // In a real app, delete from database
     // SAMPLE_USERS = SAMPLE_USERS.filter(u => u.id !== parseInt(userId))
     
-    res.json({ message: 'User deleted successfully' })
+    return res.json({ message: 'User deleted successfully' })
   } catch (error) {
     console.error('Delete user error:', error)
-    res.status(500).json({ error: 'Failed to delete user' })
+    return res.status(500).json({ error: 'Failed to delete user' })
   }
 })
 

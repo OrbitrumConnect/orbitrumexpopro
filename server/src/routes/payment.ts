@@ -15,7 +15,6 @@ router.post('/pix/qrcode', (req, res) => {
     qrcode.toDataURL(pixPayload, {
       errorCorrectionLevel: 'M',
       type: 'image/png',
-      quality: 0.92,
       margin: 1
     }, (err, url) => {
       if (err) {
