@@ -683,7 +683,7 @@ export default function AdminDashboard() {
             </div>
             
             {/* Stats Cards - Grid Mobile Otimizado */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4" key="stats-grid">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
               <Card className="bg-black/30 border-gray-700 sm:bg-gradient-to-br sm:from-cyan-900/30 sm:via-slate-800 sm:to-black/50 sm:border-cyan-500/30">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
                   <CardTitle className="text-[10px] sm:text-sm font-medium text-gray-300">Usuários</CardTitle>

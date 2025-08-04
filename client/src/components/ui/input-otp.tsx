@@ -1,67 +1,84 @@
-import * as React from "react"
-// import { OTPInput, OTPInputContext } from "input-otp"
-import { Dot } from "lucide-react"
+"use client"
 
+import * as React from "react"
 import { cn } from "@/lib/utils"
 
-const InputOTP = React.forwardRef<
-  React.ElementRef<typeof OTPInput>,
-  React.ComponentPropsWithoutRef<typeof OTPInput>
->(({ className, containerClassName, ...props }, ref) => (
-  <OTPInput
-    ref={ref}
-    containerClassName={cn(
-      "flex items-center gap-2 has-[:disabled]:opacity-50",
-      containerClassName
-    )}
-    className={cn("disabled:cursor-not-allowed", className)}
-    {...props}
-  />
-))
+interface InputOTPProps {
+  value: string
+  onChange: (value: string) => void
+  length?: number
+  className?: string
+}
+
+const InputOTP = React.forwardRef<HTMLDivElement, InputOTPProps>(
+  ({ value, onChange, length = 6, className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("flex items-center gap-2", className)}
+      {...props}
+    >
+      {Array.from({ length }).map((_, index) => (
+        <InputOTPSlot
+          key={index}
+          char={value[index] || ""}
+          isActive={index === value.length}
+          onInput={(char) => {
+            const newValue = value.slice(0, index) + char + value.slice(index + 1)
+            onChange(newValue.slice(0, length))
+          }}
+        />
+      ))}
+    </div>
+  )
+)
 InputOTP.displayName = "InputOTP"
 
 const InputOTPGroup = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center", className)} {...props} />
+  <div
+    ref={ref}
+    className={cn("flex items-center", className)}
+    {...props}
+  />
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
-const InputOTPSlot = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div"> & { index: number }
->(({ index, className, ...props }, ref) => {
-  const inputOTPContext = React.useContext(OTPInputContext)
-  const { char, hasFakeCaret, isActive } = (inputOTPContext as any).slots[index]
+interface InputOTPSlotProps {
+  char: string
+  isActive: boolean
+  onInput: (char: string) => void
+  className?: string
+}
 
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "relative flex h-10 w-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
-        isActive && "z-10 ring-2 ring-ring ring-offset-background",
-        className
-      )}
-      {...props}
-    >
-      {char}
-      {hasFakeCaret && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-4 w-px animate-caret-blink bg-foreground duration-1000" />
-        </div>
-      )}
-    </div>
-  )
-})
+const InputOTPSlot = React.forwardRef<HTMLInputElement, InputOTPSlotProps>(
+  ({ char, isActive, onInput, className, ...props }, ref) => {
+    return (
+      <input
+        ref={ref}
+        type="text"
+        maxLength={1}
+        value={char}
+        onChange={(e) => onInput(e.target.value)}
+        className={cn(
+          "relative h-10 w-10 text-center text-base font-medium rounded-md border border-input bg-background text-foreground shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          isActive && "z-10 ring-2 ring-ring ring-offset-2",
+          className
+        )}
+        {...props}
+      />
+    )
+  }
+)
 InputOTPSlot.displayName = "InputOTPSlot"
 
 const InputOTPSeparator = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ ...props }, ref) => (
   <div ref={ref} role="separator" {...props}>
-    <Dot />
+    -
   </div>
 ))
 InputOTPSeparator.displayName = "InputOTPSeparator"
