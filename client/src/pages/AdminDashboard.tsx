@@ -690,7 +690,7 @@ export default function AdminDashboard() {
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 text-cyan-400" />
                 </CardHeader>
                 <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-white">{((currentStats as any)?.totalUsers || 0).toLocaleString()}</div>
+                  <div className="text-sm sm:text-2xl font-bold text-white">{String((currentStats as any)?.totalUsers || 0).toLocaleString()}</div>
                   <p className="text-[9px] sm:text-xs text-green-400">+{(currentStats as any)?.monthlyStats?.newUsers || 0} mês</p>
                 </CardContent>
               </Card>
@@ -739,21 +739,21 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                   <div className="text-center">
                     <div className="text-lg sm:text-3xl font-bold text-green-400">
-                      R$ {(currentStats.totalRevenue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {(((currentStats as any)?.totalRevenue || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-[10px] sm:text-sm text-gray-400">Total Caixa</p>
                     <p className="text-[9px] sm:text-xs text-green-400">Depósitos</p>
                   </div>
                   <div className="text-center">
                     <div className="text-lg sm:text-2xl font-bold text-blue-400">
-                      R$ {((currentStats.totalRevenue - (currentStats.withdrawalPool?.totalAccumulated || 0)) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {((((currentStats as any)?.totalRevenue || 0) - ((currentStats as any)?.withdrawalPool?.totalAccumulated || 0)) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-[10px] sm:text-sm text-gray-400">Líquido</p>
                     <p className="text-[9px] sm:text-xs text-blue-400">Pós-saques</p>
                   </div>
                   <div className="text-center col-span-2 sm:col-span-1">
                     <div className="text-lg sm:text-2xl font-bold text-orange-400">
-                      {currentStats.withdrawalPool?.totalActiveUsers || 0}
+                      {(currentStats as any)?.withdrawalPool?.totalActiveUsers || 0}
                     </div>
                     <p className="text-[10px] sm:text-sm text-gray-400">Clientes Ativos</p>
                     <p className="text-[9px] sm:text-xs text-orange-400">Receita</p>
@@ -762,7 +762,7 @@ export default function AdminDashboard() {
                 <div className="mt-2 sm:mt-4 p-2 sm:p-3 bg-gray-800/50 rounded-lg">
                   <div className="flex justify-between items-center text-[10px] sm:text-sm">
                     <span className="text-gray-400">Atualização:</span>
-                    <span className="text-cyan-400">{(currentStats as any).currentTime}</span>
+                    <span className="text-cyan-400">{(currentStats as any)?.currentTime || 'Agora'}</span>
                   </div>
                 </div>
               </CardContent>
