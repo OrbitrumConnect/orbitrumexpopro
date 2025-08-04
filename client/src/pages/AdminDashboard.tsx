@@ -684,49 +684,33 @@ export default function AdminDashboard() {
             
             {/* Stats Cards - Grid Mobile Otimizado */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-              <Card className="bg-black/30 border-gray-700 sm:bg-gradient-to-br sm:from-cyan-900/30 sm:via-slate-800 sm:to-black/50 sm:border-cyan-500/30">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-                  <CardTitle className="text-[10px] sm:text-sm font-medium text-gray-300">Usuários</CardTitle>
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-cyan-400" />
-                </CardHeader>
-                <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-white">{String((currentStats as any)?.totalUsers || 0).toLocaleString()}</div>
-                  <p className="text-[9px] sm:text-xs text-green-400">+{(currentStats as any)?.monthlyStats?.newUsers || 0} mês</p>
-                </CardContent>
-              </Card>
+              <div className="bg-black/30 border border-gray-700 rounded-lg p-4">
+                <div className="text-center">
+                  <div className="text-sm sm:text-2xl font-bold text-white">0</div>
+                  <p className="text-[9px] sm:text-xs text-green-400">+0 mês</p>
+                </div>
+              </div>
 
-              <Card className="bg-black/30 border-gray-700 sm:bg-gradient-to-br sm:from-green-900/30 sm:via-slate-800 sm:to-black/50 sm:border-green-500/30">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-                  <CardTitle className="text-[10px] sm:text-sm font-medium text-gray-300">Ativos</CardTitle>
-                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-green-400" />
-                </CardHeader>
-                <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-green-400">{String((currentStats as any)?.activeUsers || 0).toLocaleString()}</div>
+              <div className="bg-black/30 border border-gray-700 rounded-lg p-4">
+                <div className="text-center">
+                  <div className="text-sm sm:text-2xl font-bold text-green-400">0</div>
                   <p className="text-[9px] sm:text-xs text-gray-400">Online</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card className="bg-black/30 border-gray-700 sm:bg-gradient-to-br sm:from-red-900/30 sm:via-slate-800 sm:to-black/50 sm:border-red-500/30">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-                  <CardTitle className="text-[10px] sm:text-sm font-medium text-gray-300">Offline</CardTitle>
-                  <UserX className="h-3 w-3 sm:h-4 sm:w-4 text-red-400" />
-                </CardHeader>
-                <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-red-400">{String((currentStats as any)?.offlineUsers || 0).toLocaleString()}</div>
+              <div className="bg-black/30 border border-gray-700 rounded-lg p-4">
+                <div className="text-center">
+                  <div className="text-sm sm:text-2xl font-bold text-red-400">0</div>
                   <p className="text-[9px] sm:text-xs text-gray-400">Inativos</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card className="bg-black/30 border-gray-700 sm:bg-gradient-to-br sm:from-yellow-900/30 sm:via-slate-800 sm:to-black/50 sm:border-yellow-500/30">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-                  <CardTitle className="text-[10px] sm:text-sm font-medium text-gray-300">Receita</CardTitle>
-                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-400" />
-                </CardHeader>
-                <CardContent className="pb-2 sm:pb-6">
-                  <div className="text-sm sm:text-2xl font-bold text-yellow-400">R$ {(((currentStats as any)?.totalRevenue || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                                      <p className="text-[9px] sm:text-xs text-green-400">+R$ {(((currentStats as any)?.monthlyStats?.revenue || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} mês</p>
-                </CardContent>
-              </Card>
+              <div className="bg-black/30 border border-gray-700 rounded-lg p-4">
+                <div className="text-center">
+                  <div className="text-sm sm:text-2xl font-bold text-yellow-400">R$ 0,00</div>
+                  <p className="text-[9px] sm:text-xs text-green-400">+R$ 0,00 mês</p>
+                </div>
+              </div>
             </div>
 
             {/* Caixa em Tempo Real - Mobile Optimizado */}
@@ -739,21 +723,21 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                   <div className="text-center">
                     <div className="text-lg sm:text-3xl font-bold text-green-400">
-                      R$ {(((currentStats as any)?.totalRevenue || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ 0,00
                     </div>
                     <p className="text-[10px] sm:text-sm text-gray-400">Total Caixa</p>
                     <p className="text-[9px] sm:text-xs text-green-400">Depósitos</p>
                   </div>
                   <div className="text-center">
                     <div className="text-lg sm:text-2xl font-bold text-blue-400">
-                      R$ {((((currentStats as any)?.totalRevenue || 0) - ((currentStats as any)?.withdrawalPool?.totalAccumulated || 0)) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ 0,00
                     </div>
                     <p className="text-[10px] sm:text-sm text-gray-400">Líquido</p>
                     <p className="text-[9px] sm:text-xs text-blue-400">Pós-saques</p>
                   </div>
                   <div className="text-center col-span-2 sm:col-span-1">
                     <div className="text-lg sm:text-2xl font-bold text-orange-400">
-                      {(currentStats as any)?.withdrawalPool?.totalActiveUsers || 0}
+                      0
                     </div>
                     <p className="text-[10px] sm:text-sm text-gray-400">Clientes Ativos</p>
                     <p className="text-[9px] sm:text-xs text-orange-400">Receita</p>
@@ -762,7 +746,7 @@ export default function AdminDashboard() {
                 <div className="mt-2 sm:mt-4 p-2 sm:p-3 bg-gray-800/50 rounded-lg">
                   <div className="flex justify-between items-center text-[10px] sm:text-sm">
                     <span className="text-gray-400">Atualização:</span>
-                    <span className="text-cyan-400">{(currentStats as any)?.currentTime || 'Agora'}</span>
+                    <span className="text-cyan-400">Agora</span>
                   </div>
                 </div>
               </CardContent>
