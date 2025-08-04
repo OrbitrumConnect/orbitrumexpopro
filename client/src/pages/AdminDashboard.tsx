@@ -40,13 +40,13 @@ export default function AdminDashboard() {
   const { data: adminStats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
     queryKey: ['/api/admin/stats'],
     refetchInterval: 30000,
-  });
+  }) as { data: AdminStats | undefined, isLoading: boolean, refetch: () => void };
 
   // Fetch withdrawal requests
   const { data: withdrawalRequests, isLoading: withdrawalsLoading, refetch: refetchWithdrawals } = useQuery({
     queryKey: ['/api/admin/withdrawals'],
     refetchInterval: 30000,
-  });
+  }) as { data: WithdrawalRequest[] | undefined, isLoading: boolean, refetch: () => void };
 
   // Fetch admin wallet
   const { data: walletData, isLoading: walletLoading } = useQuery({
