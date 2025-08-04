@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
+    "prebuild": "npm install -g typescript",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
@@ -27,7 +28,8 @@
     "jsonwebtoken": "^9.0.2",
     "mercadopago": "^2.0.0",
     "qrcode": "^1.5.3",
-    "ws": "^8.14.2"
+    "ws": "^8.14.2",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -39,7 +41,6 @@
     "@types/qrcode": "^1.5.5",
     "@types/ws": "^8.5.10",
     "drizzle-kit": "^0.20.9",
-    "tsx": "^4.6.2",
-    "typescript": "^5.3.3"
+    "tsx": "^4.6.2"
   }
 }
