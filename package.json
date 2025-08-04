@@ -8,7 +8,9 @@
     "dev:client": "cd client && npm run dev",
     "dev:server": "cd server && npm run dev",
     "build": "cd server && npm run build",
+    "build:server": "cd server && npm run build",
     "start": "cd server && npm start",
+    "start:prod": "cd server && npm run start:prod",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install"
   },
   "keywords": [
