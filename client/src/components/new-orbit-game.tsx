@@ -5,7 +5,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { Play, Pause, Home, Coins, Trophy, Target, Timer, Heart } from "lucide-react";
-import type { WalletView } from "@shared/token-operations";
+// import type { WalletView } from "@shared/token-operations";
 
 interface NewOrbitGameProps {
   onGameEnd: () => void;
@@ -111,7 +111,7 @@ export function NewOrbitGame({ onGameEnd }: NewOrbitGameProps) {
   const isFreeMode = !isAdmin && (!isAuthenticated || !user || user.plan === 'free');
 
   // Query para wallet em tempo real
-  const { data: wallet } = useQuery<WalletView>({
+  const { data: wallet } = useQuery<any>({
     queryKey: isAdmin ? ["/api/admin/wallet"] : ["/api/users/1/wallet"],
     enabled: isAuthenticated && gameState.gameStarted,
     refetchInterval: 2000,

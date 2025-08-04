@@ -131,9 +131,9 @@ export function CertificationSystem({ professionalId, category = "Casa e Constru
     );
   }
 
-  const complianceData = compliance?.compliance || {};
-  const certificationsList = certifications?.certifications || [];
-  const requirementsList = requirements?.requirements || [];
+  const complianceData = (compliance as any)?.compliance || {};
+  const certificationsList = (certifications as any)?.certifications || [];
+  const requirementsList = (requirements as any)?.requirements || [];
 
   return (
     <div className="space-y-6">

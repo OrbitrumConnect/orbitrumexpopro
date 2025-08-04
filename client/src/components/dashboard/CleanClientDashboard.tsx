@@ -187,7 +187,7 @@ export function CleanClientDashboard({ user }: ClientDashboardProps) {
   const tokensTotal = wallet?.saldoTotal || 0;
   const tokensComprados = wallet?.tokensComprados || 0;
   const tokensPlano = wallet?.tokensPlano || 0;
-  const requestsCount = serviceRequests?.length || 0;
+  const requestsCount = (serviceRequests as any[])?.length || 0;
 
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
@@ -574,7 +574,6 @@ export function CleanClientDashboard({ user }: ClientDashboardProps) {
             <div className="space-y-4 flex flex-col justify-end min-h-[60vh]">
               <div className="mt-auto">
                 <AIAutoChatSystem 
-                  user={user}
                   userType="client"
                   userId={user?.id || 1}
                   userPlan={user?.plan || 'free'}

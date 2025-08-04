@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Rocket } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import type { WalletView } from "@shared/token-operations";
+// import type { WalletView } from "@shared/token-operations";
 
 interface CreditSystemProps {
   isSearchActive?: boolean;
@@ -14,7 +14,7 @@ export function CreditSystem({ isSearchActive = false }: CreditSystemProps) {
   const { user: authUser, isAuthenticated } = useAuth();
   
   // Query para buscar tokens reais do usuário logado
-  const { data: wallet } = useQuery<WalletView>({
+  const { data: wallet } = useQuery<any>({
     queryKey: ["/api/users/wallet", authUser?.email],
     enabled: isAuthenticated && !!authUser?.email,
     staleTime: 2 * 60 * 1000, // Cache por 2 minutos

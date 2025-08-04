@@ -3,7 +3,7 @@ import { X, Wallet, TrendingUp, TrendingDown, History, ArrowUpCircle, Info, Shie
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import type { WalletView } from "@shared/token-operations";
+// import type { WalletView } from "@shared/token-operations";
 import { useAuth } from "@/hooks/useAuth";
 
 interface WalletModalProps {
@@ -19,7 +19,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
   const isAdmin = authUser?.email === 'passosmir4@gmail.com';
   
   // Query para carteira sem auto-refresh
-  const { data: wallet, isLoading } = useQuery<WalletView>({
+  const { data: wallet, isLoading } = useQuery<any>({
     queryKey: isAdmin ? ["/api/admin/wallet"] : ["/api/users/wallet", authUser?.email],
     enabled: isOpen && (isAdmin || !!authUser?.email),
     staleTime: 2 * 60 * 1000, // Cache por 2 minutos

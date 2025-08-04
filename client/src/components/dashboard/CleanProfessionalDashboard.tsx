@@ -85,7 +85,7 @@ export function CleanProfessionalDashboard({ user }: ProfessionalDashboardProps)
     staleTime: 5 * 60 * 1000,
   });
 
-  const pendingCount = pendingRequests?.length || 0;
+  const pendingCount = (pendingRequests as any[])?.length || 0;
   const acceptedCount = (acceptedServices as any[])?.length || 0;
   const tokensTotal = wallet?.saldoTotal || 0;
   const tokensComprados = wallet?.tokensComprados || 0;

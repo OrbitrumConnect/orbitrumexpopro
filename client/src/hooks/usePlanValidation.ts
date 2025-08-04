@@ -128,9 +128,9 @@ export function useCanPerformAction(actionType: 'aiSearch' | 'planetView' | 'pro
       };
     case 'planetView':
       return {
-        canPerform: limits.dailyPlanetViews > 0,
-        reason: limits.dailyPlanetViews <= 0 ? 'daily_planet_views_exceeded' : null,
-        remaining: limits.dailyPlanetViews
+        canPerform: (limits as any).dailyPlanetViews > 0,
+                  reason: (limits as any).dailyPlanetViews <= 0 ? 'daily_planet_views_exceeded' : null,
+                  remaining: (limits as any).dailyPlanetViews
       };
     case 'profileView':
       return {

@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { X, Play, Coins, Info, Trophy, Timer, Heart, Target } from "lucide-react";
 import { NewOrbitGame } from "./new-orbit-game";
-import type { WalletView } from "@shared/token-operations";
+// import type { WalletView } from "@shared/token-operations";
 import type { User } from "@shared/schema";
 
 interface NewGameOverlayProps {
@@ -32,7 +32,7 @@ export function NewGameOverlay({ isOpen, onClose }: NewGameOverlayProps) {
   const isAdmin = user?.email === 'passosmir4@gmail.com';
   const isFreeMode = !isAdmin && (!isAuthenticated || !user || user.plan === 'free');
 
-  const { data: wallet } = useQuery<WalletView>({
+  const { data: wallet } = useQuery<any>({
     queryKey: isAdmin ? ["/api/admin/wallet"] : ["/api/users/1/wallet"],
     enabled: isOpen && isAuthenticated,
     staleTime: 2 * 60 * 1000,
@@ -93,7 +93,7 @@ export function NewGameOverlay({ isOpen, onClose }: NewGameOverlayProps) {
       return;
     }
     
-    if (user && (isAdmin || user.gamesPlayedToday < 2)) {
+    if (user && (isAdmin || (user as any).gamesPlayedToday < 2)) {
       if (isAdmin || (wallet && wallet.saldoTotal >= 250)) {
         chargeTokens.mutate();
       } else {
@@ -124,7 +124,7 @@ export function NewGameOverlay({ isOpen, onClose }: NewGameOverlayProps) {
   const canPlay = isAdmin 
     ? true
     : isAuthenticated 
-      ? (user && user.gamesPlayedToday < 2 && (wallet?.saldoTotal ?? 0) >= 250)
+      ? (user && (user as any).gamesPlayedToday < 2 && (wallet?.saldoTotal ?? 0) >= 250)
       : (guestGamesPlayed < 3);
 
   if (!isOpen) return null;
@@ -251,7 +251,7 @@ export function NewGameOverlay({ isOpen, onClose }: NewGameOverlayProps) {
                     </span>
                   </div>
                   <p className="text-green-300 text-sm">
-                    Jogos hoje: {user?.gamesPlayedToday || 0}/2
+                    Jogos hoje: {(user as any)?.gamesPlayedToday || 0}/2
                   </p>
                 </div>
               )}

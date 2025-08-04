@@ -119,14 +119,11 @@ export function TokenStoreTab({ user }: TokenStoreTabProps) {
   // Mutation para criar pagamento PIX
   const createPaymentMutation = useMutation({
     mutationFn: async (packageData: TokenPackage) => {
-      return await apiRequest(`/api/payment/pix`, {
-        method: 'POST',
-        body: JSON.stringify({
-          userEmail: user.email,
-          amount: packageData.price,
-          tokens: packageData.totalTokens
-        })
-      });
+      return await apiRequest(`/api/payment/pix`, 'POST', JSON.stringify({
+        userEmail: user.email,
+        amount: packageData.price,
+        tokens: packageData.totalTokens
+      }));
     },
     onSuccess: (data, variables) => {
       toast({
@@ -135,7 +132,7 @@ export function TokenStoreTab({ user }: TokenStoreTabProps) {
       });
       
       // Abrir modal de pagamento
-      window.open(`/pagamento?id=${data.id}`, '_blank');
+      window.open(`/pagamento?id=${(data as any).id}`, '_blank');
       
       // Invalidar cache da carteira
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/user'] });
