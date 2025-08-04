@@ -567,10 +567,10 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
   // Distribuição completa nos rings
 
   return (
-    <div className="relative w-full h-full min-h-[90vh] max-h-[95vh] overflow-hidden scale-110" style={{ pointerEvents: 'none' }}>
+    <div className="relative w-full h-full min-h-[90vh] max-h-[95vh] overflow-hidden scale-110">
       
       {/* Orbit Ring 1 - Clockwise */}
-      <div className="absolute inset-0 flex items-center justify-center z-10" style={{ pointerEvents: 'none' }}>
+      <div className="absolute inset-0 flex items-center justify-center z-10">
         {orbit1.map((professional, index) => (
           <motion.div
             key={`${orbitKey}-ring1-${professional.id}-${index}`}
@@ -602,7 +602,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
       </div>
       
       {/* Orbit Ring 2 - Counter-clockwise */}
-      <div className="absolute inset-0 flex items-center justify-center z-10" style={{ pointerEvents: 'none' }}>
+      <div className="absolute inset-0 flex items-center justify-center z-10">
         {orbit2.map((professional, index) => (
           <motion.div
             key={`${orbitKey}-ring2-${professional.id}-${index}`}
@@ -634,7 +634,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
       </div>
       
       {/* Orbit Ring 3 - Clockwise (slow) */}
-      <div className="absolute inset-0 flex items-center justify-center z-10" style={{ pointerEvents: 'none' }}>
+      <div className="absolute inset-0 flex items-center justify-center z-10">
         {orbit3.map((professional, index) => (
           <motion.div
             key={`${orbitKey}-ring3-${professional.id}-${index}`}

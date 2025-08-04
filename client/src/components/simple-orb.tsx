@@ -35,12 +35,12 @@ export function SimpleOrb({ professional, onClick }: SimpleOrbProps) {
       whileDrag={{ scale: 1.2, zIndex: 50 }}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={() => {
-        setTimeout(() => setIsDragging(false), 100);
+        setTimeout(() => setIsDragging(false), 50);
       }}
       onClick={(e) => {
+        e.stopPropagation();
+        console.log('CLIQUE NO ORB:', professional.name, 'ID:', professional.id, 'isDragging:', isDragging);
         if (!isDragging) {
-          e.stopPropagation();
-          console.log('CLIQUE NO ORB:', professional.name, 'ID:', professional.id);
           onClick();
         }
       }}
