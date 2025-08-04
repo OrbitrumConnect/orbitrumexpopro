@@ -1,0 +1,9 @@
+# Clear cache and force fresh build
+node_modules/
+.cache/
+dist/
+*.log
+.env.local
+.env.development
+.git/
+.vercel/ 
