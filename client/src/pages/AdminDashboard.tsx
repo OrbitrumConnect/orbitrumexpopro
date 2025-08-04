@@ -2423,68 +2423,7 @@ export default function AdminDashboard() {
                         <div className="text-sm mt-2">Funcionalidade em desenvolvimento</div>
                       </div>
                     </div>
-                        <Card key={index} className={`glassmorphism ${
-                          plan.planName === 'freeOrbitrum' ? 'border-cyan-500/30' :
-                          plan.planName === 'explorador' ? 'border-yellow-500/30' :
-                          plan.planName === 'conector' ? 'border-blue-500/30' :
-                          plan.planName === 'orbitrumPro' ? 'border-purple-500/30' :
-                          plan.planName === 'orbitrumMax' ? 'border-red-500/30' :
-                          'border-gray-500/30'
-                        }`}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-                                  plan.planName === 'freeOrbitrum' ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400' :
-                                  plan.planName === 'explorador' ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400' :
-                                  plan.planName === 'conector' ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-400' :
-                                  plan.planName === 'orbitrumPro' ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400' :
-                                  plan.planName === 'orbitrumMax' ? 'bg-gradient-to-r from-red-500/20 to-pink-500/20 text-red-400' :
-                                  'bg-gradient-to-r from-gray-500/20 to-gray-600/20 text-gray-400'
-                                }`}>
-                                  {plan.planName === 'freeOrbitrum' ? '🚀' :
-                                   plan.planName === 'explorador' ? '🔭' :
-                                   plan.planName === 'conector' ? '🌐' :
-                                   plan.planName === 'orbitrumPro' ? '💎' :
-                                   plan.planName === 'orbitrumMax' ? '👑' : '❓'}
-                                </div>
-                                <div>
-                                  <div className="text-white font-medium">{plan.displayName}</div>
-                                  <div className="text-xs text-gray-400">
-                                    {plan.price > 0 ? `R$ ${plan.price}/mês` : 'Gratuito'}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-2xl font-bold text-white">{plan.userCount}</div>
-                                <div className="text-xs text-gray-400">{plan.percentage}% dos usuários</div>
-                                {plan.monthlyRevenue > 0 && (
-                                  <div className="text-xs text-green-400 mt-1">
-                                    R$ {plan.monthlyRevenue.toFixed(0)}/mês
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {/* Barra de progresso visual */}
-                            <div className="mt-3">
-                              <div className="w-full bg-gray-700 rounded-full h-2">
-                                <div 
-                                  className={`h-2 rounded-full transition-all duration-500 ${
-                                    plan.planName === 'freeOrbitrum' ? 'bg-gradient-to-r from-cyan-500 to-blue-500' :
-                                    plan.planName === 'explorador' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-                                    plan.planName === 'conector' ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
-                                    plan.planName === 'orbitrumPro' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                                    plan.planName === 'orbitrumMax' ? 'bg-gradient-to-r from-red-500 to-pink-500' :
-                                    'bg-gradient-to-r from-gray-500 to-gray-600'
-                                  }`}
-                                  style={{ width: `${Math.max(parseFloat(plan.percentage), 2)}%` }}
-                                />
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                        
                     </div>
 
                     {/* Timestamp */}
