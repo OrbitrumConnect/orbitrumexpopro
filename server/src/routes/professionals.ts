@@ -19,86 +19,10 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 // Get all professionals
 router.get('/', (req, res) => {
   try {
-    const { available, skill, location, search, lat, lng, radius = 35 } = req.query
-    
-    // TODO: Em produção, buscar profissionais reais do banco
-    // const realProfessionals = await db.select().from(professionals).where(eq(professionals.verified, true))
-    
-    // Por enquanto, usar apenas demos para desenvolvimento
-    let professionals = [...SAMPLE_PROFESSIONALS]
-    
-    // SISTEMA INTELIGENTE: Priorizar profissionais reais
-    // Em produção, isso será:
-    // 1. Buscar profissionais reais verificados
-    // 2. Se não encontrar suficientes, adicionar demos
-    // 3. Se encontrar muitos reais, não mostrar demos
-    
-    // Filter by availability
-    if (available === 'true') {
-      professionals = professionals.filter(p => p.available)
-    }
-    
-    // Filter by search term (profession/title)
-    if (search) {
-      const searchTerm = search.toString().toLowerCase()
-      professionals = professionals.filter(p => 
-        p.title.toLowerCase().includes(searchTerm) ||
-        p.name.toLowerCase().includes(searchTerm) ||
-        (p.skills && p.skills.some(s => s.toLowerCase().includes(searchTerm)))
-      )
-    }
-    
-    // Filter by skill
-    if (skill) {
-      professionals = professionals.filter(p => 
-        p.skills && p.skills.some(s => s.toLowerCase().includes(skill.toString().toLowerCase()))
-      )
-    }
-    
-    // Filter by location (cidade)
-    if (location) {
-      professionals = professionals.filter(p => 
-        p.city?.toLowerCase().includes(location.toString().toLowerCase())
-      )
-    }
-    
-    // FILTRO POR PROXIMIDADE GPS (sistema Uber)
-    if (lat && lng) {
-      const userLat = parseFloat(lat.toString())
-      const userLng = parseFloat(lng.toString())
-      const maxRadius = parseFloat(radius.toString())
-      
-      professionals = professionals.filter(p => {
-        if (!p.latitude || !p.longitude) return false
-        
-        const distance = calculateDistance(userLat, userLng, p.latitude, p.longitude)
-        const professionalRadius = p.workRadius || 20
-        
-        // Profissional deve estar dentro do raio do usuário E usuário dentro do raio do profissional
-        return distance <= maxRadius && distance <= professionalRadius
-      })
-      
-      // Ordenar por proximidade
-      professionals.sort((a, b) => {
-        if (!a.latitude || !a.longitude || !b.latitude || !b.longitude) return 0
-        const distA = calculateDistance(userLat, userLng, a.latitude, a.longitude)
-        const distB = calculateDistance(userLat, userLng, b.latitude, b.longitude)
-        return distA - distB
-      })
-    }
-    
-    // Limitar a máximo 10 profissionais por busca
-    professionals = professionals.slice(0, 10)
-    
-    console.log(`🔍 Busca retornou ${professionals.length} profissionais`)
-    if (lat && lng) {
-      console.log(`📍 Filtro GPS: lat=${lat}, lng=${lng}, raio=${radius}km`)
-    }
-    
-    res.json(professionals)
+    return res.json(SAMPLE_PROFESSIONALS)
   } catch (error) {
     console.error('Get professionals error:', error)
-    res.status(500).json({ error: 'Failed to get professionals' })
+    return res.status(500).json({ error: 'Failed to get professionals' })
   }
 })
 
@@ -112,10 +36,10 @@ router.get('/:id', (req, res) => {
       return res.status(404).json({ error: 'Professional not found' })
     }
     
-    res.json(professional)
+    return res.json(professional)
   } catch (error) {
     console.error('Get professional error:', error)
-    res.status(500).json({ error: 'Failed to get professional' })
+    return res.status(500).json({ error: 'Failed to get professional' })
   }
 })
 
@@ -140,10 +64,10 @@ router.get('/:id/services', (req, res) => {
       type: 'consultation'
     }))
     
-    res.json(services)
+    return res.json(services)
   } catch (error) {
     console.error('Get professional services error:', error)
-    res.status(500).json({ error: 'Failed to get professional services' })
+    return res.status(500).json({ error: 'Failed to get professional services' })
   }
 })
 
@@ -186,10 +110,10 @@ router.post('/', (req, res) => {
     // In a real app, save to database
     // SAMPLE_PROFESSIONALS.push(newProfessional)
     
-    res.status(201).json(newProfessional)
+    return res.status(201).json(newProfessional)
   } catch (error) {
     console.error('Create professional error:', error)
-    res.status(500).json({ error: 'Failed to create professional' })
+    return res.status(500).json({ error: 'Failed to create professional' })
   }
 })
 
@@ -214,10 +138,10 @@ router.put('/:id', (req, res) => {
     // const index = SAMPLE_PROFESSIONALS.findIndex(p => p.id === parseInt(id))
     // SAMPLE_PROFESSIONALS[index] = updatedProfessional
     
-    res.json(updatedProfessional)
+    return res.json(updatedProfessional)
   } catch (error) {
     console.error('Update professional error:', error)
-    res.status(500).json({ error: 'Failed to update professional' })
+    return res.status(500).json({ error: 'Failed to update professional' })
   }
 })
 
@@ -234,10 +158,10 @@ router.delete('/:id', (req, res) => {
     // In a real app, delete from database
     // SAMPLE_PROFESSIONALS = SAMPLE_PROFESSIONALS.filter(p => p.id !== parseInt(id))
     
-    res.json({ message: 'Professional deleted successfully' })
+    return res.json({ message: 'Professional deleted successfully' })
   } catch (error) {
     console.error('Delete professional error:', error)
-    res.status(500).json({ error: 'Failed to delete professional' })
+    return res.status(500).json({ error: 'Failed to delete professional' })
   }
 })
 
@@ -255,13 +179,13 @@ router.patch('/:id/availability', (req, res) => {
     
     professional.available = isAvailable
     
-    res.json({
+    return res.json({
       ...professional,
       message: `Professional ${isAvailable ? 'activated' : 'deactivated'} successfully`
     })
   } catch (error) {
     console.error('Toggle availability error:', error)
-    res.status(500).json({ error: 'Failed to toggle availability' })
+    return res.status(500).json({ error: 'Failed to toggle availability' })
   }
 })
 
@@ -290,10 +214,10 @@ router.get('/:id/reviews', (req, res) => {
       }
     ]
     
-    res.json(reviews)
+    return res.json(reviews)
   } catch (error) {
     console.error('Get reviews error:', error)
-    res.status(500).json({ error: 'Failed to get reviews' })
+    return res.status(500).json({ error: 'Failed to get reviews' })
   }
 })
 
@@ -314,10 +238,10 @@ router.get('/search', (req, res) => {
       p.city?.toLowerCase().includes(query)
     )
     
-    res.json(results)
+    return res.json(results)
   } catch (error) {
     console.error('Search professionals error:', error)
-    res.status(500).json({ error: 'Failed to search professionals' })
+    return res.status(500).json({ error: 'Failed to search professionals' })
   }
 })
 

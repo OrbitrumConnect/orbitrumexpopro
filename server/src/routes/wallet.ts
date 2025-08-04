@@ -26,10 +26,10 @@ router.get('/user', (req, res) => {
       totalTokens
     }
     
-    res.json(wallet)
+    return res.json(wallet)
   } catch (error) {
     console.error('Get wallet error:', error)
-    res.status(500).json({ error: 'Failed to get wallet' })
+    return res.status(500).json({ error: 'Failed to get wallet' })
   }
 })
 
@@ -56,10 +56,10 @@ router.get('/user/:userId', (req, res) => {
       totalTokens
     }
     
-    res.json(wallet)
+    return res.json(wallet)
   } catch (error) {
     console.error('Get wallet error:', error)
-    res.status(500).json({ error: 'Failed to get wallet' })
+    return res.status(500).json({ error: 'Failed to get wallet' })
   }
 })
 
@@ -90,7 +90,7 @@ router.post('/add-tokens', (req, res) => {
     
     const totalTokens = getTotalTokens(user)
     
-    res.json({
+    return res.json({
       success: true,
       message: `Added ${tokens} tokens to user`,
       newBalance: totalTokens,
@@ -104,7 +104,7 @@ router.post('/add-tokens', (req, res) => {
     })
   } catch (error) {
     console.error('Add tokens error:', error)
-    res.status(500).json({ error: 'Failed to add tokens' })
+    return res.status(500).json({ error: 'Failed to add tokens' })
   }
 })
 
@@ -129,7 +129,7 @@ router.post('/use-tokens', (req, res) => {
     
     const newTotal = getTotalTokens(user)
     
-    res.json({
+    return res.json({
       success: true,
       message: `Used ${tokens} tokens`,
       description,
@@ -144,7 +144,7 @@ router.post('/use-tokens', (req, res) => {
     })
   } catch (error) {
     console.error('Use tokens error:', error)
-    res.status(500).json({ error: 'Failed to use tokens' })
+    return res.status(500).json({ error: 'Failed to use tokens' })
   }
 })
 
@@ -184,10 +184,10 @@ router.get('/transactions/:userId', (req, res) => {
       }
     ]
     
-    res.json(transactions)
+    return res.json(transactions)
   } catch (error) {
     console.error('Get transactions error:', error)
-    res.status(500).json({ error: 'Failed to get transactions' })
+    return res.status(500).json({ error: 'Failed to get transactions' })
   }
 })
 
@@ -218,7 +218,7 @@ router.get('/stats/:userId', (req, res) => {
     return res.json(stats)
   } catch (error) {
     console.error('Get stats error:', error)
-    res.status(500).json({ error: 'Failed to get stats' })
+    return res.status(500).json({ error: 'Failed to get stats' })
   }
 })
 
@@ -244,7 +244,7 @@ router.post('/transfer', (req, res) => {
     fromUser.tokensUsados += parseInt(tokens)
     toUser.tokensGanhos += parseInt(tokens)
     
-    res.json({
+    return res.json({
       success: true,
       message: `Transferred ${tokens} tokens`,
       description,
@@ -259,7 +259,7 @@ router.post('/transfer', (req, res) => {
     })
   } catch (error) {
     console.error('Transfer tokens error:', error)
-    res.status(500).json({ error: 'Failed to transfer tokens' })
+    return res.status(500).json({ error: 'Failed to transfer tokens' })
   }
 })
 
@@ -292,7 +292,7 @@ router.post('/reset/:userId', (req, res) => {
     })
   } catch (error) {
     console.error('Reset tokens error:', error)
-    res.status(500).json({ error: 'Failed to reset tokens' })
+    return res.status(500).json({ error: 'Failed to reset tokens' })
   }
 })
 
