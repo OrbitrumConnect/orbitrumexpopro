@@ -2505,7 +2505,8 @@ export default function AdminDashboard() {
   );
 }
 
-// Componente para Analytics do Sistema de Auto-Aceitar
+// Componente para Analytics do Sistema de Auto-Aceitar - TEMPORARILY DISABLED
+/*
 function AutoAcceptAnalytics() {
   const { data: autoAcceptData, isLoading } = useQuery({
     queryKey: ['/api/admin/auto-accept-analytics'],
@@ -2527,73 +2528,15 @@ function AutoAcceptAnalytics() {
 
   return (
     <div className="space-y-4">
-      {/* Resumo das estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="glassmorphism border-green-500/30">
-          <CardContent className="p-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">{summary?.totalActive || 0}</div>
-              <div className="text-xs text-gray-400">Profissionais Ativos</div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="glassmorphism border-blue-500/30">
-          <CardContent className="p-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">{summary?.totalUsage || 0}</div>
-              <div className="text-xs text-gray-400">Total Usos</div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="glassmorphism border-cyan-500/30">
-          <CardContent className="p-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-cyan-400">{(summary?.averageResponseTime || 0).toFixed(1)}h</div>
-              <div className="text-xs text-gray-400">Tempo Médio</div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="text-center text-gray-400 py-8">
+        <div className="text-6xl mb-4">🤖</div>
+        <div className="text-lg">Auto-Aceitar Analytics</div>
+        <div className="text-sm mt-2">Funcionalidade em desenvolvimento</div>
       </div>
-
-      {/* Lista de profissionais com auto-aceitar ativo */}
-      {analytics.length > 0 ? (
-        <div className="space-y-3">
-          <h4 className="text-white font-medium">Profissionais com Auto-Aceitar Ativo:</h4>
-          {analytics.map((professional: any, index: number) => (
-            <Card key={index} className="glassmorphism border-green-500/20">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-white font-medium">{professional.professionalName}</div>
-                    <div className="text-xs text-gray-400">{professional.category}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-green-400 text-sm font-medium">ATIVO</div>
-                    <div className="text-xs text-gray-400">{professional.responseTimeHours}h prazo</div>
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                  <span>Usado: {professional.autoAcceptCount} vezes</span>
-                  <span>Último uso: {professional.lastUsed}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center text-gray-400 py-8">
-          <div className="text-6xl mb-4">🤖</div>
-          <div className="text-lg">Nenhum profissional usando auto-aceitar</div>
-          <div className="text-sm mt-2">
-            Os profissionais podem ativar no dashboard → Comunicação
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+*/
 
 // Função para gerar respostas automáticas da IA
 function generateAIResponse(message: string): string {
