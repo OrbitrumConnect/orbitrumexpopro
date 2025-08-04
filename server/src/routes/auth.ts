@@ -137,7 +137,7 @@ router.post('/register', (req, res) => {
       freePlanLastPlanetReset: null,
       pixPago: 0,
       galaxyVault: 0,
-      name: fullName || username,
+      name: req.body.fullName || req.body.username,
       createdAt: new Date(),
       updatedAt: new Date()
     }

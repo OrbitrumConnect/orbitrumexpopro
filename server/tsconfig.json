@@ -32,7 +32,7 @@
     "src/**/*",
     "../shared/**/*"
   ],
-  "rootDir": ".."
+  "rootDir": "..",
   "exclude": [
     "node_modules",
     "dist"
