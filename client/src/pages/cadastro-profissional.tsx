@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Star, Home, Sparkles, Monitor, BookOpen, Heart, Truck, Music, ChefHat, Scale } from 'lucide-react';
-import type { ProfessionalCategory } from '@shared/schema';
+// import type { ProfessionalCategory } from '@shared/schema';
 
 const iconMap = {
   Home,
@@ -25,7 +25,7 @@ const iconMap = {
 
 export default function CadastroProfissional() {
   const { toast } = useToast();
-  const [selectedCategory, setSelectedCategory] = useState<ProfessionalCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<any | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -45,7 +45,7 @@ export default function CadastroProfissional() {
     queryKey: ['/api/professional-categories'],
   });
 
-  const handleCategorySelect = (category: ProfessionalCategory) => {
+  const handleCategorySelect = (category: any) => {
     setSelectedCategory(category);
     setSelectedSkills([]);
   };
@@ -123,7 +123,7 @@ export default function CadastroProfissional() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categories?.map((category: ProfessionalCategory) => {
+                {(categories as any[])?.map((category: any) => {
                   const IconComponent = iconMap[category.icon as keyof typeof iconMap] || Home;
                   const isSelected = selectedCategory?.id === category.id;
                   
@@ -162,7 +162,7 @@ export default function CadastroProfissional() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {selectedCategory.skills?.map((skill) => {
+                  {(selectedCategory as any).skills?.map((skill: any) => {
                     const isSelected = selectedSkills.includes(skill);
                     return (
                       <Badge

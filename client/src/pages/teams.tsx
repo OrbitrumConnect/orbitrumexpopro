@@ -12,7 +12,7 @@ import { StarfieldBackground } from "@/components/starfield-background";
 import { Link, useLocation } from "wouter";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
-import type { Team, Professional, User } from "@shared/schema";
+import type { Professional, User } from "@shared/schema";
 
 export default function Teams() {
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
@@ -47,7 +47,7 @@ export default function Teams() {
     shouldBlock: currentUser?.plan === 'free' && !isAdmin
   });
 
-  const { data: teams = [], isLoading } = useQuery<Team[]>({
+  const { data: teams = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/teams"],
     enabled: isAuthenticated,
   });
@@ -60,10 +60,9 @@ export default function Teams() {
 
   const removeFromTeamMutation = useMutation({
     mutationFn: async ({ teamId, professionalId }: { teamId: number; professionalId: number }) => {
-      return apiRequest(`/api/teams/${teamId}/remove-professional`, {
-        method: "POST",
-        body: JSON.stringify({ professionalId }),
-      });
+      return apiRequest(`/api/teams/${teamId}/remove-professional`, 'POST', JSON.stringify({
+        professionalId,
+      }));
     },
     onSuccess: () => {
       toast({
@@ -86,7 +85,7 @@ export default function Teams() {
     );
   };
 
-  const getTeamProfessionals = (team: Team) => {
+  const getTeamProfessionals = (team: any) => {
     if (!team.professionalIds || team.professionalIds.length === 0) return [];
     return professionals.filter(p => team.professionalIds.includes(p.id.toString()));
   };

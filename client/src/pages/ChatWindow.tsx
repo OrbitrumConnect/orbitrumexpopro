@@ -69,7 +69,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [chatData?.messages]);
+  }, [(chatData as any)?.messages]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,10 +79,10 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   };
 
   const getTimeRemaining = () => {
-    if (!chatData?.chat?.expiresAt) return "00:00:00";
+    if (!(chatData as any)?.chat?.expiresAt) return "00:00:00";
     
     const now = new Date().getTime();
-    const expires = new Date(chatData.chat.expiresAt).getTime();
+    const expires = new Date((chatData as any).chat.expiresAt).getTime();
     const remaining = expires - now;
     
     if (remaining <= 0) return "EXPIRADO";
@@ -121,8 +121,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     );
   }
 
-  const chat = chatData.chat;
-  const messages = chatData.messages || [];
+  const chat = (chatData as any).chat;
+  const messages = (chatData as any).messages || [];
   const timeRemaining = getTimeRemaining();
   const isExpired = timeRemaining === "EXPIRADO";
 

@@ -3,11 +3,11 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 
 export default function Dashboard() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!isLoading) {
+    if (user) {
       // Admin master vai diretamente para dashboard admin
       if (user?.email === 'passosmir4@gmail.com') {
         console.log('🚀 ADMIN MASTER - Redirecionando diretamente para /admin');
@@ -19,7 +19,7 @@ export default function Dashboard() {
       console.log('🚀 REDIRECIONANDO para seletor de dashboard');
       setLocation('/dashboard-selector');
     }
-  }, [isLoading, setLocation, user]);
+  }, [setLocation, user]);
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center" style={{ position: 'relative', zIndex: 1 }}>

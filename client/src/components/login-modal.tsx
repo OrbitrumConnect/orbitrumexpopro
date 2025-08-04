@@ -197,9 +197,9 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       // Tratamento específico de diferentes tipos de erro
       if ((error as any).name === 'AbortError') {
         showNotification('error', 'Timeout', 'Conexão muito lenta. Tente novamente.');
-      } else if (error.message?.includes('fetch')) {
+      } else if ((error as any).message?.includes('fetch')) {
         showNotification('error', 'Erro de rede', 'Verifique sua conexão e tente novamente.');
-      } else if (error.message?.includes('CORS')) {
+              } else if ((error as any).message?.includes('CORS')) {
         showNotification('error', 'Erro de acesso', 'Problema de segurança. Recarregue a página.');
       } else if (error && error instanceof Error && error.message) {
         showNotification('error', 'Erro de conexão', error.message);

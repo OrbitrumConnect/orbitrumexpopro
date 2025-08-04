@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
-import { User } from '../../shared/schema';
+// import { User } from '../../shared/schema';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null;
-  login: (userData: User, rememberMe?: boolean) => void;
+  user: any | null;
+  login: (userData: any, rememberMe?: boolean) => void;
   logout: () => void;
   showLoginModal: boolean;
   setShowLoginModal: (show: boolean) => void;
@@ -18,7 +18,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Performance: Memoizar funções para evitar re-renders
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // Funções memoizadas para performance
-  const login = useCallback((userData: User, rememberMe: boolean = false) => {
+  const login = useCallback((userData: any, rememberMe: boolean = false) => {
     setUser(userData);
     setIsAuthenticated(true);
     setShowLoginModal(false);

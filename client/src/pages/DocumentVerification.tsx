@@ -187,19 +187,19 @@ export default function DocumentVerification() {
         <Card className="glassmorphism border-cyan-500/30 mb-8">
           <CardHeader>
             <CardTitle className="text-white flex items-center">
-              {getStatusIcon(documentsStatus?.status || 'pending')}
+              {getStatusIcon((documentsStatus as any)?.status || 'pending')}
               <span className="ml-2">Status da Verificação</span>
-              {getStatusBadge(documentsStatus?.status || 'pending')}
+                              {getStatusBadge((documentsStatus as any)?.status || 'pending')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-gray-300">
-            {documentsStatus?.status === 'approved' ? (
+            {(documentsStatus as any)?.status === 'approved' ? (
               <div className="bg-green-500/10 p-4 rounded-lg border border-green-500/30">
                 <p className="text-green-400 font-medium">
                   ✅ Documentos aprovados! Você pode realizar compras na plataforma.
                 </p>
               </div>
-            ) : documentsStatus?.status === 'rejected' ? (
+            ) : (documentsStatus as any)?.status === 'rejected' ? (
               <div className="bg-red-500/10 p-4 rounded-lg border border-red-500/30">
                 <p className="text-red-400 font-medium">
                   ❌ Documentos rejeitados. Por favor, envie novamente.

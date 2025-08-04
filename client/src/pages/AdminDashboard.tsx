@@ -313,20 +313,16 @@ export default function AdminDashboard() {
   // Mutation para creditar tokens manualmente
   const creditTokensMutation = useMutation({
     mutationFn: async (data: { userId: string; amount: string; description: string }) => {
-      return apiRequest('/api/admin/creditar-tokens', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: data.userId,
-          amount: parseInt(data.amount),
-          description: data.description
-        })
-      });
+      return apiRequest('/api/admin/creditar-tokens', 'POST', JSON.stringify({
+        userId: data.userId,
+        amount: parseInt(data.amount),
+        description: data.description
+      }));
     },
     onSuccess: (response) => {
       toast({
         title: "Tokens creditados",
-        description: `${response.message}`,
+        description: `${(response as any).message}`,
         variant: "default"
       });
       setCreditTokensData({ userId: '', amount: '', description: '' });
@@ -687,7 +683,7 @@ export default function AdminDashboard() {
             </div>
             
             {/* Stats Cards - Grid Mobile Otimizado */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4" key="stats-grid">
               <Card className="bg-black/30 border-gray-700 sm:bg-gradient-to-br sm:from-cyan-900/30 sm:via-slate-800 sm:to-black/50 sm:border-cyan-500/30">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
                   <CardTitle className="text-[10px] sm:text-sm font-medium text-gray-300">Usuários</CardTitle>
@@ -766,7 +762,7 @@ export default function AdminDashboard() {
                 <div className="mt-2 sm:mt-4 p-2 sm:p-3 bg-gray-800/50 rounded-lg">
                   <div className="flex justify-between items-center text-[10px] sm:text-sm">
                     <span className="text-gray-400">Atualização:</span>
-                    <span className="text-cyan-400">{currentStats.currentTime}</span>
+                    <span className="text-cyan-400">{(currentStats as any).currentTime}</span>
                   </div>
                 </div>
               </CardContent>
@@ -783,21 +779,21 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-cyan-400">
-                        {(adminWallet.saldoTotal || 10000).toLocaleString()}
+                        {((adminWallet as any).saldoTotal || 10000).toLocaleString()}
                       </div>
                       <p className="text-sm text-gray-400">Tokens Disponíveis</p>
                       <p className="text-xs text-cyan-400">Recarga semanal</p>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-cyan-400">
-                        {(adminWallet.utilizacaoSemana || 0).toLocaleString()}
+                        {((adminWallet as any).utilizacaoSemana || 0).toLocaleString()}
                       </div>
                       <p className="text-sm text-gray-400">Utilizados esta semana</p>
                       <p className="text-xs text-cyan-400">Para testes</p>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-400">
-                        {adminWallet.proximaRecarga || 'Domingo'}
+                        {(adminWallet as any).proximaRecarga || 'Domingo'}
                       </div>
                       <p className="text-sm text-gray-400">Próxima recarga</p>
                       <p className="text-xs text-green-400">Automática</p>
@@ -925,26 +921,26 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-green-400">
-                      R$ {(currentStats.withdrawalPool?.totalAccumulated / 100 || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                R$ {(((currentStats as any).withdrawalPool?.totalAccumulated || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-xs text-gray-400">Pool Mensal (8.7%)</p>
                     <p className="text-xs text-gray-500">{currentStats.withdrawalPool?.totalActiveUsers || 0} usuários elegíveis</p>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-400">
-                      R$ {(currentStats.withdrawalPool?.monthlyLimit / 100 || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                R$ {(((currentStats as any).withdrawalPool?.monthlyLimit || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-xs text-gray-400">Disponível Dia 3</p>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-orange-400">
-                      R$ {(currentStats.withdrawalPool?.currentMonthUsed / 100 || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                R$ {(((currentStats as any).withdrawalPool?.currentMonthUsed || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-xs text-gray-400">Utilizado Este Mês</p>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-emerald-400">
-                      R$ {(currentStats.withdrawalPool?.remainingThisMonth / 100 || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {(((currentStats as any).withdrawalPool?.remainingThisMonth || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-xs text-gray-400">Restante Disponível</p>
                   </div>
@@ -1235,8 +1231,8 @@ export default function AdminDashboard() {
                         <p>Carregando documentos pendentes...</p>
                       </div>
                     </div>
-                  ) : pendingDocuments && pendingDocuments.length > 0 ? (
-                    pendingDocuments.map((doc: any) => (
+                  ) : (pendingDocuments as any[]) && (pendingDocuments as any[]).length > 0 ? (
+                    (pendingDocuments as any[]).map((doc: any) => (
                       <div key={doc.id} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -1340,9 +1336,9 @@ export default function AdminDashboard() {
                       <div className="flex justify-center items-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
                       </div>
-                    ) : suspiciousUsers && suspiciousUsers.length > 0 ? (
+                    ) : (suspiciousUsers as any[]) && (suspiciousUsers as any[]).length > 0 ? (
                       <div className="space-y-4">
-                        {suspiciousUsers.map((user: any) => (
+                                                  {(suspiciousUsers as any[]).map((user: any) => (
                           <div key={user.id} className="p-4 bg-gray-800/50 rounded-lg border border-red-500/20">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-3">
@@ -1471,7 +1467,7 @@ export default function AdminDashboard() {
                       Moderar Usuário
                     </CardTitle>
                     <CardDescription className="text-gray-400">
-                      Aplicar ação disciplinar para {selectedModerationUser.username}
+                      Aplicar ação disciplinar para {(selectedModerationUser as any).username}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -1534,7 +1530,7 @@ export default function AdminDashboard() {
                         onClick={() => {
                           const reason = selectedBanReason || customBanReason;
                           if (reason) {
-                            handleBanUser(selectedModerationUser.id, reason, banType as 'temporary' | 'permanent', banType === 'temporary' ? banDuration : undefined);
+                            handleBanUser((selectedModerationUser as any).id, reason, banType as 'temporary' | 'permanent', banType === 'temporary' ? banDuration : undefined);
                           }
                         }}
                         disabled={!selectedBanReason && !customBanReason}
@@ -1621,7 +1617,7 @@ export default function AdminDashboard() {
                       <div className="text-center">
                         <h3 className="text-sm font-medium text-blue-300 mb-1">Restante Disponível</h3>
                         <div className="text-2xl font-bold text-blue-400">
-                          R$ {((currentStats.withdrawalPool?.remainingThisMonth || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {(((currentStats as any).withdrawalPool?.remainingThisMonth || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
                         <p className="text-xs text-blue-300 mt-1">Próxima janela: 03/08/2025</p>
                       </div>
@@ -2407,7 +2403,7 @@ export default function AdminDashboard() {
                       <Card className="glassmorphism border-cyan-500/30">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-cyan-400">{planDistribution.totalUsers}</div>
+                            <div className="text-2xl font-bold text-cyan-400">{(planDistribution as any).totalUsers}</div>
                             <div className="text-xs text-gray-400">Total de Usuários</div>
                           </div>
                         </CardContent>
@@ -2416,7 +2412,7 @@ export default function AdminDashboard() {
                       <Card className="glassmorphism border-green-500/30">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-green-400">R$ {planDistribution.totalRevenue.toFixed(0)}</div>
+                            <div className="text-2xl font-bold text-green-400">R$ {(planDistribution as any).totalRevenue.toFixed(0)}</div>
                             <div className="text-xs text-gray-400">Receita Mensal</div>
                           </div>
                         </CardContent>
@@ -2426,7 +2422,7 @@ export default function AdminDashboard() {
                         <CardContent className="p-4">
                           <div className="text-center">
                             <div className="text-2xl font-bold text-blue-400">
-                              {planDistribution.planStats.filter(p => p.userCount > 0).length}
+                              {(planDistribution as any).planStats.filter((p: any) => p.userCount > 0).length}
                             </div>
                             <div className="text-xs text-gray-400">Planos Ativos</div>
                           </div>
@@ -2437,7 +2433,7 @@ export default function AdminDashboard() {
                     {/* Lista Detalhada de Planos */}
                     <div className="space-y-3">
                       <h4 className="text-white font-medium">Detalhamento por Plano:</h4>
-                      {planDistribution.planStats.map((plan: any, index: number) => (
+                      {(planDistribution as any).planStats.map((plan: any, index: number) => (
                         <Card key={index} className={`glassmorphism ${
                           plan.planName === 'freeOrbitrum' ? 'border-cyan-500/30' :
                           plan.planName === 'explorador' ? 'border-yellow-500/30' :
@@ -2504,7 +2500,7 @@ export default function AdminDashboard() {
 
                     {/* Timestamp */}
                     <div className="text-center text-xs text-gray-500 mt-4">
-                      Última atualização: {new Date(planDistribution.timestamp).toLocaleString('pt-BR')}
+                      Última atualização: {new Date((planDistribution as any).timestamp).toLocaleString('pt-BR')}
                     </div>
                   </div>
                 ) : (
@@ -2542,8 +2538,8 @@ function AutoAcceptAnalytics() {
     );
   }
 
-  const analytics = autoAcceptData?.data || [];
-  const summary = autoAcceptData?.summary || { totalActive: 0, totalUsage: 0, averageResponseTime: 0 };
+  const analytics = (autoAcceptData as any)?.data || [];
+  const summary = (autoAcceptData as any)?.summary || { totalActive: 0, totalUsage: 0, averageResponseTime: 0 };
 
   return (
     <div className="space-y-4">

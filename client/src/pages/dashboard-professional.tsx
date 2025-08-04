@@ -2,9 +2,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { ProfessionalDashboard } from "@/components/dashboard/professional-dashboard";
 
 export default function ProfessionalDashboardPage() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
-  if (isLoading) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center" style={{ position: 'relative', zIndex: 1 }}>
         <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full" />
