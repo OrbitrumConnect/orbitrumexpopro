@@ -210,12 +210,12 @@ router.get('/stats/:userId', (req, res) => {
       tokensPlano: user.tokensPlano,
       tokensGanhos: user.tokensGanhos,
       tokensUsados: user.tokensUsados,
-      totalSpent: user.pixPago || 0,
-      averageTokensPerReal: user.pixPago ? (user.tokensComprados / user.pixPago) : 0,
+      totalSpent: (user as any).pixPago || 0,
+      averageTokensPerReal: (user as any).pixPago ? (user.tokensComprados / (user as any).pixPago) : 0,
       usageRate: user.tokensComprados > 0 ? (user.tokensUsados / user.tokensComprados) * 100 : 0
     }
     
-    res.json(stats)
+    return res.json(stats)
   } catch (error) {
     console.error('Get stats error:', error)
     res.status(500).json({ error: 'Failed to get stats' })
@@ -279,7 +279,7 @@ router.post('/reset/:userId', (req, res) => {
     user.tokensGanhos = 0
     user.tokensUsados = 0
     
-    res.json({
+    return res.json({
       success: true,
       message: 'User tokens reset successfully',
       wallet: {
