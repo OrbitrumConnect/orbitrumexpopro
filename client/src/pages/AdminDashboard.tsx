@@ -2532,7 +2532,7 @@ function AutoAcceptAnalytics() {
         <Card className="glassmorphism border-green-500/30">
           <CardContent className="p-3">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">{summary.totalActive}</div>
+              <div className="text-2xl font-bold text-green-400">{summary?.totalActive || 0}</div>
               <div className="text-xs text-gray-400">Profissionais Ativos</div>
             </div>
           </CardContent>
@@ -2541,7 +2541,7 @@ function AutoAcceptAnalytics() {
         <Card className="glassmorphism border-blue-500/30">
           <CardContent className="p-3">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">{summary.totalUsage}</div>
+              <div className="text-2xl font-bold text-blue-400">{summary?.totalUsage || 0}</div>
               <div className="text-xs text-gray-400">Total Usos</div>
             </div>
           </CardContent>
@@ -2550,7 +2550,7 @@ function AutoAcceptAnalytics() {
         <Card className="glassmorphism border-cyan-500/30">
           <CardContent className="p-3">
             <div className="text-center">
-              <div className="text-2xl font-bold text-cyan-400">{summary.averageResponseTime.toFixed(1)}h</div>
+              <div className="text-2xl font-bold text-cyan-400">{(summary?.averageResponseTime || 0).toFixed(1)}h</div>
               <div className="text-xs text-gray-400">Tempo Médio</div>
             </div>
           </CardContent>
