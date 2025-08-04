@@ -682,8 +682,8 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Stats Cards - Grid Mobile Otimizado */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+            {/* Stats Cards - Grid Mobile Otimizado - TEMPORARILY DISABLED */}
+            {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
               <div className="bg-black/30 border border-gray-700 rounded-lg p-4">
                 <div className="text-center">
                   <div className="text-sm sm:text-2xl font-bold text-white">0</div>
@@ -711,7 +711,7 @@ export default function AdminDashboard() {
                   <p className="text-[9px] sm:text-xs text-green-400">+R$ 0,00 mês</p>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Caixa em Tempo Real - Mobile Optimizado */}
             <Card className="bg-black/30 border-gray-700 sm:bg-gradient-to-br sm:from-blue-900/30 sm:via-slate-800 sm:to-black/50 sm:border-blue-500/30">
