@@ -135,6 +135,9 @@ router.post('/register', (req, res) => {
       freePlanMessages: 2,
       freePlanLastDailyReset: null,
       freePlanLastPlanetReset: null,
+      pixPago: 0,
+      galaxyVault: 0,
+      name: fullName || username,
       createdAt: new Date(),
       updatedAt: new Date()
     }
@@ -164,8 +167,8 @@ router.post('/complete-professional', (req, res) => {
       return res.status(404).json({ error: 'User not found' })
     }
     
-    // Update user to professional
-    user.userType = 'professional'
+    // Update user to professional (as client for now)
+    user.userType = 'client'
     
     res.json({
       success: true,

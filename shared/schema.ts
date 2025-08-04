@@ -63,7 +63,11 @@ export const SAMPLE_USERS = [
     freePlanAiSearches: 10,
     freePlanPlanetViews: 2,
     freePlanProfileViews: 1,
-    freePlanMessages: 2
+    freePlanMessages: 2,
+    pixPago: 6,
+    galaxyVault: 0,
+    name: "Maria",
+    createdAt: new Date()
   },
   {
     id: 3,
@@ -121,7 +125,11 @@ export const SAMPLE_USERS = [
     freePlanAiSearches: 999,
     freePlanPlanetViews: 999,
     freePlanProfileViews: 999,
-    freePlanMessages: 999
+    freePlanMessages: 999,
+    pixPago: 32,
+    galaxyVault: 0,
+    name: "João",
+    createdAt: new Date()
   }
 ];
 
