@@ -21,7 +21,7 @@ RUN cd server && npm run build
 
 # Expose port
 EXPOSE 8080
+ENV PORT=8080
 
 # Start the application
-WORKDIR /app/server
-CMD ["npm", "run", "start:prod"] 
+CMD ["sh", "-c", "cd server && npm run start:prod"] 
