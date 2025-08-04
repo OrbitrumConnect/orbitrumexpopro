@@ -11,7 +11,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "https://orbitrum-pro-connect-production.up.railway.app/api/$1"
+      "dest": "https://orbitrumproconnect-production.up.railway.app/api/$1"
     },
     {
       "src": "/(.*)",
@@ -19,6 +19,6 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://orbitrum-pro-connect-production.up.railway.app"
+    "VITE_API_URL": "https://orbitrumproconnect-production.up.railway.app"
   }
 } 
