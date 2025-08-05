@@ -389,4 +389,146 @@ router.get('/purchases', (req, res) => {
   }
 })
 
+// Get suspicious users
+router.get('/suspicious-users', (req, res) => {
+  try {
+    const suspiciousUsers = SAMPLE_USERS.filter(user => {
+      // Simular usuários suspeitos baseado em critérios
+      const hasMultipleAccounts = user.email.includes('test') || user.email.includes('fake')
+      const hasUnusualActivity = (user as any).lastLogin === null
+      return hasMultipleAccounts || hasUnusualActivity
+    }).map(user => ({
+      id: user.id,
+      email: user.email,
+      name: (user as any).name || user.username,
+      reason: 'Atividade suspeita detectada',
+      riskLevel: 'medium',
+      lastActivity: (user as any).lastLogin || new Date().toISOString()
+    }))
+    
+    res.json(suspiciousUsers)
+  } catch (error) {
+    console.error('Get suspicious users error:', error)
+    res.status(500).json({ error: 'Failed to get suspicious users' })
+  }
+})
+
+// Get pending documents
+router.get('/pending-documents', (req, res) => {
+  try {
+    const pendingDocuments = SAMPLE_USERS.filter(user => {
+      // Simular documentos pendentes
+      return !(user as any).documentVerified
+    }).map(user => ({
+      id: user.id,
+      email: user.email,
+      name: (user as any).name || user.username,
+      documentType: 'CPF',
+      submittedAt: (user as any).createdAt || new Date().toISOString(),
+      status: 'pending',
+      priority: 'normal'
+    }))
+    
+    res.json(pendingDocuments)
+  } catch (error) {
+    console.error('Get pending documents error:', error)
+    res.status(500).json({ error: 'Failed to get pending documents' })
+  }
+})
+
+// Get plan distribution
+router.get('/plan-distribution', (req, res) => {
+  try {
+    const planDistribution = {
+      basic: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago <= 6).length,
+      standard: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago > 6 && (u as any).pixPago <= 18).length,
+      pro: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago > 18 && (u as any).pixPago <= 32).length,
+      galaxy: SAMPLE_USERS.filter(u => (u as any).galaxyVault).length,
+      total: SAMPLE_USERS.length,
+      revenue: {
+        basic: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago <= 6).reduce((sum, u) => sum + ((u as any).pixPago || 0), 0),
+        standard: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago > 6 && (u as any).pixPago <= 18).reduce((sum, u) => sum + ((u as any).pixPago || 0), 0),
+        pro: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago > 18 && (u as any).pixPago <= 32).reduce((sum, u) => sum + ((u as any).pixPago || 0), 0),
+        galaxy: SAMPLE_USERS.filter(u => (u as any).galaxyVault).reduce((sum, u) => sum + ((u as any).galaxyVault || 0), 0)
+      }
+    }
+    
+    res.json(planDistribution)
+  } catch (error) {
+    console.error('Get plan distribution error:', error)
+    res.status(500).json({ error: 'Failed to get plan distribution' })
+  }
+})
+
+export default router 
+
+  try {
+    const suspiciousUsers = SAMPLE_USERS.filter(user => {
+      // Simular usuários suspeitos baseado em critérios
+      const hasMultipleAccounts = user.email.includes('test') || user.email.includes('fake')
+      const hasUnusualActivity = (user as any).lastLogin === null
+      return hasMultipleAccounts || hasUnusualActivity
+    }).map(user => ({
+      id: user.id,
+      email: user.email,
+      name: (user as any).name || user.username,
+      reason: 'Atividade suspeita detectada',
+      riskLevel: 'medium',
+      lastActivity: (user as any).lastLogin || new Date().toISOString()
+    }))
+    
+    res.json(suspiciousUsers)
+  } catch (error) {
+    console.error('Get suspicious users error:', error)
+    res.status(500).json({ error: 'Failed to get suspicious users' })
+  }
+})
+
+// Get pending documents
+router.get('/pending-documents', (req, res) => {
+  try {
+    const pendingDocuments = SAMPLE_USERS.filter(user => {
+      // Simular documentos pendentes
+      return !(user as any).documentVerified
+    }).map(user => ({
+      id: user.id,
+      email: user.email,
+      name: (user as any).name || user.username,
+      documentType: 'CPF',
+      submittedAt: (user as any).createdAt || new Date().toISOString(),
+      status: 'pending',
+      priority: 'normal'
+    }))
+    
+    res.json(pendingDocuments)
+  } catch (error) {
+    console.error('Get pending documents error:', error)
+    res.status(500).json({ error: 'Failed to get pending documents' })
+  }
+})
+
+// Get plan distribution
+router.get('/plan-distribution', (req, res) => {
+  try {
+    const planDistribution = {
+      basic: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago <= 6).length,
+      standard: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago > 6 && (u as any).pixPago <= 18).length,
+      pro: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago > 18 && (u as any).pixPago <= 32).length,
+      galaxy: SAMPLE_USERS.filter(u => (u as any).galaxyVault).length,
+      total: SAMPLE_USERS.length,
+      revenue: {
+        basic: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago <= 6).reduce((sum, u) => sum + ((u as any).pixPago || 0), 0),
+        standard: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago > 6 && (u as any).pixPago <= 18).reduce((sum, u) => sum + ((u as any).pixPago || 0), 0),
+        pro: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago > 18 && (u as any).pixPago <= 32).reduce((sum, u) => sum + ((u as any).pixPago || 0), 0),
+        galaxy: SAMPLE_USERS.filter(u => (u as any).galaxyVault).reduce((sum, u) => sum + ((u as any).galaxyVault || 0), 0)
+      }
+    }
+    
+    res.json(planDistribution)
+  } catch (error) {
+    console.error('Get plan distribution error:', error)
+    res.status(500).json({ error: 'Failed to get plan distribution' })
+  }
+})
+
 export default router 

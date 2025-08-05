@@ -44,6 +44,7 @@ export function SimpleOrb({ professional, onClick }: SimpleOrbProps) {
           onClick();
         }
       }}
+      style={{ pointerEvents: 'auto' }}
     >
       <div className="professional-orb w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden border-2 border-[var(--neon-cyan)] shadow-lg shadow-cyan-500/20">
         <img
