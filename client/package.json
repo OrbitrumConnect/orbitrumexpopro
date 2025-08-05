@@ -12,6 +12,13 @@
   "resolutions": {
     "rollup": "4.9.5"
   },
+  "overrides": {
+    "rollup": "4.9.5",
+    "@rollup/rollup-linux-x64-gnu": "4.9.5"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.9.5"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
     "@radix-ui/react-accordion": "^1.2.11",
