@@ -24,9 +24,16 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       external: ['@rollup/rollup-linux-x64-gnu'],
+      output: {
+        manualChunks: undefined
+      }
     },
   },
   optimizeDeps: {
-    exclude: ['@rollup/rollup-linux-x64-gnu']
+    exclude: ['@rollup/rollup-linux-x64-gnu'],
+    include: ['react', 'react-dom']
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"'
   }
 }) 
