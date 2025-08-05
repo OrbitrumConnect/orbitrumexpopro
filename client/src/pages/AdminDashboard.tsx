@@ -55,6 +55,63 @@ interface WithdrawalRequest {
   availableBalance: number;
 }
 
+interface SuspiciousUser {
+  id: number;
+  email: string;
+  name: string;
+  reason: string;
+  riskLevel: string;
+  lastActivity: string;
+}
+
+interface PlanDistribution {
+  totalUsers: number;
+  totalRevenue: number;
+  planStats: Array<{
+    planName: string;
+    displayName: string;
+    price: number;
+    userCount: number;
+    percentage: number;
+    monthlyRevenue: number;
+  }>;
+  timestamp: string;
+}
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  userType: string;
+  tokens: number;
+  plan: string;
+  credits: number;
+  maxCredits: number;
+  highScore: number;
+  adminLevel: number;
+  documentsStatus: string;
+  canMakePurchases: boolean;
+  suspended: boolean;
+  banned: boolean;
+  termsAccepted: boolean;
+  tokensPlano: number;
+  tokensGanhos: number;
+  tokensComprados: number;
+  tokensUsados: number;
+  creditosAcumulados: number;
+  creditosSacados: number;
+  saqueDisponivel: number;
+  notificacaoSaque: boolean;
+  freePlanAiSearches: number;
+  freePlanPlanetViews: number;
+  freePlanProfileViews: number;
+  freePlanMessages: number;
+  pixPago: number;
+  galaxyVault: number;
+  name: string;
+  createdAt: Date;
+}
+
 export default function AdminDashboard() {
   const [selectedTab, setSelectedTab] = useState("overview");
   const [chatMessage, setChatMessage] = useState("");
@@ -126,18 +183,18 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/stats"],
     retry: 3,
     staleTime: 0, // Sem cache - sempre buscar dados atualizados
-    cacheTime: 0, // Não manter cache
+    gcTime: 0, // Não manter cache
   });
 
   // Query para carteira administrativa separada
-  const { data: adminWallet, isLoading: adminWalletLoading, refetch: refetchAdminWallet } = useQuery({
+  const { data: adminWallet, isLoading: adminWalletLoading, refetch: refetchAdminWallet } = useQuery<any>({
     queryKey: ["/api/admin/wallet"],
     retry: 3,
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos
   });
 
   // Query para distribuição de planos
-  const { data: planDistribution, isLoading: planDistributionLoading, refetch: refetchPlanDistribution } = useQuery({
+  const { data: planDistribution, isLoading: planDistributionLoading, refetch: refetchPlanDistribution } = useQuery<PlanDistribution>({
     queryKey: ["/api/admin/plan-distribution"],
     enabled: selectedTab === 'plans',
     staleTime: 2 * 60 * 1000, // Cache por 2 minutos
@@ -174,14 +231,14 @@ export default function AdminDashboard() {
     {
       id: 2,
       type: "user",
-      message: `${stats.totalUsers} usuários registrados na plataforma`,
+      message: `${stats?.totalUsers || 0} usuários registrados na plataforma`,
       time: "há 15 minutos",
       urgent: false
     },
     {
       id: 3,
       type: "system",
-      message: `Pool de saques configurada: R$ ${stats.withdrawalPool?.totalAccumulated?.toFixed(2).replace('.', ',') || '0,00'}`,
+      message: `Pool de saques configurada: R$ ${stats?.withdrawalPool?.totalAccumulated?.toFixed(2).replace('.', ',') || '0,00'}`,
       time: "há 30 minutos",
       urgent: false
     }
@@ -236,16 +293,11 @@ export default function AdminDashboard() {
     }
   }, [users, usersError]);
 
-  // Buscar atividades suspeitas
-  const {
-    data: suspiciousUsers,
-    isLoading: suspiciousLoading,
-    error: suspiciousError,
-    refetch: refetchSuspicious
-  } = useQuery({
-    queryKey: ['/api/admin/suspicious-users'],
-    enabled: selectedTab === 'moderation',
-    staleTime: 30000
+  // Query para usuários suspeitos
+  const { data: suspiciousUsers, isLoading: suspiciousUsersLoading, refetch: refetchSuspiciousUsers } = useQuery<SuspiciousUser[]>({
+    queryKey: ["/api/admin/suspicious-users"],
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // Cache por 5 minutos
   });
 
   // Mutation to ban users
@@ -349,7 +401,7 @@ export default function AdminDashboard() {
       refetchWithdrawals(),
       refetchUsers(),
       refetchPurchases(),
-      refetchSuspicious(),
+      refetchSuspiciousUsers(),
       refetchDocuments(),
       refetchAdminWallet(),
       refetchPlanDistribution()
@@ -1336,13 +1388,13 @@ export default function AdminDashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {suspiciousLoading ? (
+                    {suspiciousUsersLoading ? (
                       <div className="flex justify-center items-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
                       </div>
                     ) : suspiciousUsers && Array.isArray(suspiciousUsers) && suspiciousUsers.length > 0 ? (
                       <div className="space-y-4">
-                        {suspiciousUsers.map((user: any) => (
+                        {(suspiciousUsers as any[]).map((user: any) => (
                           <div key={user.id} className="p-4 bg-gray-800/50 rounded-lg border border-red-500/20">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-3">
@@ -2400,14 +2452,14 @@ export default function AdminDashboard() {
                     </div>
                     <p className="text-gray-400">Carregando distribuição de planos...</p>
                   </div>
-                ) : planDistribution ? (
+                ) : planDistribution && planDistribution.totalUsers ? (
                   <div className="space-y-6">
                     {/* Resumo Geral */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <Card className="glassmorphism border-cyan-500/30">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-cyan-400">{planDistribution.totalUsers}</div>
+                            <div className="text-2xl font-bold text-cyan-400">{planDistribution.totalUsers || 0}</div>
                             <div className="text-xs text-gray-400">Total de Usuários</div>
                           </div>
                         </CardContent>
@@ -2416,7 +2468,7 @@ export default function AdminDashboard() {
                       <Card className="glassmorphism border-green-500/30">
                         <CardContent className="p-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-green-400">R$ {planDistribution.totalRevenue.toFixed(0)}</div>
+                            <div className="text-2xl font-bold text-green-400">R$ {(planDistribution.totalRevenue || 0).toFixed(0)}</div>
                             <div className="text-xs text-gray-400">Receita Mensal</div>
                           </div>
                         </CardContent>
@@ -2426,7 +2478,7 @@ export default function AdminDashboard() {
                         <CardContent className="p-4">
                           <div className="text-center">
                             <div className="text-2xl font-bold text-blue-400">
-                              {planDistribution.planStats.filter(p => p.userCount > 0).length}
+                              {Array.isArray(planDistribution.planStats) ? planDistribution.planStats.filter((p: any) => p.userCount > 0).length : 0}
                             </div>
                             <div className="text-xs text-gray-400">Planos Ativos</div>
                           </div>
@@ -2437,7 +2489,7 @@ export default function AdminDashboard() {
                     {/* Lista Detalhada de Planos */}
                     <div className="space-y-3">
                       <h4 className="text-white font-medium">Detalhamento por Plano:</h4>
-                      {planDistribution.planStats.map((plan: any, index: number) => (
+                      {Array.isArray(planDistribution.planStats) ? planDistribution.planStats.map((plan: any, index: number) => (
                         <Card key={index} className={`glassmorphism ${
                           plan.planName === 'freeOrbitrum' ? 'border-cyan-500/30' :
                           plan.planName === 'explorador' ? 'border-yellow-500/30' :
@@ -2499,7 +2551,7 @@ export default function AdminDashboard() {
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                      )) : null}
                     </div>
 
                     {/* Timestamp */}
