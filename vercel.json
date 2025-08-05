@@ -19,6 +19,8 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://orbitrumproconnect-production.up.railway.app"
+    "VITE_API_URL": "https://orbitrumproconnect-production.up.railway.app",
+    "VITE_SUPABASE_URL": "@vite_supabase_url",
+    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key"
   }
 } 
