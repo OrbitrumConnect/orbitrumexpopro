@@ -1,5 +1,5 @@
 import express from 'express'
-import { SAMPLE_USERS } from '../../../shared/schema'
+import { SAMPLE_USERS, REAL_USERS_DATA } from '../../../shared/schema'
 
 const router = express.Router()
 
@@ -8,7 +8,7 @@ router.get('/me', (req, res) => {
   try {
     // In a real app, this would verify JWT token
     // For now, return the first user as mock authenticated user
-    const user = SAMPLE_USERS[1] // Pedro Galluf
+    const user = REAL_USERS_DATA[0] // Admin
     res.json(user)
   } catch (error) {
     console.error('Auth error:', error)
@@ -21,8 +21,8 @@ router.post('/login', (req, res) => {
   try {
     const { email, password } = req.body
     
-    // Mock authentication
-    const user = SAMPLE_USERS.find(u => u.email === email)
+    // Mock authentication - usar dados reais
+    const user = REAL_USERS_DATA.find(u => u.email === email)
     
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' })

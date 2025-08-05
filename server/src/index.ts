@@ -8,15 +8,15 @@ import { WebSocketServer } from 'ws'
 import dotenv from 'dotenv'
 
 // Import routes
-import authRoutes from './routes/auth'
-import adminRoutes from './routes/admin'
-import paymentRoutes from './routes/payment'
-import professionalRoutes from './routes/professionals'
-import walletRoutes from './routes/wallet'
-import trackingRoutes from './routes/tracking'
+import authRoutes from './routes/auth.js'
+import adminRoutes from './routes/admin.js'
+import paymentRoutes from './routes/payment.js'
+import professionalRoutes from './routes/professionals.js'
+import walletRoutes from './routes/wallet.js'
+import trackingRoutes from './routes/tracking.js'
 
 // Import database
-import { db } from './db'
+import { db } from './db.js'
 
 // Import types
 import { SAMPLE_USERS, SAMPLE_PROFESSIONALS } from '../../shared/schema'

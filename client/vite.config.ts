@@ -16,7 +16,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:5001',
         changeOrigin: true,
         secure: false,
       }
@@ -24,11 +24,16 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // Desabilitar sourcemap para produção
+    minify: 'terser', // Usar terser para melhor minificação
     rollupOptions: {
       external: ['@rollup/rollup-linux-x64-gnu'],
       output: {
-        manualChunks: undefined
+        manualChunks: undefined,
+        // Otimizar chunks
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       },
       onwarn(warning, warn) {
         // Ignorar warnings de TypeScript durante o build
@@ -38,12 +43,19 @@ export default defineConfig({
         warn(warning);
       }
     },
+    // Otimizações para produção
+    target: 'es2015',
+    cssCodeSplit: true,
+    reportCompressedSize: false
   },
   optimizeDeps: {
     exclude: ['@rollup/rollup-linux-x64-gnu'],
     include: ['react', 'react-dom']
   },
   define: {
-    'process.env.NODE_ENV': '"production"'
+    'process.env.NODE_ENV': '"production"',
+    // Definir variáveis para dados reais
+    '__VUE_PROD_DEVTOOLS__': false,
+    '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': false
   }
 }) 

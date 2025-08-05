@@ -1,8 +1,82 @@
 // Client-safe schema - removed database dependencies
 // Only keeping sample data and utility functions
 
-// Sample Users Data
+// ========================================
+// DADOS FICTÍCIOS (MOCK) - Para demonstração
+// ========================================
 export const SAMPLE_USERS = [
+  {
+    id: 1001,
+    username: "demo_user_1",
+    email: "demo1@orbitrum.com",
+    userType: "client" as const,
+    tokens: 1000,
+    plan: "free" as const,
+    credits: 20,
+    maxCredits: 20,
+    highScore: 250,
+    adminLevel: 0,
+    documentsStatus: "approved" as const,
+    canMakePurchases: true,
+    suspended: false,
+    banned: false,
+    termsAccepted: true,
+    tokensPlano: 0,
+    tokensGanhos: 1000,
+    tokensComprados: 0,
+    tokensUsados: 0,
+    creditosAcumulados: 1000,
+    creditosSacados: 0,
+    saqueDisponivel: 0,
+    notificacaoSaque: true,
+    freePlanAiSearches: 10,
+    freePlanPlanetViews: 2,
+    freePlanProfileViews: 1,
+    freePlanMessages: 2,
+    pixPago: 0,
+    galaxyVault: 0,
+    name: "Usuário Demo 1",
+    createdAt: new Date()
+  },
+  {
+    id: 1002,
+    username: "demo_user_2", 
+    email: "demo2@orbitrum.com",
+    userType: "professional" as const,
+    tokens: 5000,
+    plan: "pro" as const,
+    credits: 100,
+    maxCredits: 100,
+    highScore: 800,
+    adminLevel: 0,
+    documentsStatus: "approved" as const,
+    canMakePurchases: true,
+    suspended: false,
+    banned: false,
+    termsAccepted: true,
+    tokensPlano: 5000,
+    tokensGanhos: 0,
+    tokensComprados: 5000,
+    tokensUsados: 0,
+    creditosAcumulados: 5000,
+    creditosSacados: 0,
+    saqueDisponivel: 0,
+    notificacaoSaque: true,
+    freePlanAiSearches: 999,
+    freePlanPlanetViews: 999,
+    freePlanProfileViews: 999,
+    freePlanMessages: 999,
+    pixPago: 0,
+    galaxyVault: 0,
+    name: "Profissional Demo",
+    createdAt: new Date()
+  }
+];
+
+// ========================================
+// DADOS REAIS - Para migração ao Supabase
+// ========================================
+export const REAL_USERS_DATA = [
   {
     id: 1,
     username: "admin",
@@ -66,7 +140,7 @@ export const SAMPLE_USERS = [
     freePlanMessages: 2,
     pixPago: 6,
     galaxyVault: 0,
-    name: "Maria",
+    name: "Pedro Galluf",
     createdAt: new Date()
   },
   {
@@ -96,17 +170,21 @@ export const SAMPLE_USERS = [
     freePlanAiSearches: 10,
     freePlanPlanetViews: 2,
     freePlanProfileViews: 1,
-    freePlanMessages: 2
+    freePlanMessages: 2,
+    pixPago: 12,
+    galaxyVault: 0,
+    name: "Maria Helena",
+    createdAt: new Date()
   },
   {
     id: 4,
     username: "joao",
     email: "joao.vidal@remederi.com",
-    userType: "client" as const,
+    userType: "professional" as const,
     tokens: 23040,
     plan: "max" as const,
-    credits: 20,
-    maxCredits: 20,
+    credits: 999999,
+    maxCredits: 999999,
     highScore: 720,
     adminLevel: 0,
     documentsStatus: "approved" as const,
@@ -126,9 +204,9 @@ export const SAMPLE_USERS = [
     freePlanPlanetViews: 999,
     freePlanProfileViews: 999,
     freePlanMessages: 999,
-    pixPago: 32,
-    galaxyVault: 0,
-    name: "João",
+    pixPago: 0,
+    galaxyVault: 32,
+    name: "João Vidal",
     createdAt: new Date()
   }
 ];

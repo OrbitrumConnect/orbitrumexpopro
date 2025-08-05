@@ -1,31 +1,34 @@
 import express from 'express'
-import { SAMPLE_USERS, SAMPLE_PROFESSIONALS, getTotalTokens } from '../../../shared/schema'
+import { SAMPLE_USERS, SAMPLE_PROFESSIONALS, getTotalTokens, REAL_USERS_DATA } from '../../../shared/schema'
 
 const router = express.Router()
 
 // Get admin statistics
 router.get('/stats', (req, res) => {
   try {
+    // Usar dados reais (REAL_USERS_DATA) em vez de dados fictícios (SAMPLE_USERS)
+    const usersData = REAL_USERS_DATA;
+    
     // Calculate total revenue
-    const totalRevenue = SAMPLE_USERS.reduce((sum, user) => {
+    const totalRevenue = usersData.reduce((sum, user) => {
       return sum + (user.pixPago || 0) + (user.galaxyVault || 0)
     }, 0)
     
     // Calculate total tokens
-    const totalTokens = SAMPLE_USERS.reduce((sum, user) => {
+    const totalTokens = usersData.reduce((sum, user) => {
       return sum + getTotalTokens(user)
     }, 0)
     
     // Count users by type
-    const userCounts = SAMPLE_USERS.reduce((counts, user) => {
+    const userCounts = usersData.reduce((counts, user) => {
       counts[user.userType] = (counts[user.userType] || 0) + 1
       return counts
     }, {} as Record<string, number>)
     
     const stats = {
       totalRevenue: totalRevenue * 100, // Convert to cents for display
-      totalUsers: SAMPLE_USERS.length,
-      activeUsers: SAMPLE_USERS.length,
+      totalUsers: usersData.length,
+      activeUsers: usersData.length,
       offlineUsers: 0,
       pendingWithdrawals: 0,
       totalWithdrawn: 0,
@@ -33,9 +36,9 @@ router.get('/stats', (req, res) => {
       totalTokens,
       professionals: SAMPLE_PROFESSIONALS.length,
       conversionRate: 100, // 100% since all users have paid
-      averageTicket: totalRevenue > 0 ? totalRevenue / SAMPLE_USERS.filter(u => u.pixPago || u.galaxyVault).length : 0,
+      averageTicket: totalRevenue > 0 ? totalRevenue / usersData.filter(u => u.pixPago || u.galaxyVault).length : 0,
       monthlyStats: {
-        newUsers: SAMPLE_USERS.length,
+        newUsers: usersData.length,
         revenue: totalRevenue * 100,
         withdrawals: 0
       },
@@ -45,9 +48,10 @@ router.get('/stats', (req, res) => {
         currentMonthUsed: 15000, // R$ 150,00
         remainingThisMonth: 35000, // R$ 350,00
         utilizationRate: 30, // 30%
-        averageUserBalance: totalRevenue / SAMPLE_USERS.length,
-        totalActiveUsers: SAMPLE_USERS.length
-      }
+        averageUserBalance: totalRevenue / usersData.length,
+        totalActiveUsers: usersData.length
+      },
+      dataSource: 'real_data'
     }
     
     res.json(stats)
@@ -60,7 +64,9 @@ router.get('/stats', (req, res) => {
 // Get all users
 router.get('/users', (req, res) => {
   try {
-    const users = SAMPLE_USERS.map(user => ({
+    const usersData = REAL_USERS_DATA;
+    
+    const users = usersData.map(user => ({
       ...user,
       totalTokens: getTotalTokens(user),
       totalSpent: (user.pixPago || 0) + (user.galaxyVault || 0)
@@ -204,7 +210,7 @@ router.get('/analytics', (req, res) => {
       distribution: {
         clients: SAMPLE_USERS.filter(u => u.userType === 'client').length,
         professionals: SAMPLE_USERS.filter(u => (u as any).userType === 'professional').length,
-        admins: SAMPLE_USERS.filter(u => u.userType === 'admin').length
+        admins: 1 // Apenas 1 admin (Admin)
       },
       revenueBySegment: {
         basic: SAMPLE_USERS.filter(u => (u as any).pixPago && (u as any).pixPago <= 6).reduce((sum, u) => sum + ((u as any).pixPago || 0), 0),

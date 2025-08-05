@@ -1,13 +1,9 @@
 {
-  "buildCommand": "cd client && npm run build:no-check",
-  "outputDirectory": "client/dist",
+  "buildCommand": "npm run build:no-check",
+  "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "/index.html"
@@ -18,13 +14,8 @@
     "NODE_ENV": "production"
   },
   "functions": {
-    "client/src/**/*.tsx": {
+    "src/**/*.tsx": {
       "maxDuration": 30
-    }
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
     }
   }
 } 

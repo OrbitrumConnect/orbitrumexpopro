@@ -22,7 +22,7 @@ import Cadastro from "@/pages/cadastro";
 import PlanosPagamento from "@/pages/PlanosPagamento";
 import Pagamento from "@/pages/Pagamento";
 import TokenStore from "@/pages/TokenStore";
-import AdminDashboard from "@/pages/AdminDashboard";
+import AdminDashboard from "@/pages/AdminDashboard-Safe";
 import Dashboard from "@/pages/dashboard";
 import DashboardSelector from "@/pages/dashboard-selector";
 import ClientDashboard from "@/pages/dashboard-client";

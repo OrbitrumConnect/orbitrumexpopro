@@ -112,6 +112,33 @@ interface User {
   createdAt: Date;
 }
 
+interface PendingDocument {
+  id: number;
+  email: string;
+  name: string;
+  documentType: string;
+  submittedAt: string;
+  status: string;
+  priority: string;
+}
+
+interface AutoAcceptSummary {
+  totalActive: number;
+  totalUsage: number;
+  averageResponseTime: number;
+}
+
+interface AutoAcceptData {
+  data: any[];
+  summary: AutoAcceptSummary;
+}
+
+interface AdminWallet {
+  balance: number;
+  transactions: any[];
+  lastUpdate: string;
+}
+
 export default function AdminDashboard() {
   const [selectedTab, setSelectedTab] = useState("overview");
   const [chatMessage, setChatMessage] = useState("");
@@ -187,7 +214,7 @@ export default function AdminDashboard() {
   });
 
   // Query para carteira administrativa separada
-  const { data: adminWallet, isLoading: adminWalletLoading, refetch: refetchAdminWallet } = useQuery<any>({
+  const { data: adminWallet, isLoading: adminWalletLoading, refetch: refetchAdminWallet } = useQuery<AdminWallet>({
     queryKey: ["/api/admin/wallet"],
     retry: 3,
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos
@@ -330,10 +357,17 @@ export default function AdminDashboard() {
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos
   });
 
-  // Query para documentos pendentes sem auto-refresh
-  const { data: pendingDocuments, isLoading: documentsLoading, refetch: refetchDocuments } = useQuery({
+  // Query para documentos pendentes
+  const { data: pendingDocuments, isLoading: pendingDocumentsLoading, refetch: refetchDocuments } = useQuery<PendingDocument[]>({
     queryKey: ["/api/admin/pending-documents"],
-    enabled: selectedTab === 'documents',
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // Cache por 5 minutos
+  });
+
+  // Query para analytics do auto-aceitar
+  const { data: autoAcceptData, isLoading: autoAcceptLoading, refetch: refetchAutoAccept } = useQuery<AutoAcceptData>({
+    queryKey: ["/api/admin/auto-accept-analytics"],
+    retry: 3,
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos
   });
 
@@ -835,21 +869,21 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-cyan-400">
-                        {(adminWallet.saldoTotal || 10000).toLocaleString()}
+                        {(adminWallet.balance || 10000).toLocaleString()}
                       </div>
                       <p className="text-sm text-gray-400">Tokens Disponíveis</p>
                       <p className="text-xs text-cyan-400">Recarga semanal</p>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-cyan-400">
-                        {(adminWallet.utilizacaoSemana || 0).toLocaleString()}
+                        {(adminWallet.transactions.length || 0).toLocaleString()}
                       </div>
                       <p className="text-sm text-gray-400">Utilizados esta semana</p>
                       <p className="text-xs text-cyan-400">Para testes</p>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-400">
-                        {adminWallet.proximaRecarga || 'Domingo'}
+                        {adminWallet.lastUpdate || 'Domingo'}
                       </div>
                       <p className="text-sm text-gray-400">Próxima recarga</p>
                       <p className="text-xs text-green-400">Automática</p>
@@ -1280,7 +1314,7 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {documentsLoading ? (
+                  {pendingDocumentsLoading ? (
                     <div className="flex items-center justify-center py-12">
                       <div className="text-center text-gray-500">
                         <div className="animate-spin w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4"></div>
