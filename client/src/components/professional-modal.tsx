@@ -19,7 +19,7 @@ interface ProfessionalModalProps {
 }
 
 export function ProfessionalModal({ isOpen, onClose, professionalId, onAddToTeam }: ProfessionalModalProps) {
-  console.log('Professional modal rendered:', { isOpen, professionalId });
+  console.log('🚀 Professional modal rendered:', { isOpen, professionalId });
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -30,6 +30,8 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onAddToTeam
     queryKey: ["/api/professionals", professionalId],
     enabled: isOpen && !!professionalId,
   });
+
+  console.log('🚀 Professional data:', { professional, isLoading, error, isOpen, professionalId });
 
   // Get current user to check plan (só se autenticado)
   const { data: user } = useQuery<User>({
@@ -42,6 +44,8 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onAddToTeam
     queryKey: ["/api/professionals", professionalId, "services"],
     enabled: isOpen && !!professionalId,
   });
+
+  console.log('🚀 Services data:', { services, servicesLoading });
 
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
@@ -172,22 +176,33 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onAddToTeam
     }
   });
 
-  console.log('Professional data:', { professional, isLoading, error });
+  if (!isOpen) {
+    console.log('🚀 Modal não está aberto, retornando null');
+    return null;
+  }
 
-  if (!isOpen) return null;
-  if (isLoading) return (
-    <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-      <div className="text-white">Carregando...</div>
-    </div>
-  );
-  if (!professional) return (
-    <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="glassmorphism rounded-lg p-6 text-white text-center">
-        <p>Profissional não encontrado</p>
-        <button onClick={onClose} className="mt-4 px-4 py-2 bg-red-500 rounded">Fechar</button>
+  if (isLoading) {
+    console.log('🚀 Carregando dados do profissional...');
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+        <div className="text-white">Carregando...</div>
       </div>
-    </div>
-  );
+    );
+  }
+  
+  if (!professional) {
+    console.log('🚀 Profissional não encontrado');
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" onClick={onClose}>
+        <div className="glassmorphism rounded-lg p-6 text-white text-center">
+          <p>Profissional não encontrado</p>
+          <button onClick={onClose} className="mt-4 px-4 py-2 bg-red-500 rounded">Fechar</button>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('🚀 Renderizando modal com dados:', professional);
 
   const renderStars = () => {
     const fullStars = Math.floor(professional.rating);
