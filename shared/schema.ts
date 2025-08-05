@@ -903,10 +903,10 @@ export const TOKEN_PACKAGES = [
   {
     id: "galaxy",
     name: "Galaxy Vault",
-    price: 31,
-    baseTokens: 18600,
-    bonusTokens: 9650,
-    totalTokens: 28250,
+    price: 32,
+    baseTokens: 19200,
+    bonusTokens: 10000,
+    totalTokens: 29200,
     icon: "crown"
   }
 ];

@@ -53,7 +53,7 @@ export function NotificationModal({
           </DialogTitle>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-sm text-muted-foreground">{message}</p>
+          <p className="text-sm text-white">{message}</p>
         </div>
         <div className="flex justify-end gap-2">
           {showResendButton && onResend && (

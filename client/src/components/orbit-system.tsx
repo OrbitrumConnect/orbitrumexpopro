@@ -570,7 +570,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
     <div className="relative w-full h-full min-h-[90vh] max-h-[95vh] overflow-hidden scale-110">
       
       {/* Orbit Ring 1 - Clockwise */}
-      <div className="absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'auto', zIndex: 10 }}>
+      <div className="absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'auto', zIndex: 50 }}>
         {orbit1.map((professional, index) => (
           <motion.div
             key={`${orbitKey}-ring1-${professional.id}-${index}`}
@@ -579,7 +579,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
               animationDelay: `${-index * 4 - Math.random() * 2}s`,
               '--initial-rotation': `${index * (360 / Math.max(orbit1.length, 1)) + (Math.random() - 0.5) * 30}deg`,
               pointerEvents: 'auto',
-              zIndex: 10 + index
+              zIndex: 50 + index
             } as React.CSSProperties}
             initial={{ opacity: 0 }}
             animate={{ 
@@ -604,7 +604,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
       </div>
       
       {/* Orbit Ring 2 - Counter-clockwise */}
-      <div className="absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'auto', zIndex: 20 }}>
+      <div className="absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'auto', zIndex: 60 }}>
         {orbit2.map((professional, index) => (
           <motion.div
             key={`${orbitKey}-ring2-${professional.id}-${index}`}
@@ -613,7 +613,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
               animationDelay: `${-index * 5 - Math.random() * 3}s`,
               '--initial-rotation': `${index * (360 / Math.max(orbit2.length, 1)) + (Math.random() - 0.5) * 40}deg`,
               pointerEvents: 'auto',
-              zIndex: 20 + index
+              zIndex: 60 + index
             } as React.CSSProperties}
             initial={{ opacity: 0 }}
             animate={{ 
@@ -638,7 +638,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
       </div>
       
       {/* Orbit Ring 3 - Clockwise (slow) */}
-      <div className="absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'auto', zIndex: 30 }}>
+      <div className="absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'auto', zIndex: 70 }}>
         {orbit3.map((professional, index) => (
           <motion.div
             key={`${orbitKey}-ring3-${professional.id}-${index}`}
@@ -647,7 +647,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
               animationDelay: `${-index * 6 - Math.random() * 4}s`,
               '--initial-rotation': `${index * (360 / Math.max(orbit3.length, 1)) + (Math.random() - 0.5) * 50}deg`,
               pointerEvents: 'auto',
-              zIndex: 30 + index
+              zIndex: 70 + index
             } as React.CSSProperties}
             initial={{ opacity: 0 }}
             animate={{ 
@@ -672,7 +672,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
       </div>
       
       {/* Central Neural Brain - Above orbits */}
-      <div className="absolute inset-0 flex items-center justify-center z-45" style={{ pointerEvents: 'none' }}>
+      <div className="absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'none', zIndex: 40 }}>
         <div className="flex flex-col items-center" style={{ pointerEvents: 'auto' }}>
           <NeuralBrain onClick={handleBrainClick} />
           
