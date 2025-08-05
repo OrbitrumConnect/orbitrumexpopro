@@ -311,8 +311,8 @@ export default function AdminDashboard() {
           <TabsContent value="tokens" className="space-y-6 mt-6">
             <Card className="bg-black/30 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-lg font-bold text-white">🪙 Sistema de Tokens</CardTitle>
-                <CardDescription>29.520 tokens em circulação</CardDescription>
+                <CardTitle className="text-lg font-bold text-white">🪙 Sistema de Créditos</CardTitle>
+                <CardDescription>29.520 créditos em circulação</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
                     <CardContent className="p-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-yellow-400">29.520</div>
-                        <div className="text-sm text-gray-400">Total Tokens</div>
+                        <div className="text-sm text-gray-400">Total Créditos</div>
                         <div className="text-xs text-yellow-400">Em circulação</div>
                 </div>
               </CardContent>
@@ -330,7 +330,7 @@ export default function AdminDashboard() {
                     <CardContent className="p-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-green-400">720</div>
-                        <div className="text-sm text-gray-400">Tokens/Real</div>
+                        <div className="text-sm text-gray-400">Créditos/Real</div>
                         <div className="text-xs text-green-400">Taxa conversão</div>
                       </div>
                   </CardContent>
@@ -339,9 +339,9 @@ export default function AdminDashboard() {
                   <Card className="bg-black/20 border-blue-500/30">
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-400">R$ 0,00139</div>
-                        <div className="text-sm text-gray-400">Valor/Token</div>
-                        <div className="text-xs text-blue-400">Preço unitário</div>
+                        <div className="text-2xl font-bold text-blue-400">1.000</div>
+                        <div className="text-sm text-gray-400">Créditos Base</div>
+                        <div className="text-xs text-blue-400">Por Real investido</div>
                     </div>
                   </CardContent>
                 </Card>

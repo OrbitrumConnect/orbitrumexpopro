@@ -32,23 +32,17 @@ export function SimpleOrb({ professional, onClick }: SimpleOrbProps) {
       dragMomentum={false}
       dragElastic={0}
       whileHover={{ scale: isDragging ? 1 : 1.1 }}
-      whileDrag={{ scale: 1.2, zIndex: 1000 }}
+      whileDrag={{ scale: 1.2, zIndex: 50 }}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={() => {
-        setTimeout(() => setIsDragging(false), 10);
+        setTimeout(() => setIsDragging(false), 100);
       }}
       onClick={(e) => {
         if (!isDragging) {
           e.stopPropagation();
-          e.preventDefault();
-          console.log('CLIQUE NO ORB:', professional.name, 'ID:', professional.id, 'isDragging:', isDragging);
+          console.log('CLIQUE NO ORB:', professional.name);
           onClick();
         }
-      }}
-      style={{ 
-        pointerEvents: 'auto',
-        zIndex: isDragging ? 1000 : 10,
-        position: 'relative'
       }}
     >
       <div className="professional-orb w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden border-2 border-[var(--neon-cyan)] shadow-lg shadow-cyan-500/20">
