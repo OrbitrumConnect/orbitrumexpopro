@@ -1340,7 +1340,7 @@ export default function AdminDashboard() {
                       <div className="flex justify-center items-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
                       </div>
-                    ) : suspiciousUsers && suspiciousUsers.length > 0 ? (
+                    ) : suspiciousUsers && Array.isArray(suspiciousUsers) && suspiciousUsers.length > 0 ? (
                       <div className="space-y-4">
                         {suspiciousUsers.map((user: any) => (
                           <div key={user.id} className="p-4 bg-gray-800/50 rounded-lg border border-red-500/20">

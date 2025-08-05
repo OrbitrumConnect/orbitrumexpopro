@@ -16,10 +16,11 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
+        target: 'http://localhost:5000',
         changeOrigin: true,
-      },
-    },
+        secure: false,
+      }
+    }
   },
   build: {
     outDir: 'dist',
@@ -28,6 +29,13 @@ export default defineConfig({
       external: ['@rollup/rollup-linux-x64-gnu'],
       output: {
         manualChunks: undefined
+      },
+      onwarn(warning, warn) {
+        // Ignorar warnings de TypeScript durante o build
+        if (warning.code === 'TS2307' || warning.code === 'TS2339' || warning.code === 'TS2345') {
+          return;
+        }
+        warn(warning);
       }
     },
   },

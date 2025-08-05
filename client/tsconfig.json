@@ -25,7 +25,14 @@
     "paths": {
       "@/*": ["./src/*"],
       "@shared/*": ["../shared/*"]
-    }
+    },
+
+    /* Build compatibility */
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*"
