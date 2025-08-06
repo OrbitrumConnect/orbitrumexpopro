@@ -5,7 +5,6 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "prebuild": "npm install -g typescript",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
