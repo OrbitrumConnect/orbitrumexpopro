@@ -16,8 +16,8 @@ RUN cd server && npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Build the server
-RUN cd server && npm run build
+# Build the server with explicit error checking
+RUN cd server && npm run build && ls -la dist/
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs
@@ -35,4 +35,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:$PORT/api/health || exit 1
 
 # Start the application
-CMD ["sh", "-c", "cd server && npm run start:prod"] 
+CMD ["sh", "-c", "cd server && ls -la && npm run start:prod"] 
