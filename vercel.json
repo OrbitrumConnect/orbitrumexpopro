@@ -1,5 +1,19 @@
 {
-  "buildCommand": "cd client && npm run build:no-check",
+  "buildCommand": "npm run build:vercel",
   "outputDirectory": "client/dist",
-  "installCommand": "npm install"
+  "installCommand": "echo 'Installing dependencies...'",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://orbitrum-connect-production.up.railway.app",
+    "NODE_ENV": "production"
+  }
 } 

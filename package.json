@@ -10,6 +10,7 @@
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
     "build": "cd client && npm run build",
     "build:client": "cd client && npm run build",
+    "start:prod": "cd server && npm start",
     "migrate:real-data": "cd server && npx tsx src/scripts/migrate-to-supabase.ts",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
