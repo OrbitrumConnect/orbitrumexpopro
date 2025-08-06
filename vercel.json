@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build:vercel",
-  "outputDirectory": "client/dist",
+  "outputDirectory": "dist",
   "routes": [
     {
       "src": "/api/(.*)",
