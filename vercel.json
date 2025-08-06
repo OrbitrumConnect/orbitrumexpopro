@@ -1,7 +1,6 @@
 {
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "client/dist",
-  "installCommand": "echo 'Installing dependencies...'",
   "routes": [
     {
       "src": "/api/(.*)",

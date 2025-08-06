@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "build:vercel": "tsc --project tsconfig.build.json && vite build",
+    "build": "npx tsc && vite build",
+    "build:vercel": "npx tsc --project tsconfig.build.json && vite build",
     "build:no-check": "vite build --mode production",
     "build:production": "NODE_ENV=production vite build",
     "preview": "vite preview",
@@ -71,6 +71,8 @@
     "recharts": "^3.1.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
     "wouter": "^3.0.0",
     "zod": "^4.0.14"
   },
@@ -85,8 +87,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.4.32",
-    "tailwindcss": "^3.4.0",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "tailwindcss": "^3.4.0"
   }
 }
