@@ -74,7 +74,7 @@
     "terser": "^5.28.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
-    "wouter": "^0.0.0",
+    "wouter": "^3.0.0",
     "zod": "^4.0.14"
   },
   "devDependencies": {
