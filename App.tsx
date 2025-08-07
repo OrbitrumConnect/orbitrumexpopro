@@ -4,9 +4,12 @@ import { StyleSheet, Text, View, SafeAreaView, ScrollView, TouchableOpacity, Ale
 import { createClient, User } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Configuração do Supabase - SUBSTITUA PELAS SUAS CREDENCIAIS
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://seu-projeto.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sua-chave-anonima';
+// Configuração do Supabase
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://gnvxnsgewhjucdhwrrdi.supabase.co';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdudnhuc2dld2hqdWNkaHdycmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2Nzk1NDAsImV4cCI6MjA2ODI1NTU0MH0.p0LjK34rpLRVnG0F002PL5MbqSJOvyUebUBWAruMpi0';
+
+// Configuração do Railway
+const railwayApiUrl = process.env.EXPO_PUBLIC_RAILWAY_API_URL || 'https://orbitrumexpopro-production.up.railway.app';
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -21,23 +24,36 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('Verificando...');
+  const [backendStatus, setBackendStatus] = useState('Verificando...');
 
   useEffect(() => {
-    checkConnection();
+    checkConnections();
     checkAuth();
   }, []);
 
-  const checkConnection = async () => {
+  const checkConnections = async () => {
+    // Testar Supabase
     try {
-      // Testar conexão com Supabase
       const { data, error } = await supabase.from('profiles').select('count').limit(1);
       if (error) {
-        setConnectionStatus('Erro: ' + error.message);
+        setConnectionStatus('❌ Erro Supabase: ' + error.message);
       } else {
-        setConnectionStatus('✅ Conectado ao Supabase');
+        setConnectionStatus('✅ Supabase Conectado');
       }
     } catch (error) {
-      setConnectionStatus('❌ Erro de conexão');
+      setConnectionStatus('❌ Erro de conexão Supabase');
+    }
+
+    // Testar Railway Backend
+    try {
+      const response = await fetch(`${railwayApiUrl}/api/health`);
+      if (response.ok) {
+        setBackendStatus('✅ Railway Backend Online');
+      } else {
+        setBackendStatus('⚠️ Railway Backend Iniciando...');
+      }
+    } catch (error) {
+      setBackendStatus('❌ Railway Backend Offline');
     }
   };
 
@@ -86,6 +102,7 @@ export default function App() {
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Carregando...</Text>
           <Text style={styles.statusText}>{connectionStatus}</Text>
+          <Text style={styles.statusText}>{backendStatus}</Text>
         </View>
       </SafeAreaView>
     );
@@ -97,10 +114,26 @@ export default function App() {
         <View style={styles.header}>
           <Text style={styles.title}>🚀 Orbitrum Connect</Text>
           <Text style={styles.subtitle}>Expo + Railway + Supabase</Text>
-          <Text style={styles.statusText}>{connectionStatus}</Text>
         </View>
 
         <View style={styles.content}>
+          {/* Status das Conexões */}
+          <View style={styles.statusSection}>
+            <Text style={styles.sectionTitle}>🔗 Status das Conexões</Text>
+            
+            <View style={styles.statusCard}>
+              <Text style={styles.statusTitle}>📱 Supabase</Text>
+              <Text style={styles.statusText}>{connectionStatus}</Text>
+            </View>
+
+            <View style={styles.statusCard}>
+              <Text style={styles.statusTitle}>🌐 Railway Backend</Text>
+              <Text style={styles.statusText}>{backendStatus}</Text>
+              <Text style={styles.urlText}>{railwayApiUrl}</Text>
+            </View>
+          </View>
+
+          {/* Autenticação */}
           {user ? (
             <View style={styles.userSection}>
               <Text style={styles.welcomeText}>✅ Bem-vindo!</Text>
@@ -122,45 +155,50 @@ export default function App() {
             </View>
           )}
 
+          {/* Arquitetura */}
           <View style={styles.featuresSection}>
-            <Text style={styles.sectionTitle}>🏗️ Arquitetura</Text>
+            <Text style={styles.sectionTitle}>🏗️ Arquitetura Completa</Text>
             
             <View style={styles.featureCard}>
-              <Text style={styles.featureTitle}>📱 Frontend</Text>
+              <Text style={styles.featureTitle}>📱 Frontend (Expo)</Text>
               <Text style={styles.featureDescription}>
-                React Native + Expo
+                React Native + Expo + TypeScript
               </Text>
             </View>
 
             <View style={styles.featureCard}>
-              <Text style={styles.featureTitle}>🌐 Backend</Text>
+              <Text style={styles.featureTitle}>🌐 Backend (Railway)</Text>
               <Text style={styles.featureDescription}>
-                Node.js + Express (Railway)
+                Node.js + Express + Drizzle ORM
               </Text>
             </View>
 
             <View style={styles.featureCard}>
-              <Text style={styles.featureTitle}>🗄️ Database</Text>
+              <Text style={styles.featureTitle}>🗄️ Database (Supabase)</Text>
               <Text style={styles.featureDescription}>
-                Supabase (PostgreSQL)
+                PostgreSQL + Auth + Real-time
               </Text>
             </View>
           </View>
 
-          <View style={styles.configSection}>
-            <Text style={styles.sectionTitle}>⚙️ Configuração</Text>
-            <Text style={styles.configText}>
-              Para configurar completamente:
-            </Text>
-            <Text style={styles.configText}>
-              1. Crie projeto no Supabase
-            </Text>
-            <Text style={styles.configText}>
-              2. Configure as credenciais no .env
-            </Text>
-            <Text style={styles.configText}>
-              3. Deploy o backend no Railway
-            </Text>
+          {/* URLs */}
+          <View style={styles.urlsSection}>
+            <Text style={styles.sectionTitle}>🔗 URLs do Projeto</Text>
+            
+            <View style={styles.urlCard}>
+              <Text style={styles.urlTitle}>Frontend (Expo)</Text>
+              <Text style={styles.urlText}>expo.dev/accounts/obritrum/projects/orbitrum</Text>
+            </View>
+
+            <View style={styles.urlCard}>
+              <Text style={styles.urlTitle}>Backend (Railway)</Text>
+              <Text style={styles.urlText}>{railwayApiUrl}</Text>
+            </View>
+
+            <View style={styles.urlCard}>
+              <Text style={styles.urlTitle}>Database (Supabase)</Text>
+              <Text style={styles.urlText}>{supabaseUrl}</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -214,6 +252,33 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  statusSection: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 15,
+  },
+  statusCard: {
+    backgroundColor: '#1a1a1a',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  statusTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 5,
+  },
+  urlText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 5,
+    fontFamily: 'monospace',
+  },
   userSection: {
     backgroundColor: '#1a1a1a',
     padding: 20,
@@ -256,13 +321,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   featuresSection: {
-    marginTop: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   featureCard: {
     backgroundColor: '#1a1a1a',
@@ -280,15 +339,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#ccc',
   },
-  configSection: {
-    marginTop: 20,
+  urlsSection: {
+    marginBottom: 20,
+  },
+  urlCard: {
     backgroundColor: '#1a1a1a',
     padding: 15,
     borderRadius: 8,
+    marginBottom: 10,
   },
-  configText: {
-    fontSize: 14,
-    color: '#ccc',
+  urlTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
     marginBottom: 5,
   },
 });
