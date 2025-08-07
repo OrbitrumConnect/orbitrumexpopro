@@ -1,33 +1,37 @@
 {
-  "name": "orbitrum-connect",
+  "name": "orbitrum-connect-expo",
   "version": "1.0.0",
-  "description": "Professional networking platform with orbital-themed interface",
-  "type": "module",
+  "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:client": "cd client && npm run dev",
-    "dev:server": "cd server && npm run dev",
-    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "install:client": "cd client && npm install",
-    "build": "cd client && npm run build",
-    "build:client": "cd client && npm run build",
-    "build:vercel": "cd client && npm install && npm run build:no-check",
-    "start:prod": "cd server && npm start",
-    "migrate:real-data": "cd server && npx tsx src/scripts/migrate-to-supabase.ts",
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build:android": "eas build --platform android",
+    "build:ios": "eas build --platform ios",
+    "submit:android": "eas submit --platform android",
+    "submit:ios": "eas submit --platform ios"
   },
-  "keywords": [
-    "networking",
-    "professional",
-    "orbital",
-    "react",
-    "typescript"
-  ],
-  "author": "Orbitrum Connect Team",
-  "license": "proprietary",
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "1.18.2",
+    "@supabase/postgrest-js": "^1.21.2",
+    "@supabase/supabase-js": "^2.54.0",
+    "expo": "~49.0.0",
+    "expo-constants": "~14.4.2",
+    "expo-linking": "~5.0.2",
+    "expo-router": "^2.0.0",
+    "expo-status-bar": "~1.6.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.72.10",
+    "react-native-web": "~0.19.6"
+  },
   "devDependencies": {
-    "concurrently": "^8.2.2"
-  }
+    "@babel/core": "^7.20.0",
+    "@types/react": "~18.2.14",
+    "@types/react-native": "~0.72.2",
+    "eas-cli": "^3.17.0",
+    "typescript": "^5.1.3"
+  },
+  "private": true
 }

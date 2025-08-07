@@ -2,30 +2,34 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
-    /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./client/src/*"],
-      "@/shared/*": ["./shared/*"],
-      "@/server/*": ["./server/src/*"]
+      "@/*": [
+        "./client/src/*"
+      ],
+      "@/shared/*": [
+        "./shared/*"
+      ],
+      "@/server/*": [
+        "./server/src/*"
+      ]
     }
   },
   "include": [
@@ -36,5 +40,6 @@
   "exclude": [
     "node_modules",
     "dist"
-  ]
-} 
+  ],
+  "extends": "expo/tsconfig.base"
+}
