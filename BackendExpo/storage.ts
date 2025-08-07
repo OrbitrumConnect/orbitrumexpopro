@@ -5949,7 +5949,7 @@ async function createStorageInstance(): Promise<IStorage> {
   console.log("🔍 Detectando ambiente de produção...");
   
   // Verificar se Supabase Auth está disponível
-  if (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY) {
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
     console.log("✅ SUPABASE AUTH DETECTADO - Modo produção ativo!");
     console.log("🚀 Sistema operando com dados reais via Supabase");
     console.log("📊 Usuários autênticos, profissionais reais, transações válidas");

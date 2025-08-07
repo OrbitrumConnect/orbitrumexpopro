@@ -31,8 +31,8 @@ const loginSchema = z.object({
 
 export function setupAuthRoutes(app: Express) {
   // Inicializar Supabase se as keys estiverem disponíveis
-  if (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY) {
-    supabase = initializeSupabase(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+  supabase = initializeSupabase(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
     console.log('🔐 Supabase Auth inicializado');
   } else {
     console.log('⚠️ Supabase Auth não configurado - usando autenticação local');
@@ -586,7 +586,7 @@ export function setupAuthRoutes(app: Express) {
   // Status da autenticação
   app.get('/api/auth/status', (req, res) => {
     res.json({
-      supabaseConfigured: !!(process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY),
+      supabaseConfigured: !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY),
       localAuthFallback: true
     });
   });

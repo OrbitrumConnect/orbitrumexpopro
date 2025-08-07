@@ -89,7 +89,7 @@ function setupHealthCheck(app: Express) {
     try {
       const services = {
         database: await storage.getAllUsers().then(() => true).catch(() => false),
-        auth: !!(process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY),
+        auth: !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY),
         memory: process.memoryUsage().heapUsed < 512 * 1024 * 1024
       };
       

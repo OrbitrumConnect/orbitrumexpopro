@@ -50,8 +50,8 @@ async function checkDatabase(): Promise<boolean> {
 async function checkAuth(): Promise<boolean> {
   try {
     // Verificar se as variáveis de ambiente estão presentes
-    const hasSupabaseUrl = !!process.env.VITE_SUPABASE_URL;
-    const hasSupabaseKey = !!process.env.VITE_SUPABASE_ANON_KEY;
+      const hasSupabaseUrl = !!process.env.SUPABASE_URL;
+  const hasSupabaseKey = !!process.env.SUPABASE_ANON_KEY;
     return hasSupabaseUrl && hasSupabaseKey;
   } catch (error) {
     console.warn('⚠️ Auth health check failed:', error);
