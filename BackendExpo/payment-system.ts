@@ -1,6 +1,5 @@
 import { storage } from './storage';
 import QRCode from 'qrcode';
-import { createStaticPix } from 'pix-utils';
 
 // Sistema de Pagamento PIX - Orbitrum Connect
 export interface PaymentData {
@@ -296,23 +295,8 @@ export class PaymentProcessor {
         // Gerar payload PIX no formato BR Code padrão
         console.log('🔧 Gerando PIX padrão brasileiro...');
         // Gerar payload PIX correto com CRC16
-        // Usar biblioteca pix-utils para gerar PIX válido
-        const pixObject = createStaticPix({
-          merchantName: 'PEDRO GALLUF',
-          merchantCity: 'RIO DE JANEIRO',
-          pixKey: pixKey,
-          infoAdicional: transactionId.slice(-6),
-          transactionAmount: amount
-        });
-        
-        let pixPayload;
-        // Verificar se PIX foi criado com sucesso
-        if ('toBRCode' in pixObject) {
-          pixPayload = pixObject.toBRCode();
-        } else {
-          // Fallback manual se biblioteca falhar
-          pixPayload = ManualPixGenerator.generatePixCode(pixKey, amount, transactionId);
-        }
+        // Gerar PIX usando implementação própria
+        const pixPayload = ManualPixGenerator.generatePixCode(pixKey, amount, transactionId);
         
         console.log('🔧 PIX BR Code gerado:', pixPayload);
         console.log('🔧 PIX Comprimento:', pixPayload.length);
@@ -798,22 +782,8 @@ export async function createPixPayment(userEmail: string, planType: string, amou
     const transactionId = `TKN${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
     const pixKey = '03669282106'; // CPF Pedro Galluf Nubank
     
-    // Usar biblioteca pix-utils para gerar PIX válido
-    const pixObject = createStaticPix({
-      merchantName: 'PEDRO GALLUF',
-      merchantCity: 'RIO DE JANEIRO',
-      pixKey: pixKey,
-      infoAdicional: transactionId.slice(-6),
-      transactionAmount: amount
-    });
-    
-    let pixCode;
-    if ('toBRCode' in pixObject) {
-      pixCode = pixObject.toBRCode();
-    } else {
-      // Fallback manual usando ManualPixGenerator
-      pixCode = ManualPixGenerator.generatePixCode(pixKey, amount, transactionId);
-    }
+    // Gerar PIX usando implementação própria
+    const pixCode = ManualPixGenerator.generatePixCode(pixKey, amount, transactionId);
     
     // Gerar QR Code do PIX
     const qrCodeBase64 = await QRCode.toDataURL(pixCode, {
