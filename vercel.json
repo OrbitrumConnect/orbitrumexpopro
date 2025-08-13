@@ -1,15 +1,20 @@
 {
-  "buildCommand": "cd client && npm ci && npm run build:vercel",
+  "buildCommand": "cd client && npm install && npm run build:no-check",
   "outputDirectory": "client/dist",
+  "installCommand": "npm install",
+  "framework": "vite",
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.html"
     }
   ],
   "env": {
-    "VITE_SUPABASE_URL": "https://gnvxnsgewhjucdhwrrdi.supabase.co",
-    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdudnhuc2dld2hqdWNkaHdycmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2Nzk1NDAsImV4cCI6MjA2ODI1NTU0MH0.p0LjK34rpLRVnG0F002PL5MbqSJOvyUebUBWAruMpi0",
+    "VITE_API_URL": "https://orbitrum-connect-production.up.railway.app",
     "NODE_ENV": "production"
   }
 } 
