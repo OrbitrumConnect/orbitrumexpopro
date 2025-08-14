@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "vite",
     "build": "npx tsc && vite build",
-    "build:vercel": "vite build --mode production",
     "build:no-check": "vite build --mode production",
     "build:production": "NODE_ENV=production vite build",
     "preview": "vite preview",

@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { supabase } from "./supabase";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -7,11 +8,71 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Pequeno roteador: converte chaves '/api/*' em chamadas Supabase
+async function queryKeyToData(keyString: string): Promise<any> {
+  // Profissionais - lista
+  if (keyString === "/api/professionals") {
+    const { data, error } = await supabase
+      .from("professionals")
+      .select("*")
+      .order("id", { ascending: true });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  // Profissionais - detalhe
+  const profDetail = keyString.match(/^\/api\/professionals\/(\d+)$/);
+  if (profDetail) {
+    const id = Number(profDetail[1]);
+    const { data, error } = await supabase
+      .from("professionals")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) throw error;
+    return data ?? null;
+  }
+
+  // Serviços do profissional
+  const profServices = keyString.match(/^\/api\/professionals\/(\d+)\/services$/);
+  if (profServices) {
+    const id = Number(profServices[1]);
+    const { data, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("professional_id", id)
+      .order("id", { ascending: true });
+    if (error) throw error;
+    return { services: data ?? [] };
+  }
+
+  // Limites do plano gratuito (fallback local; pode ser migrado para tabela se existir)
+  if (keyString === "/api/free-plan/limits") {
+    return { dailyMessages: 10, remaining: 10, canUse: true };
+  }
+
+  // Endpoints ainda não mapeados: retornar vazio para não quebrar UI
+  if (keyString.startsWith("/api/")) {
+    return null;
+  }
+
+  // Fallback para a estratégia antiga (fetch direto da URL da key)
+  const res = await fetch(keyString, {
+    credentials: "include",
+  });
+  await throwIfResNotOk(res);
+  return await res.json();
+}
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Se ainda houver usos de '/api/*' para mutations, por ora retornamos 400 claro
+  if (url.startsWith("/api/")) {
+    throw new Error(`Endpoint não disponível: ${url}. A lógica deve usar Supabase diretamente.`);
+  }
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -29,16 +90,23 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const keyString = Array.isArray(queryKey) ? queryKey.join("/") : String(queryKey);
+
+    // Novo caminho: resolver via supabase quando a key simula '/api/*'
+    if (keyString.startsWith("/api/")) {
+      return (await queryKeyToData(keyString)) as any;
+    }
+
+    const res = await fetch(keyString, {
       credentials: "include",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      return null as any;
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+    return (await res.json()) as any;
   };
 
 export const queryClient = new QueryClient({

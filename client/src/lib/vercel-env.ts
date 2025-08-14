@@ -1,13 +1,13 @@
 // Configuração específica para o Vercel
 export const VERCEL_ENV = {
   // Verificar se estamos no Vercel
-  IS_VERCEL: import.meta.env.VITE_VERCEL === '1' || import.meta.env.VERCEL === '1',
+  IS_VERCEL: (import.meta as any).env?.VITE_VERCEL === '1' || (import.meta as any).env?.VERCEL === '1',
   
   // Verificar se estamos em produção
-  IS_PRODUCTION: import.meta.env.PROD === true || import.meta.env.NODE_ENV === 'production',
+  IS_PRODUCTION: (import.meta as any).env?.PROD === true || (import.meta as any).env?.NODE_ENV === 'production',
   
   // Supabase URL (removido Railway)
-  SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || 'https://gnvxnsgewhjucdhwrrdi.supabase.co',
+  SUPABASE_URL: (import.meta as any).env?.VITE_SUPABASE_URL || 'https://rfjshppjhjtwtbqhlaio.supabase.co',
   
   // Configuração de dados
   DATA_CONFIG: {

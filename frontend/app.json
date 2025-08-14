@@ -22,8 +22,7 @@
       "adaptiveIcon": {
         "backgroundColor": "#000000"
       },
-      "package": "com.orbitrumconnect.app",
-      "versionCode": 1
+      "package": "com.orbitrumconnect.app"
     },
     "web": {
       "bundler": "metro"
