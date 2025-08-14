@@ -6,8 +6,8 @@ export const VERCEL_ENV = {
   // Verificar se estamos em produção
   IS_PRODUCTION: (import.meta as any).env?.PROD === true || (import.meta as any).env?.NODE_ENV === 'production',
   
-  // Supabase URL (removido Railway)
-  SUPABASE_URL: (import.meta as any).env?.VITE_SUPABASE_URL || 'https://rfjshppjhjtwtbqhlaio.supabase.co',
+  // Supabase URL (Orbitrum)
+  SUPABASE_URL: (import.meta as any).env?.VITE_SUPABASE_URL || 'https://gnvxnsgewhjucdhwrrdi.supabase.co',
   
   // Configuração de dados
   DATA_CONFIG: {
