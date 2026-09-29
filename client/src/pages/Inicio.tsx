@@ -6,6 +6,7 @@ import { OrbitSystem } from '@/components/orbit-system';
 import { ProfessionalModal } from '@/components/professional-modal';
 import ConversaModal from '@/components/ConversaModal';
 import { StarfieldBackground } from '@/components/starfield-background';
+import { LoginModal } from '@/components/login-modal';
 
 // HOME no design alvo — "Sua rede em movimento".
 // Coração da tese: necessidade → OrbitMatch → recomendação COM MOTIVO.
@@ -98,7 +99,7 @@ function OrbitNetwork({ counts, onNode }: { counts?: Record<string, number>; onN
 }
 
 export default function Inicio() {
-  const { user, logout } = useAuth();
+  const { user, logout, showLoginModal, setShowLoginModal } = useAuth();
   const [, setLocation] = useLocation();
   const ehAdmin = isAdminUser(user);
   const [necessidade, setNecessidade] = useState('');
@@ -208,10 +209,14 @@ export default function Inicio() {
               style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: '10px 18px', color: C.ink, fontSize: 14, outline: 'none' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 13, color: C.ink2 }}>{user?.full_name || user?.username || user?.email || 'Participante'}</span>
-            <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}` }} />
-            {user && (
-              <button onClick={() => { logout(); setLocation('/'); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '5px 12px', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Sair</button>
+            {user ? (
+              <>
+                <span style={{ fontSize: 13, color: C.ink2 }}>{user?.full_name || user?.username || user?.email || 'Participante'}</span>
+                <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}` }} />
+                <button onClick={() => { logout(); setLocation('/'); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '5px 12px', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Sair</button>
+              </>
+            ) : (
+              <button onClick={() => setShowLoginModal(true)} style={{ background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, border: 'none', borderRadius: 16, padding: '8px 18px', color: '#012', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Entrar</button>
             )}
           </div>
         </header>
@@ -398,6 +403,9 @@ export default function Inicio() {
       {conversaId != null && (
         <ConversaModal profId={conversaId} onClose={() => setConversaId(null)} />
       )}
+
+      {/* Login — sem isso, quem desloga não consegue voltar a entrar na home nova */}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 }
