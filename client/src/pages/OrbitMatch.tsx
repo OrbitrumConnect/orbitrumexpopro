@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 
 // OrbitMatch — o coração da tese, vestido com o design alvo.
@@ -69,6 +70,7 @@ interface Perfil {
 
 export default function OrbitMatch() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   // Quem procura é o usuário logado; cai em 1 (admin) só se não houver sessão ainda.
   const userId = String(user?.id_interno ?? user?.id ?? 1);
   const [necessidade, setNecessidade] = useState('');
@@ -362,7 +364,7 @@ export default function OrbitMatch() {
                   </div>
                 )}
 
-                <button style={{ width: '100%', border: 'none', cursor: 'pointer', borderRadius: 24, padding: '14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 15, boxShadow: `0 0 20px ${C.blue}44` }}>
+                <button onClick={() => setLocation(`/conversa/${perfil.profissional.id}`)} style={{ width: '100%', border: 'none', cursor: 'pointer', borderRadius: 24, padding: '14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 15, boxShadow: `0 0 20px ${C.blue}44` }}>
                   Conectar
                 </button>
                 <p style={{ color: C.ink3, fontSize: 11, textAlign: 'center', marginTop: 12 }}>

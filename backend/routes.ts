@@ -3120,6 +3120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: prof.id, name: prof.name, title: prof.title,
           city: prof.city, state: prof.state, avatar: prof.avatar,
           services: prof.services ?? [], available: prof.available,
+          userId: profUserId, // user id (para registrar a experiência/fato)
         },
         ...perfil,
       });
