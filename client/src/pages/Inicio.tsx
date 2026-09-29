@@ -327,7 +327,7 @@ export default function Inicio() {
                       <div style={{ fontWeight: 600, fontSize: 14 }}>{r.profissional.name}</div>
                       <button onClick={(e) => { e.stopPropagation(); setConversaId(r.profissional.id); }} style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '5px 14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
                     </div>
-                    <div style={{ color: C.ink3, fontSize: 12, marginBottom: 6 }}>{r.profissional.title}</div>
+                    <div style={{ color: C.ink2, fontSize: 12, marginBottom: 6 }}>{r.profissional.title}</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                       {r.chips.slice(0, 3).map((c, i) => <Chip key={i} label={c} />)}
                     </div>
@@ -335,10 +335,32 @@ export default function Inicio() {
                 </div>
               ))}
             </div>
-            <p style={{ color: C.ink3, fontSize: 11, marginTop: 14, textAlign: 'center' }}>
+
+            {/* Oportunidades próximas (design-alvo). Empty-state que ENSINA — sem dado fabricado. */}
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 14 }}>
+              <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 8 }}>Oportunidades próximas</div>
+              <p style={{ color: C.ink2, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
+                Quando alguém publica uma necessidade na sua região, ela aparece aqui — você pode
+                responder ou indicar quem resolve. É a rede trabalhando a seu favor.
+              </p>
+            </div>
+
+            <p style={{ color: C.ink2, fontSize: 11, marginTop: 14, textAlign: 'center' }}>
               A rede explica por que cada pessoa apareceu.
             </p>
           </aside>
+        </div>
+
+        {/* ATIVIDADE RECENTE (design-alvo, faixa inferior). Empty-state que ENSINA — o stream real
+            de eventos (indicou/conectou/validou) vem dos fatos quando houver atividade. */}
+        <div style={{ borderTop: `1px solid ${C.border}`, padding: '16px 24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>Atividade recente</span>
+          </div>
+          <p style={{ color: C.ink2, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
+            Cada indicação, conexão e experiência validada da sua rede aparece aqui —
+            “Ana indicou você para Carlos”, “sua experiência foi validada”. Assim que a rede se mover, você acompanha por aqui.
+          </p>
         </div>
 
         {/* RODAPÉ — nada órfão: cadastro de profissional + páginas legais acessíveis da home */}
