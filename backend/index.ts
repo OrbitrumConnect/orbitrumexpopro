@@ -1,3 +1,4 @@
+import 'dotenv/config'; // DEVE ser o primeiro import: carrega .env (DATABASE_URL) antes de db.ts inicializar o postgres
 import express, { type Request, Response, NextFunction } from "express";
 import session from 'express-session';
 import { registerRoutes } from "./routes";
