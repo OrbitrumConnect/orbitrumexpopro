@@ -91,9 +91,9 @@ export default function ConversaModal({ profId, onClose }: Props) {
 
   return (
     <div onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.82)', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: 'clamp(6px, 2.5vw, 20px)', overflowY: 'auto', zIndex: 70, fontFamily: 'Inter, system-ui, sans-serif' }}>
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.82)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'clamp(6px, 2.5vw, 20px)', overflowY: 'auto', zIndex: 70, fontFamily: 'Inter, system-ui, sans-serif' }}>
       <div onClick={e => e.stopPropagation()}
-        style={{ background: C.bg2, border: `1px solid ${C.borderHot}`, borderRadius: 18, maxWidth: 'min(760px, 96vw)', width: '100%', marginTop: 'clamp(8px, 2vh, 24px)', color: C.ink, boxShadow: `0 0 44px ${C.blue}22`, display: 'flex', flexDirection: 'column', maxHeight: '94vh' }}>
+        style={{ background: C.bg2, border: `1px solid ${C.borderHot}`, borderRadius: 18, maxWidth: 'min(760px, 96vw)', width: '100%', color: C.ink, boxShadow: `0 0 44px ${C.blue}22`, display: 'flex', flexDirection: 'column', maxHeight: '94vh' }}>
 
         {/* header */}
         <header style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', borderBottom: `1px solid ${C.border}` }}>
@@ -125,6 +125,8 @@ export default function ConversaModal({ profId, onClose }: Props) {
             <MiniMapa nomeProf={prof?.name ?? 'Profissional'}
               origem={prof?.latitude != null && prof?.longitude != null ? { lat: prof.latitude, lng: prof.longitude } : null} />
           )}
+          {/* "Como ir" aparece JUNTO com o mapa (a caminho) — não no final (aí já rolou). */}
+          {estado === 'a_caminho' && prof && <Continuar prof={prof} />}
           {msgs.length === 0 && estado === 'conversando' && (
             <div style={{ color: C.ink3, fontSize: 13, textAlign: 'center', marginTop: 20 }}>
               Combine o serviço direto com {prof?.name?.split(' ')[0] ?? 'o profissional'}.<br />
@@ -161,10 +163,10 @@ export default function ConversaModal({ profId, onClose }: Props) {
           )}
         </div>
 
-        {/* Continuidade: ao validar, "o que deseja fazer agora?" (deep-links + nova busca) */}
-        {estado === 'validado' && prof && (
-          <div style={{ padding: '0 18px 14px' }}>
-            <Continuar prof={prof} onNovaBusca={onClose} />
+        {/* Ao validar, o serviço já aconteceu — nada de "como ir". Só continuidade na rede. */}
+        {estado === 'validado' && (
+          <div style={{ padding: '0 18px 14px', display: 'flex', gap: 8, justifyContent: 'center' }}>
+            <button onClick={onClose} style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 16, padding: '8px 16px', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Ver outras opções na rede</button>
           </div>
         )}
 
