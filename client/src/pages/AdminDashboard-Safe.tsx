@@ -46,7 +46,10 @@ export default function AdminDashboard() {
         return;
       }
       
-      if (authUser?.email !== 'passosmir4@gmail.com') {
+      const ehAdmin = authUser?.isAdmin === true
+        || (authUser?.admin_level ?? 0) >= 1
+        || authUser?.user_type === 'admin';
+      if (!ehAdmin) {
         console.warn('⚠️ AdminDashboard: Usuário sem permissão admin, redirecionando...');
         setLocation('/');
         return;

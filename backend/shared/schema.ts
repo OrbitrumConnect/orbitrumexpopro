@@ -632,3 +632,92 @@ export const insertProfessionCertificationRequirementSchema = createInsertSchema
 
 export type InsertProfessionalCertificationForm = z.infer<typeof insertProfessionalCertificationSchema>;
 export type InsertProfessionCertificationRequirementForm = z.infer<typeof insertProfessionCertificationRequirementSchema>;
+
+// ============================================================================
+// CAMADA DE FATOS RELACIONAIS
+// A rede aprende com as próprias conexões. Cada experiência real vira um fato
+// com contexto, data, origem, evidência e validade — e é isso que o OrbitMatch
+// consulta, que explica o match, e que um agente externo pode ler e alimentar.
+// ============================================================================
+
+// Quem conhece quem. Aresta simples: o contexto não mora aqui, mora no fato.
+export const connections = pgTable("connections", {
+  id: serial("id").primaryKey(),
+  userAId: integer("user_a_id").notNull().references(() => users.id),
+  userBId: integer("user_b_id").notNull().references(() => users.id),
+  origin: text("origin").notNull(), // indicacao, experiencia, convite, importada
+  status: text("status").notNull().default("pending"), // pending, active, blocked
+  createdAt: timestamp("created_at").defaultNow(),
+  confirmedAt: timestamp("confirmed_at"),
+});
+
+// O fato relacional: a unidade de valor da rede.
+// Nunca é apagado nem sobrescrito — um fato novo substitui o anterior via supersededBy.
+export const relationalFacts = pgTable("relational_facts", {
+  id: serial("id").primaryKey(),
+
+  // sujeito -> predicado -> objeto
+  subjectId: integer("subject_id").notNull().references(() => users.id),
+  predicate: text("predicate").notNull(), // trabalhou_com, indicou, atende_regiao, disponivel_em, integra_equipe, tem_qualificacao
+  objectUserId: integer("object_user_id").references(() => users.id), // quando o objeto é uma pessoa
+  objectValue: text("object_value"), // quando o objeto é região, qualificação, empresa
+
+  // contexto: o mesmo profissional é ótimo para uma necessidade e inadequado para outra
+  contextCategory: text("context_category"), // eletrica, reforma, design
+  contextDetail: text("context_detail"), // "reforma de banheiro"
+  contextRegion: text("context_region"), // "Copacabana, RJ"
+
+  // temporalidade: um fato sem data não serve para decidir nada hoje
+  occurredAt: timestamp("occurred_at").notNull(), // quando o fato aconteceu
+  validUntil: timestamp("valid_until"), // null = não expira. Disponibilidade: dias. Relação: meses.
+
+  // procedência
+  origin: text("origin").notNull(), // experiencia_app, declaracao, documento, agente_externo
+  originRef: text("origin_ref"), // id do service_request, do referral ou do documento que gerou o fato
+  agentId: text("agent_id"), // qual agente registrou, quando veio de fora
+
+  // confiança: declarado < indicado < validado < verificado
+  confidence: text("confidence").notNull().default("declarado"),
+
+  visibility: text("visibility").notNull().default("rede"), // privado, rede, agentes
+  supersededBy: integer("superseded_by"), // fato que substitui este; o histórico nunca é apagado
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Confirmação de cada parte. Um fato só sobe para "validado" com as duas.
+// Confirmar NUNCA gera recompensa: recompensar validação produz validação falsa.
+export const factConfirmations = pgTable("fact_confirmations", {
+  id: serial("id").primaryKey(),
+  factId: integer("fact_id").notNull().references(() => relationalFacts.id),
+  confirmedBy: integer("confirmed_by").notNull().references(() => users.id),
+  role: text("role").notNull(), // sujeito, objeto
+  method: text("method").notNull(), // app, agente, admin
+  evidenceUrl: text("evidence_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type Connection = typeof connections.$inferSelect;
+export type InsertConnection = typeof connections.$inferInsert;
+
+export type RelationalFact = typeof relationalFacts.$inferSelect;
+export type InsertRelationalFact = typeof relationalFacts.$inferInsert;
+
+export type FactConfirmation = typeof factConfirmations.$inferSelect;
+export type InsertFactConfirmation = typeof factConfirmations.$inferInsert;
+
+export const insertConnectionSchema = createInsertSchema(connections).omit({
+  id: true,
+  createdAt: true,
+  confirmedAt: true,
+});
+
+export const insertRelationalFactSchema = createInsertSchema(relationalFacts).omit({
+  id: true,
+  supersededBy: true,
+  createdAt: true,
+});
+
+export const insertFactConfirmationSchema = createInsertSchema(factConfirmations).omit({
+  id: true,
+  createdAt: true,
+});

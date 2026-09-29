@@ -1,5 +1,25 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
+import { supabase } from '@/lib/supabase';
 // import { User } from '../../shared/schema';
+
+// Enriquece o usuário com o registro de public.users (papel, admin_level, id real).
+// Defensivo: qualquer falha só retorna o user como está — nunca quebra a sessão.
+async function enriquecerComPerfil(u: any): Promise<any> {
+  try {
+    const sid = u?.id || u?.supabase_id;
+    if (!sid) return u;
+    const { data: row } = await supabase.from('users').select('*').eq('supabase_id', sid).maybeSingle();
+    if (!row) return u;
+    return {
+      ...u,
+      ...row,
+      email: u.email ?? (row as any).email,
+      isAdmin: ((row as any).admin_level ?? 0) >= 1 || (row as any).user_type === 'admin',
+    };
+  } catch {
+    return u;
+  }
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -40,6 +60,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setIsAuthenticated(true);
             setShowLoginModal(false);
             console.log(`🔐 Sessão restaurada: ${authData.rememberMe ? '30 dias' : '24 horas'}`);
+            // Re-enriquece a sessão salva com o perfil do banco (papel/admin/id real).
+            enriquecerComPerfil(authData.user).then(u => {
+              if (u !== authData.user) {
+                setUser(u);
+                try {
+                  localStorage.setItem("orbtrum_auth", JSON.stringify({ ...authData, user: u }));
+                } catch {}
+              }
+            });
             return;
           } else {
             console.log('🕒 Sessão expirada, removendo...');

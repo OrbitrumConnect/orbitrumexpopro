@@ -118,10 +118,29 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       });
       if (error) throw error;
 
-      const user = data.user;
-      if (user) {
+      const authUser = data.user;
+      if (authUser) {
+        // Enriquece com o registro de public.users (papel, admin_level, tokens...).
+        // O RLS libera o próprio registro por supabase_id = auth.uid().
+        let perfil: any = {};
+        try {
+          const { data: row } = await supabase
+            .from('users')
+            .select('*')
+            .eq('supabase_id', authUser.id)
+            .maybeSingle();
+          if (row) perfil = row;
+        } catch (e) {
+          console.warn('Perfil de public.users não carregado:', e);
+        }
+        const user = {
+          ...authUser,
+          ...perfil,
+          email: authUser.email,
+          isAdmin: (perfil.admin_level ?? 0) >= 1 || perfil.user_type === 'admin',
+        };
         onSuccess?.(user, formData.rememberMe);
-        if (user.email === 'passosmir4@gmail.com') {
+        if (user.isAdmin) {
           setTimeout(() => setLocation('/admin'), 100);
         }
       } else {

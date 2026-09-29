@@ -9,12 +9,24 @@ import { setupAdminRoutes } from "./admin-routes";
 import { setupCreditRoutes } from "./credit-tokens";
 import { PixTracker } from "./pix-tracking";
 import { insertUserSchema, insertProfessionalSchema, insertGameScoreSchema, insertTeamSchema } from "@shared/schema";
+// Fonte da verdade para a busca contextual: banco direto (não o storage, cujo modo varia).
+import { db as _db } from "./db";
+import { professionals as _professionals, users as _users } from "@shared/schema";
 import { globalErrorHandler, notFoundHandler, handleAsyncError, rateLimit, securityHeaders, validateInput } from "./error-handler";
 import { planExpirySystem } from './plan-expiry-system';
 import { isAdminMaster, getAdminWallet, adminBypass } from './admin-bypass';
 import { referralSystem } from './referral-system';
 import { restoreAdminMaster } from './restore-admin';
 import * as cron from 'node-cron';
+// 🔗 Camada de fatos relacionais — as rotas apenas PRODUZEM fatos.
+// Validade, confiança e sinal são decididos no motor, nunca aqui.
+import { factStore } from './relational-store';
+import {
+  aoConcluirServico, aoConfirmarExperiencia, aoConfirmarIndicacao,
+  aoAprovarValidacao, aoMudarDisponibilidade, comporBusca,
+} from './relational-triggers';
+import { perfilRelacional } from './relational-facts';
+import { eq as _eq } from 'drizzle-orm';
 
 // Helper functions para carteira administrativa
 function getNextSundayDate(): string {
@@ -1986,9 +1998,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         canMakePurchases: true
       });
 
-      res.json({ 
-        success: true, 
-        message: 'Documentos aprovados com sucesso' 
+      // 🔗 GATILHO: documento aprovado vira evidência verificada.
+      try {
+        const { documentType } = req.body;
+        await aoAprovarValidacao(factStore, {
+          validationId: parseInt(userId),
+          profissionalUserId: parseInt(userId),
+          tipoDocumento: documentType || 'documentos_cadastrais',
+          aprovadoEm: new Date(),
+        });
+      } catch (e) {
+        console.error('🔗 Falha ao registrar qualificação (rota segue normalmente):', e);
+      }
+
+      res.json({
+        success: true,
+        message: 'Documentos aprovados com sucesso'
       });
     } catch (error) {
       console.error("Error approving documents:", error);
@@ -2975,6 +3000,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==========================================================================
+  // 🔗 CAMADA DE FATOS RELACIONAIS
+  // As rotas produzem fatos. O motor decide validade, confiança e sinal.
+  // A busca compõe contexto e explicação — e nunca devolve o grafo.
+  // ==========================================================================
+
+  /** Uma das partes confirma a experiência. Com as duas, o fato sobe para "validado".
+   *  Não credita, não paga, não devolve nada — confirmar NUNCA gera recompensa. */
+  app.post("/api/facts/:factId/confirm", async (req, res) => {
+    try {
+      const factId = parseInt(req.params.factId);
+      const { clienteConfirmou, profissionalConfirmou } = req.body;
+
+      const confianca = await aoConfirmarExperiencia(factStore, {
+        factId,
+        clienteConfirmou: !!clienteConfirmou,
+        profissionalConfirmou: !!profissionalConfirmou,
+      });
+
+      res.json({ success: true, factId, confianca });
+    } catch (error: any) {
+      console.error("Erro ao confirmar fato:", error);
+      res.status(400).json({ success: false, message: error?.message || "Falha ao confirmar" });
+    }
+  });
+
+  /** Profissional declara disponibilidade. Não edita o fato anterior: substitui. */
+  app.post("/api/facts/availability", async (req, res) => {
+    try {
+      const { professionalUserId, regiao } = req.body;
+      if (!professionalUserId || !regiao) {
+        return res.status(400).json({ success: false, message: "professionalUserId e regiao são obrigatórios" });
+      }
+      const fato = await aoMudarDisponibilidade(factStore, {
+        profissionalUserId: Number(professionalUserId),
+        regiao: String(regiao),
+      });
+      res.json({ success: true, factId: fato.id, validUntil: fato.validUntil });
+    } catch (error) {
+      console.error("Erro ao registrar disponibilidade:", error);
+      res.status(500).json({ success: false, message: "Falha ao registrar disponibilidade" });
+    }
+  });
+
+  /** Busca com contexto relacional: POR QUE esta pessoa apareceu.
+   *  Devolve explicação, nunca o grafo (§35). Os dois sinais ficam separados. */
+  app.get("/api/orbitmatch/search", async (req, res) => {
+    try {
+      const quemProcura = parseInt(String(req.query.userId || '0'));
+      const categoria = req.query.categoria ? String(req.query.categoria) : null;
+      if (!quemProcura) {
+        return res.status(400).json({ success: false, message: "userId é obrigatório" });
+      }
+
+      // Lê do banco (fonte da verdade). Cada profissional é um user (userId preenchido),
+      // então o fato (subject_id → users.id) e a busca falam o MESMO id. Sem colisão.
+      const profissionais = await _db.select().from(_professionals);
+      const usuarios = await _db.select().from(_users);
+
+      // Nome real para os motivos (§35): profissional pelo professionals.name;
+      // demais pessoas pelo full_name/username. Nunca expõe username técnico (prof_N).
+      const nomeDeProfPorUserId = new Map<number, string>();
+      for (const p of profissionais as any[]) {
+        if (p.userId) nomeDeProfPorUserId.set(p.userId, p.name);
+      }
+      const nomePorId = (id: number) => {
+        if (nomeDeProfPorUserId.has(id)) return nomeDeProfPorUserId.get(id);
+        const u: any = (usuarios as any[]).find(u => u.id === id);
+        return u?.fullName || u?.username;
+      };
+
+      const candidatos = (profissionais as any[]).map((p: any) => ({
+        profissional: { id: p.id, name: p.name, title: p.title, city: p.city },
+        profissionalUserId: p.userId ?? p.id,
+        aiMatchScore: Math.round((p.rating ?? 0) * 20), // score de atributo existente, intocado
+      }));
+
+      const resultado = await comporBusca(factStore, quemProcura, candidatos, { categoria, nomePorId });
+
+      res.json({
+        success: true,
+        quemProcura,
+        categoria,
+        total: resultado.length,
+        resultados: resultado.slice(0, 10),
+      });
+    } catch (error) {
+      console.error("Erro no OrbitMatch:", error);
+      res.status(500).json({ success: false, message: "Falha na busca contextual" });
+    }
+  });
+
+  /** Perfil de um profissional COM contexto relacional — substitui o modal de tokens.
+   *  Devolve: por que apareceu, placar (experiências/indicações/validações),
+   *  experiências relevantes e qualificações. Tudo do banco, respeitando §35. */
+  app.get("/api/orbitmatch/profile/:profId", async (req, res) => {
+    try {
+      const profId = parseInt(req.params.profId);
+      const quemProcura = parseInt(String(req.query.userId || '0'));
+
+      const [prof]: any[] = await _db.select().from(_professionals).where(_eq(_professionals.id, profId));
+      if (!prof) return res.status(404).json({ success: false, message: "Profissional não encontrado" });
+
+      const profUserId = prof.userId ?? prof.id;
+      const usuarios = await _db.select().from(_users);
+      const profissionais = await _db.select().from(_professionals);
+      const nomeDeProfPorUserId = new Map<number, string>();
+      for (const p of profissionais as any[]) if (p.userId) nomeDeProfPorUserId.set(p.userId, p.name);
+      const nomePorId = (id: number) => nomeDeProfPorUserId.get(id)
+        || (usuarios as any[]).find(u => u.id === id)?.fullName
+        || (usuarios as any[]).find(u => u.id === id)?.username;
+
+      const perfil = await perfilRelacional(factStore, profUserId, quemProcura, { nomePorId });
+
+      res.json({
+        success: true,
+        profissional: {
+          id: prof.id, name: prof.name, title: prof.title,
+          city: prof.city, state: prof.state, avatar: prof.avatar,
+          services: prof.services ?? [], available: prof.available,
+        },
+        ...perfil,
+      });
+    } catch (error) {
+      console.error("Erro no perfil relacional:", error);
+      res.status(500).json({ success: false, message: "Falha ao montar o perfil" });
+    }
+  });
+
   app.post("/api/professional/update-service-status", async (req, res) => {
     try {
       const { serviceId, status, reason, professionalId, timestamp } = req.body;
@@ -2987,13 +3141,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log(`🔄 Status atualizado - Serviço ${serviceId}: ${status}${reason ? ` (${reason})` : ''}`);
-      
+
+      // 🔗 GATILHO: serviço concluído vira fato relacional "trabalhou_com".
+      // Idempotente por originRef — retry ou clique duplo não duplicam.
+      // Nunca derruba a resposta da rota: fato é efeito, não pré-requisito.
+      let relationalFactId: number | undefined;
+      if (status === 'concluido') {
+        try {
+          const { clientUserId, description, category, region } = req.body;
+          if (clientUserId) {
+            const { fato, criado } = await aoConcluirServico(factStore, {
+              serviceId: String(serviceId),
+              clienteUserId: Number(clientUserId),
+              profissionalUserId: Number(professionalId),
+              descricao: description || `Serviço ${serviceId}`,
+              categoria: category ?? null,
+              regiao: region ?? null,
+              concluidoEm: timestamp ? new Date(timestamp) : new Date(),
+            });
+            relationalFactId = fato.id;
+            console.log(`🔗 Fato ${criado ? 'registrado' : 'já existia'}: trabalhou_com #${fato.id} (${fato.confidence})`);
+          }
+        } catch (e) {
+          console.error('🔗 Falha ao registrar fato relacional (rota segue normalmente):', e);
+        }
+      }
+
       // Em produção, atualizaria banco de dados e enviaria notificações
       res.json({
         success: true,
         message: "Status atualizado com sucesso",
         serviceId,
         status,
+        ...(relationalFactId ? { relationalFactId } : {}),
         timestamp: timestamp || new Date().toISOString()
       });
       
