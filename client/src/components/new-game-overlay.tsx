@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isAdminUser } from '@/lib/isAdmin';
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -29,7 +30,7 @@ export function NewGameOverlay({ isOpen, onClose }: NewGameOverlayProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const isAdmin = user?.email === 'passosmir4@gmail.com';
+  const isAdmin = isAdminUser(user);
   const isFreeMode = !isAdmin && (!isAuthenticated || !user || user.plan === 'free');
 
   const { data: wallet } = useQuery<any>({

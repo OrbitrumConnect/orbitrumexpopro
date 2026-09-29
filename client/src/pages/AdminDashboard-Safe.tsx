@@ -37,6 +37,11 @@ export default function AdminDashboard() {
   const { isAuthenticated, user: authUser } = useAuth();
   const { toast } = useToast();
 
+  // Admin por papel/admin_level (não por e-mail fixo). Usado no useEffect e no guard de render.
+  const ehAdmin = (authUser as any)?.isAdmin === true
+    || ((authUser as any)?.admin_level ?? 0) >= 1
+    || (authUser as any)?.user_type === 'admin';
+
   // Proteção de acesso - early return
   useEffect(() => {
     try {
@@ -46,9 +51,6 @@ export default function AdminDashboard() {
         return;
       }
       
-      const ehAdmin = authUser?.isAdmin === true
-        || (authUser?.admin_level ?? 0) >= 1
-        || authUser?.user_type === 'admin';
       if (!ehAdmin) {
         console.warn('⚠️ AdminDashboard: Usuário sem permissão admin, redirecionando...');
         setLocation('/');
@@ -62,8 +64,8 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, authUser, setLocation]);
 
-  // Proteção para renderização apenas quando autenticado
-  if (!isAuthenticated || !authUser || authUser.email !== 'passosmir4@gmail.com') {
+  // Proteção para renderização apenas quando autenticado E admin (por papel).
+  if (!isAuthenticated || !authUser || !ehAdmin) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -80,7 +82,7 @@ export default function AdminDashboard() {
     retry: 3,
     staleTime: 0,
     gcTime: 0,
-    enabled: isAuthenticated && authUser?.email === 'passosmir4@gmail.com',
+    enabled: isAuthenticated && ehAdmin,
   });
 
   // Estados de erro seguros

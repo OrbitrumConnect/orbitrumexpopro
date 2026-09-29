@@ -32,8 +32,10 @@ export default function Teams() {
     enabled: isAuthenticated && !authUser?.email, // Só buscar se não há usuário autenticado
   });
 
-  // Admin bypass - verificar se é admin usando usuário autenticado
-  const isAdmin = authUser?.email === 'passosmir4@gmail.com';
+  // Admin por papel/admin_level (não por e-mail fixo), coerente com useAuth/AdminDashboard.
+  const isAdmin = (authUser as any)?.isAdmin === true
+    || ((authUser as any)?.admin_level ?? 0) >= 1
+    || (authUser as any)?.user_type === 'admin';
   
   // Usar usuário autenticado ou fallback para demo
   const currentUser = authUser || user;
@@ -47,14 +49,18 @@ export default function Teams() {
     shouldBlock: currentUser?.plan === 'free' && !isAdmin
   });
 
-  const { data: teams = [], isLoading } = useQuery<any[]>({
+  // A queryFn do projeto pode retornar null (não só undefined), e `= []` não cobre null.
+  // Normaliza para SEMPRE array — protege todos os usos (filter, find, map) de uma vez.
+  const { data: teamsData, isLoading } = useQuery<any[]>({
     queryKey: ["/api/teams"],
     enabled: isAuthenticated,
   });
+  const teams = teamsData ?? [];
 
-  const { data: professionals = [] } = useQuery<Professional[]>({
+  const { data: professionalsData } = useQuery<Professional[]>({
     queryKey: ["/api/professionals"],
   });
+  const professionals = professionalsData ?? [];
 
 
 
@@ -87,7 +93,7 @@ export default function Teams() {
 
   const getTeamProfessionals = (team: any) => {
     if (!team.professionalIds || team.professionalIds.length === 0) return [];
-    return professionals.filter(p => team.professionalIds.includes(p.id.toString()));
+    return (professionals || []).filter(p => team.professionalIds.includes(p.id.toString()));
   };
 
   const handleViewProfile = (professionalId: number) => {
@@ -218,7 +224,7 @@ export default function Teams() {
             </div>
 
             <div className="space-y-4">
-              {teams.filter(team => team.name !== "Por Todos").map((team) => {
+              {(teams || []).filter(team => team.name !== "Por Todos").map((team) => {
                 const teamProfessionals = getTeamProfessionals(team);
                 return (
                   <motion.div
@@ -307,7 +313,7 @@ export default function Teams() {
                 );
               })}
 
-              {teams.filter(team => team.name !== "Por Todos").length === 0 && (
+              {(teams || []).filter(team => team.name !== "Por Todos").length === 0 && (
                 <div className="text-center text-gray-400 py-8">
                   <Users className="mx-auto h-12 w-12 mb-4 opacity-50" />
                   <p>Nenhum time criado ainda.</p>

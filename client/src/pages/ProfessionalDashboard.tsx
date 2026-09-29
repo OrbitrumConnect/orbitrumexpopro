@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { isAdminUser } from '@/lib/isAdmin';
 import { ProfessionalDashboard } from "@/components/dashboard/professional-dashboard";
 
 export default function ProfessionalDashboardPage() {
@@ -13,7 +14,7 @@ export default function ProfessionalDashboardPage() {
   }
 
   // Admin bypass - permitir acesso total ao dashboard profissional
-  const isAdmin = user?.email === 'passosmir4@gmail.com' || user?.email === 'passossmir4@gmail.com';
+  const isAdmin = isAdminUser(user);
   
   // Use dados diretos do auth do Supabase se autenticado
   const displayUser = isAuthenticated && user ? {

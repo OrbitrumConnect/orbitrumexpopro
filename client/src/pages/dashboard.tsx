@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { isAdminUser } from '@/lib/isAdmin';
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 
@@ -9,7 +10,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       // Admin master vai diretamente para dashboard admin
-      if (user?.email === 'passosmir4@gmail.com') {
+      if (isAdminUser(user)) {
         console.log('🚀 ADMIN MASTER - Redirecionando diretamente para /admin');
         setLocation('/admin');
         return;

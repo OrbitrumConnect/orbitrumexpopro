@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { isAdminUser } from '@/lib/isAdmin';
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -107,7 +108,7 @@ export function NewOrbitGame({ onGameEnd }: NewOrbitGameProps) {
   const { isAuthenticated, user } = useAuth();
 
   // Verificar tipo de usuário
-  const isAdmin = user?.email === 'passosmir4@gmail.com';
+  const isAdmin = isAdminUser(user);
   const isFreeMode = !isAdmin && (!isAuthenticated || !user || user.plan === 'free');
 
   // Query para wallet em tempo real

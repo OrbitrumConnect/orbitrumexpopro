@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, memo, useMemo, useCallback } from "react";
+import { isAdminUser } from '@/lib/isAdmin';
 import { motion } from "framer-motion";
 import { NeuralBrain } from "./neural-brain";
 import { SimpleOrb } from "./simple-orb";
@@ -37,7 +38,7 @@ const OrbitSystem = memo(({ onOpenProfessional, onOpenLogin, autoOpenSearch, onS
   const { isAuthenticated, user } = useAuth();
   
   // Admin bypass - verificar se é admin
-  const isAdmin = user?.email === 'passosmir4@gmail.com' || user?.email === 'passossmir4@gmail.com';
+  const isAdmin = isAdminUser(user);
 
   // Performance monitor - memoizado
   const performanceMonitor = useMemo(() => PerformanceMonitor.getInstance(), []);

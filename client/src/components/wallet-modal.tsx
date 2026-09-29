@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { isAdminUser } from '@/lib/isAdmin';
 import { X, Wallet, TrendingUp, TrendingDown, History, ArrowUpCircle, Info, Shield, ShoppingBag, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +17,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
   const { user: authUser } = useAuth();
   
   // Admin tem wallet especial
-  const isAdmin = authUser?.email === 'passosmir4@gmail.com';
+  const isAdmin = isAdminUser(authUser);
   
   // Query para carteira sem auto-refresh
   const { data: wallet, isLoading } = useQuery<any>({

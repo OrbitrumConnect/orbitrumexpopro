@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { isAdminUser } from '@/lib/isAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, Briefcase, Home, Shield } from "lucide-react";
@@ -8,7 +9,7 @@ export default function DashboardSelector() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
 
-  const isAdmin = user?.email === 'passosmir4@gmail.com' || user?.email === 'passossmir4@gmail.com';
+  const isAdmin = isAdminUser(user);
   const userType = user?.userType || "client";
   
   // Regras de acesso híbrido:

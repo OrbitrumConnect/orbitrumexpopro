@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { isAdminUser } from '@/lib/isAdmin';
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
@@ -150,7 +151,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
             {isAuthenticated ? (
               <>
                 {/* Botão Dashboard Selector - acesso aos 3 dashboards para admin */}
-                {authUser?.email === 'passosmir4@gmail.com' && (
+                {isAdminUser(authUser) && (
                   <Link 
                     href="/dashboard-selector"
                     className="glassmorphism px-1.5 py-1 text-xs rounded-full hover:bg-orange-500/20 hover:text-orange-400 transition-colors border border-orange-500/30 font-semibold admin-button-mobile scale-75"
@@ -177,7 +178,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
                 >
                   <Wallet className="h-3 w-3 sm:h-4 sm:w-4 inline mr-0.5 text-[var(--neon-cyan)]" />
                   <span className="hidden xs:inline text-[11px] sm:text-xs font-medium">
-                    {authUser?.email === 'passosmir4@gmail.com' 
+                    {isAdminUser(authUser) 
                       ? '10.000' // Admin com carteira administrativa
                       : (user?.tokens ?? 0) // Carteira normal
                     }
@@ -417,7 +418,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
                 </div>
 
                 {/* Admin - apenas para admin master */}
-                {authUser?.email === 'passosmir4@gmail.com' && (
+                {isAdminUser(authUser) && (
                   <Link 
                     href="/admin" 
                     className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-orange-500/10 hover:text-orange-400 transition-all duration-300 border border-orange-500/30 scale-[0.8]"
