@@ -44,13 +44,19 @@ function Avatar({ src, name }: { src?: string | null; name: string }) {
 }
 
 // Órbita: núcleo + nós nomeados (design alvo). SVG leve, sem libs.
-function OrbitNetwork() {
+// REGRA: nenhum número é inventado. Cada nó só mostra contagem quando ela vem
+// do banco (prop `counts`). Sem dado → só o rótulo (componente estrutural).
+function OrbitNetwork({ counts }: { counts?: Record<string, number> }) {
+  const sub = (chave: string) => {
+    const n = counts?.[chave];
+    return typeof n === 'number' ? String(n) : undefined; // undefined = não renderiza número fake
+  };
   const nos = [
-    { label: 'Profissionais', sub: '+12 novos hoje', x: 250, y: 70 },
-    { label: 'Empresas', sub: '3 conectadas', x: 470, y: 130 },
-    { label: 'Oportunidades', sub: '5 novas', x: 470, y: 300 },
-    { label: 'Sua rede', sub: '42 conexões', x: 250, y: 360 },
-    { label: 'Indicações', sub: '8 pendentes', x: 40, y: 215 },
+    { key: 'profissionais', label: 'Profissionais', sub: sub('profissionais'), x: 250, y: 70 },
+    { key: 'empresas', label: 'Empresas', sub: sub('empresas'), x: 470, y: 130 },
+    { key: 'oportunidades', label: 'Oportunidades', sub: sub('oportunidades'), x: 470, y: 300 },
+    { key: 'rede', label: 'Sua rede', sub: sub('rede'), x: 250, y: 360 },
+    { key: 'indicacoes', label: 'Indicações', sub: sub('indicacoes'), x: 40, y: 215 },
   ];
   return (
     <svg viewBox="0 0 560 420" style={{ width: '100%', maxWidth: 560, display: 'block', margin: '0 auto' }}>
@@ -67,7 +73,9 @@ function OrbitNetwork() {
         <g key={n.label}>
           <circle cx={n.x} cy={n.y} r="6" fill={C.cyan} />
           <text x={n.x} y={n.y - 12} textAnchor="middle" fill={C.ink} fontSize="12" fontWeight="600">{n.label}</text>
-          <text x={n.x} y={n.y + 20} textAnchor="middle" fill={C.ink3} fontSize="10">{n.sub}</text>
+          {n.sub !== undefined && (
+            <text x={n.x} y={n.y + 20} textAnchor="middle" fill={C.ink3} fontSize="10">{n.sub}</text>
+          )}
         </g>
       ))}
     </svg>
@@ -79,9 +87,15 @@ export default function Inicio() {
   const [, setLocation] = useLocation();
   const [necessidade, setNecessidade] = useState('');
   const [recs, setRecs] = useState<Rec[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
   const userId = String(user?.id_interno ?? 1);
 
   useEffect(() => {
+    // Contadores reais do banco (só os que existem hoje). Nada é fabricado.
+    fetch('/api/professionals')
+      .then(r => r.json())
+      .then(list => { if (Array.isArray(list)) setCounts(c => ({ ...c, profissionais: list.length })); })
+      .catch(() => {});
     fetch(`/api/orbitmatch/search?userId=${userId}`)
       .then(r => r.json())
       .then(j => { if (j.success) setRecs((j.resultados as Rec[]).filter(r => r.motivos.length).slice(0, 3)); })
@@ -140,7 +154,7 @@ export default function Inicio() {
               <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Sua rede em movimento</h1>
               <p style={{ color: C.ink3, fontSize: 13, margin: '4px 0 0' }}>Cada conexão fortalece o seu ecossistema.</p>
             </div>
-            <OrbitNetwork />
+            <OrbitNetwork counts={counts} />
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 8 }}>
               <div style={{ display: 'flex', gap: 10 }}>
                 <input value={necessidade} onChange={e => setNecessidade(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscar()}
@@ -149,6 +163,23 @@ export default function Inicio() {
                 <button onClick={buscar} style={{ width: 48, height: 48, borderRadius: '50%', border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontSize: 18, fontWeight: 700 }}>→</button>
               </div>
             </div>
+
+            {/* Estado que ENSINA quando a rede ainda está começando (não fabrica dado). */}
+            {recs.length === 0 && (
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 12 }}>
+                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>Sua rede está começando</div>
+                <p style={{ color: C.ink2, fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+                  O Orbitrum aprende com o que acontece de verdade. Faça uma busca acima ou convide
+                  alguém que você conhece. Cada experiência real — e confirmada pelos dois lados —
+                  vira um fato que faz a rede explicar <strong>por que</strong> mostra cada pessoa.
+                </p>
+                <div style={{ display: 'flex', gap: 12, marginTop: 12, fontSize: 12, color: C.ink3, flexWrap: 'wrap' }}>
+                  <span>1 · Necessidade</span><span>→</span><span>2 · Conexão</span><span>→</span>
+                  <span>3 · Experiência</span><span>→</span><span>4 · Validação</span><span>→</span>
+                  <span style={{ color: C.cyan }}>a rede aprende</span>
+                </div>
+              </div>
+            )}
           </main>
 
           {/* coluna lateral: recomendações com MOTIVO */}
