@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import { isAdminUser } from '@/lib/isAdmin';
 import { OrbitSystem } from '@/components/orbit-system';
 import { ProfessionalModal } from '@/components/professional-modal';
 import ConversaModal from '@/components/ConversaModal';
@@ -16,11 +17,6 @@ const C = {
   ink: '#F4FAFF', ink2: '#91A9BD', ink3: '#607A91',
 };
 
-const MENU = [
-  ['Início', true], ['Minha Rede', false], ['Profissionais', false],
-  ['Oportunidades', false], ['Indicações', false], ['Conversas', false],
-  ['Experiências', false], ['Ferramentas', false],
-];
 const MENU_ECON = ['Orbit Credits', 'Recompensas', 'Assinatura'];
 
 const CONF_LABEL: Record<string, string> = {
@@ -87,13 +83,17 @@ function OrbitNetwork({ counts, onNucleo }: { counts?: Record<string, number>; o
 }
 
 export default function Inicio() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const ehAdmin = isAdminUser(user);
   const [necessidade, setNecessidade] = useState('');
   const [recs, setRecs] = useState<Rec[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [profModalId, setProfModalId] = useState<number | null>(null);
   const [conversaId, setConversaId] = useState<number | null>(null);
+  const [resultados, setResultados] = useState<Rec[]>([]);
+  const [buscou, setBuscou] = useState(false);
+  const [carregando, setCarregando] = useState(false);
   const userId = String(user?.id_interno ?? 1);
 
   useEffect(() => {
@@ -108,7 +108,17 @@ export default function Inicio() {
       .catch(() => {});
   }, [userId]);
 
-  const buscar = () => setLocation('/orbitmatch');
+  // Busca INLINE: mostra os resultados na própria home (funil sem trocar de aba).
+  // Ranqueia pelo sinal relacional (comporBusca). Sem filtro de texto fabricado —
+  // quando o backend aceitar busca por termo, plugamos `necessidade` aqui.
+  const buscar = () => {
+    setBuscou(true); setCarregando(true);
+    fetch(`/api/orbitmatch/search?userId=${userId}`)
+      .then(r => r.json())
+      .then(j => { if (j.success) setResultados(j.resultados as Rec[]); })
+      .catch(() => {})
+      .finally(() => setCarregando(false));
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
@@ -118,17 +128,45 @@ export default function Inicio() {
           <div style={{ width: 24, height: 24, borderRadius: '50%', background: `radial-gradient(circle at 50% 40%, ${C.cyan}, ${C.blue} 60%, transparent)` }} />
           <span style={{ letterSpacing: 2, fontWeight: 700, fontSize: 15 }}>ORBITRUM</span>
         </div>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: 3, flex: 1 }}>
-          {MENU.map(([label, active]) => (
-            <button key={label as string} onClick={() => label === 'Início' ? null : setLocation('/orbitmatch')}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflowY: 'auto' }}>
+          {/* REDE — o eixo da tese (§30: rede em cima). Fluxo acontece inline, sem trocar de aba. */}
+          {([
+            ['Início', true, () => { setBuscou(false); setResultados([]); }],
+            ['Minha Rede', false, buscar],
+            ['Profissionais', false, buscar],
+            ['Indicações', false, buscar],
+          ] as Array<[string, boolean, () => void]>).map(([label, active, onClick]) => (
+            <button key={label} onClick={onClick}
               style={{ textAlign: 'left', padding: '11px 14px', borderRadius: 9, border: active ? `1px solid ${C.borderHot}` : '1px solid transparent',
                 background: active ? `${C.blue}22` : 'transparent', color: active ? C.ink : '#A9C6DC', fontSize: 15, fontWeight: active ? 600 : 400, letterSpacing: 0.2, cursor: 'pointer' }}>
-              {label as string}
+              {label}
             </button>
           ))}
+          {/* Seções da tese ainda não construídas — honesto: "em breve", nunca link morto que finge. */}
+          {['Oportunidades', 'Conversas'].map(label => (
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 14px', color: C.ink3, fontSize: 15 }}>
+              <span>{label}</span><span style={{ fontSize: 9, color: C.ink3, border: `1px solid ${C.border}`, borderRadius: 8, padding: '1px 6px' }}>em breve</span>
+            </div>
+          ))}
+
+          {/* FERRAMENTAS — páginas utilitárias reais (sem regressão: nada some do app). */}
+          <div style={{ fontSize: 10, color: C.ink3, letterSpacing: 1.5, margin: '14px 14px 6px' }}>FERRAMENTAS</div>
+          {([
+            ['Meu Painel', '/dashboard-selector'],
+            ['Equipes', '/teams'],
+            ['Mapa · GPS', '/controle-gps'],
+            ...(ehAdmin ? [['Admin', '/admin'] as [string, string]] : []),
+          ] as Array<[string, string]>).map(([label, rota]) => (
+            <button key={label} onClick={() => setLocation(rota)}
+              style={{ textAlign: 'left', padding: '10px 14px', borderRadius: 9, border: '1px solid transparent', background: 'transparent', color: '#A9C6DC', fontSize: 14, cursor: 'pointer' }}>
+              {label}
+            </button>
+          ))}
+
+          {/* CONTA — dinheiro embaixo, menor destaque (§30: reward is not the product). */}
           <div style={{ height: 1, background: C.border, margin: '12px 4px' }} />
           {MENU_ECON.map(label => (
-            <button key={label} style={{ textAlign: 'left', padding: '9px 14px', borderRadius: 9, border: '1px solid transparent', background: 'transparent', color: C.ink2, fontSize: 13, cursor: 'pointer' }}>{label}</button>
+            <button key={label} onClick={() => setLocation('/tokens')} style={{ textAlign: 'left', padding: '9px 14px', borderRadius: 9, border: '1px solid transparent', background: 'transparent', color: C.ink2, fontSize: 13, cursor: 'pointer' }}>{label}</button>
           ))}
         </nav>
         <div style={{ border: `1px solid ${C.borderHot}`, borderRadius: 12, padding: 14, background: C.bg2, marginTop: 12 }}>
@@ -150,6 +188,9 @@ export default function Inicio() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 13, color: C.ink2 }}>{user?.full_name || user?.username || user?.email || 'Participante'}</span>
             <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}` }} />
+            {user && (
+              <button onClick={() => { logout(); setLocation('/'); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '5px 12px', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Sair</button>
+            )}
           </div>
         </header>
 
@@ -174,8 +215,49 @@ export default function Inicio() {
               </div>
             </div>
 
+            {/* RESULTADOS INLINE — o funil da busca acontece aqui, sem trocar de aba.
+                Cada card abre o perfil-tese e "Conectar" abre a conversa, tudo em modal. */}
+            {buscou && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontWeight: 600, fontSize: 15 }}>
+                    {carregando ? 'Buscando na sua rede…' : `${resultados.length} ${resultados.length === 1 ? 'pessoa' : 'pessoas'} — ordenadas pela sua rede`}
+                  </span>
+                  <button onClick={() => { setBuscou(false); setResultados([]); }} style={{ background: 'none', border: 'none', color: C.ink3, fontSize: 12, cursor: 'pointer' }}>Limpar</button>
+                </div>
+                {resultados.map(r => (
+                  <div key={r.profissional.id} onClick={() => setProfModalId(r.profissional.id)}
+                    style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 14, marginBottom: 10, cursor: 'pointer', display: 'flex', gap: 12 }}>
+                    <Avatar src={r.profissional.avatar} name={r.profissional.name} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 14 }}>{r.profissional.name}</div>
+                          <div style={{ color: C.ink3, fontSize: 12 }}>{r.profissional.title}{r.profissional.city ? ` · ${r.profissional.city}` : ''}</div>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); setConversaId(r.profissional.id); }} style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '6px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
+                      </div>
+                      {r.motivos.length > 0 && (
+                        <div style={{ color: C.ink2, fontSize: 12, marginTop: 6, display: 'flex', gap: 6 }}>
+                          <span style={{ color: C.cyan }}>✓</span><span>{r.motivos[0]}</span>
+                        </div>
+                      )}
+                      {r.chips.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+                          {r.chips.slice(0, 3).map((c, i) => <Chip key={i} label={c} />)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {!carregando && resultados.length === 0 && (
+                  <p style={{ color: C.ink3, fontSize: 13 }}>Ninguém na sua rede ainda para isso. Conforme experiências reais forem confirmadas, os resultados ganham contexto.</p>
+                )}
+              </div>
+            )}
+
             {/* Estado que ENSINA quando a rede ainda está começando (não fabrica dado). */}
-            {recs.length === 0 && (
+            {!buscou && recs.length === 0 && (
               <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 12 }}>
                 <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>Sua rede está começando</div>
                 <p style={{ color: C.ink2, fontSize: 13, margin: 0, lineHeight: 1.5 }}>
@@ -197,7 +279,7 @@ export default function Inicio() {
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
                 <span style={{ fontWeight: 600, fontSize: 15 }}>Recomendações para você</span>
-                <button onClick={() => setLocation('/orbitmatch')} style={{ background: 'none', border: 'none', color: C.cyan, fontSize: 12, cursor: 'pointer' }}>Ver todas</button>
+                <button onClick={buscar} style={{ background: 'none', border: 'none', color: C.cyan, fontSize: 12, cursor: 'pointer' }}>Ver todas</button>
               </div>
               {recs.length === 0 && (
                 <p style={{ color: C.ink3, fontSize: 12 }}>
