@@ -7,6 +7,7 @@ import { setupAuthRoutes } from "./auth-routes";
 import { setupPaymentRoutes } from "./payment-routes";
 import { setupAdminRoutes } from "./admin-routes";
 import { setupCreditRoutes } from "./credit-tokens";
+import { setupMissingEndpoints } from "./missing-endpoints";
 import { PixTracker } from "./pix-tracking";
 import { insertUserSchema, insertProfessionalSchema, insertGameScoreSchema, insertTeamSchema } from "@shared/schema";
 // Fonte da verdade para a busca contextual: banco direto (não o storage, cujo modo varia).
@@ -3493,11 +3494,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const serviceCalendarRouter = await import("./routes/service-calendar");  
   app.use("/api/service-calendar", serviceCalendarRouter.default);
 
-  // Handler para rotas API não encontradas (apenas /api/*)
-  app.use('/api/*', notFoundHandler);
-  
-  // Handler global de erros (deve ser o último middleware)
-  app.use(globalErrorHandler);
+  // NOTA: o notFoundHandler e o globalErrorHandler foram movidos para o FINAL
+  // (antes do return), senão sombreavam ~1000 linhas de rotas registradas depois
+  // daqui (missing-endpoints, credit, team, service-requests, analytics) → 404 nas abas.
 
   const httpServer = createServer(app);
   
@@ -3770,6 +3769,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   setupCreditRoutes(app);
+
+  // Endpoints que faltavam (retornam vazio/zero honesto) — resolvem os 404 das abas
+  // do dashboard (Serviços/Pedidos/Analytics/Histórico). Aditivo, sem catch-all.
+  setupMissingEndpoints(app);
 
   // ========================================
   // 🏢 PROFESSIONAL TEAM MANAGEMENT SYSTEM
@@ -4540,7 +4543,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/profiles/completed', profileRoutes.getCompletedProfiles);
 
   console.log('✅ Rotas de perfil configuradas');
-  
+
+  // Catch-all de /api e handler de erros — DEPOIS de todas as rotas, senão sombreiam.
+  app.use('/api/*', notFoundHandler);
+  app.use(globalErrorHandler);
+
   return httpServer;
 }
 
