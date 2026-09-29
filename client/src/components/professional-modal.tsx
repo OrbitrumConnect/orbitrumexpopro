@@ -13,6 +13,9 @@ interface ProfessionalModalProps {
   onClose: () => void;
   professionalId: number;
   onAddToTeam?: (professional: any) => void;
+  // Quando fornecido, "Conectar" abre a conversa INLINE (mesma tela) em vez de
+  // navegar para /conversa — honra "tudo acontece aqui, sem mudar de aba".
+  onConectar?: (profId: number) => void;
 }
 
 const C = {
@@ -26,7 +29,7 @@ const CONF_LABEL: Record<string, string> = {
   validado: 'Experiência validada', verificado: 'Verificado',
 };
 
-export function ProfessionalModal({ isOpen, onClose, professionalId }: ProfessionalModalProps) {
+export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar }: ProfessionalModalProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [perfil, setPerfil] = useState<any>(null);
@@ -158,7 +161,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId }: Professio
             )}
 
             {/* CTA — conectar leva à conversa/experiência */}
-            <button onClick={() => { onClose(); setLocation(`/conversa/${p.id}`); }}
+            <button onClick={() => { if (onConectar) { onConectar(p.id); } else { onClose(); setLocation(`/conversa/${p.id}`); } }}
               style={{ width: '100%', border: 'none', cursor: 'pointer', borderRadius: 24, padding: '14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 15, boxShadow: `0 0 20px ${C.blue}44` }}>
               Conectar
             </button>

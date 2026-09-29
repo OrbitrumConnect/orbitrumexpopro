@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import { OrbitSystem } from '@/components/orbit-system';
+import { ProfessionalModal } from '@/components/professional-modal';
+import ConversaModal from '@/components/ConversaModal';
 
 // HOME no design alvo — "Sua rede em movimento".
 // Coração da tese: necessidade → OrbitMatch → recomendação COM MOTIVO.
@@ -89,6 +92,8 @@ export default function Inicio() {
   const [necessidade, setNecessidade] = useState('');
   const [recs, setRecs] = useState<Rec[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const [profModalId, setProfModalId] = useState<number | null>(null);
+  const [conversaId, setConversaId] = useState<number | null>(null);
   const userId = String(user?.id_interno ?? 1);
 
   useEffect(() => {
@@ -113,17 +118,17 @@ export default function Inicio() {
           <div style={{ width: 24, height: 24, borderRadius: '50%', background: `radial-gradient(circle at 50% 40%, ${C.cyan}, ${C.blue} 60%, transparent)` }} />
           <span style={{ letterSpacing: 2, fontWeight: 700, fontSize: 15 }}>ORBITRUM</span>
         </div>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 3, flex: 1 }}>
           {MENU.map(([label, active]) => (
             <button key={label as string} onClick={() => label === 'Início' ? null : setLocation('/orbitmatch')}
-              style={{ textAlign: 'left', padding: '9px 12px', borderRadius: 8, border: active ? `1px solid ${C.border}` : '1px solid transparent',
-                background: active ? `${C.blue}18` : 'transparent', color: active ? C.ink : C.ink2, fontSize: 13, cursor: 'pointer' }}>
+              style={{ textAlign: 'left', padding: '11px 14px', borderRadius: 9, border: active ? `1px solid ${C.borderHot}` : '1px solid transparent',
+                background: active ? `${C.blue}22` : 'transparent', color: active ? C.ink : '#A9C6DC', fontSize: 15, fontWeight: active ? 600 : 400, letterSpacing: 0.2, cursor: 'pointer' }}>
               {label as string}
             </button>
           ))}
-          <div style={{ height: 1, background: C.border, margin: '10px 4px' }} />
+          <div style={{ height: 1, background: C.border, margin: '12px 4px' }} />
           {MENU_ECON.map(label => (
-            <button key={label} style={{ textAlign: 'left', padding: '8px 12px', borderRadius: 8, border: '1px solid transparent', background: 'transparent', color: C.ink3, fontSize: 12, cursor: 'pointer' }}>{label}</button>
+            <button key={label} style={{ textAlign: 'left', padding: '9px 14px', borderRadius: 9, border: '1px solid transparent', background: 'transparent', color: C.ink2, fontSize: 13, cursor: 'pointer' }}>{label}</button>
           ))}
         </nav>
         <div style={{ border: `1px solid ${C.borderHot}`, borderRadius: 12, padding: 14, background: C.bg2, marginTop: 12 }}>
@@ -155,7 +160,11 @@ export default function Inicio() {
               <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Sua rede em movimento</h1>
               <p style={{ color: C.ink3, fontSize: 13, margin: '4px 0 0' }}>Cada conexão fortalece o seu ecossistema.</p>
             </div>
-            <OrbitNetwork counts={counts} onNucleo={buscar} />
+            {/* MIOLO ORBITAL — o sistema orbit original (profissionais orbitando + busca).
+                Clicar num profissional abre o perfil-tese (não o modal de tokens). */}
+            <div style={{ position: 'relative', minHeight: 420 }}>
+              <OrbitSystem onOpenProfessional={(id: number) => setProfModalId(id)} onOpenLogin={() => {}} />
+            </div>
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 8 }}>
               <div style={{ display: 'flex', gap: 10 }}>
                 <input value={necessidade} onChange={e => setNecessidade(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscar()}
@@ -196,13 +205,13 @@ export default function Inicio() {
                 </p>
               )}
               {recs.map(r => (
-                <div key={r.profissional.id} onClick={() => setLocation('/orbitmatch')}
+                <div key={r.profissional.id} onClick={() => setProfModalId(r.profissional.id)}
                   style={{ borderTop: `1px solid ${C.border}`, padding: '12px 0', cursor: 'pointer', display: 'flex', gap: 10 }}>
                   <Avatar src={r.profissional.avatar} name={r.profissional.name} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                       <div style={{ fontWeight: 600, fontSize: 14 }}>{r.profissional.name}</div>
-                      <button style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '5px 14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
+                      <button onClick={(e) => { e.stopPropagation(); setConversaId(r.profissional.id); }} style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '5px 14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
                     </div>
                     <div style={{ color: C.ink3, fontSize: 12, marginBottom: 6 }}>{r.profissional.title}</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -218,6 +227,17 @@ export default function Inicio() {
           </aside>
         </div>
       </div>
+
+      {/* perfil-tese ao clicar num profissional orbitando */}
+      {profModalId != null && (
+        <ProfessionalModal isOpen={true} professionalId={profModalId} onClose={() => setProfModalId(null)}
+          onConectar={(id) => { setProfModalId(null); setConversaId(id); }} />
+      )}
+
+      {/* conversa INLINE — o ciclo se fecha na mesma tela, sem mudar de aba */}
+      {conversaId != null && (
+        <ConversaModal profId={conversaId} onClose={() => setConversaId(null)} />
+      )}
     </div>
   );
 }

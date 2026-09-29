@@ -75,7 +75,8 @@ function AppContent() {
         />
       <Switch>
         <Route path="/" component={Inicio} />
-        <Route path="/classico" component={Home} />
+        <Route path="/home" component={Home} />
+        <Route path="/painel" component={Inicio} />
         <Route path="/orbitmatch" component={OrbitMatch} />
         <Route path="/inicio" component={Inicio} />
         <Route path="/conversa/:profId" component={Conversa} />
