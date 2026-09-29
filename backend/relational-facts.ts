@@ -298,8 +298,10 @@ export async function fatoDeValidacao(
 export interface ContextoRelacional {
   /** 0..100 — sinal relacional, somado ao score de atributos do ai-matching */
   score: number;
-  /** frases prontas, já filtradas por privacidade */
+  /** frases prontas, já filtradas por privacidade (usadas no perfil) */
   motivos: string[];
+  /** rótulos curtos para os CHIPS do card (design alvo) */
+  chips: string[];
   /** o fato mais recente que sustenta a recomendação */
   fatoMaisRecente: Date | null;
   /** maior nível de confiança encontrado */
@@ -341,9 +343,11 @@ export async function contextoRelacional(
   const comoSujeito = facts.filter(f => f.subjectId === profissionalUserId);
 
   const motivos: string[] = [];
+  const chips: string[] = []; // rótulos curtos para os cards (design alvo)
   let score = 0;
   let maisRecente: Date | null = null;
   let confMax: Confidence | null = null;
+  const primeiroNome = (n?: string) => (n ? n.split(' ')[0] : undefined);
 
   const marcar = (f: RelationalFact) => {
     const d = new Date(f.occurredAt);
@@ -375,6 +379,7 @@ export async function contextoRelacional(
           ? `${nome}, uma conexão sua, trabalhou com essa pessoa e os dois confirmaram`
           : `${validados.length} conexão(ões) sua(s) trabalharam com essa pessoa, com confirmação dos dois lados`,
       );
+      chips.push('Experiência validada');
       score += 45 * pesoTemporal(melhor, now);
     } else {
       motivos.push(
@@ -382,6 +387,7 @@ export async function contextoRelacional(
           ? `${nome}, uma conexão sua, informou ter trabalhado com essa pessoa`
           : `${viaRede.length} conexão(ões) sua(s) informaram ter trabalhado com essa pessoa`,
       );
+      chips.push(primeiroNome(nome) ? `Trabalhou com ${primeiroNome(nome)}` : 'Trabalhou na sua rede');
       score += 20 * pesoTemporal(melhor, now);
     }
   }
@@ -395,6 +401,7 @@ export async function contextoRelacional(
     marcar(melhor);
     const nome = opts.nomePorId?.(melhor.subjectId);
     motivos.push(nome ? `Indicada por ${nome}, uma conexão sua` : `Indicada por ${indicacoes.length} conexão(ões) sua(s)`);
+    chips.push(primeiroNome(nome) ? `Indicado por ${primeiroNome(nome)}` : 'Indicado pela rede');
     score += 25 * pesoTemporal(melhor, now);
   }
 
@@ -412,6 +419,7 @@ export async function contextoRelacional(
       motivos.push(
         `${naCategoria.length} experiência(s) confirmada(s) em ${opts.categoria}`,
       );
+      chips.push(`${naCategoria.length} em ${opts.categoria}`);
       score += Math.min(20, 8 * naCategoria.length) * pesoTemporal(melhor, now);
     }
   }
@@ -423,6 +431,7 @@ export async function contextoRelacional(
   if (quali.length > 0) {
     marcar(quali[0]);
     motivos.push(`Qualificação verificada: ${quali.map(q => q.objectValue).filter(Boolean).join(', ')}`);
+    chips.push('Qualificação verificada');
     score += 10;
   }
 
@@ -433,12 +442,14 @@ export async function contextoRelacional(
     marcar(d);
     const dias = Math.floor((now.getTime() - new Date(d.occurredAt).getTime()) / (1000 * 60 * 60 * 24));
     motivos.push(dias <= 1 ? 'Disponibilidade atualizada hoje' : `Disponibilidade atualizada há ${dias} dia(s)`);
+    chips.push(dias <= 1 ? 'Disponível hoje' : 'Disponível');
     score += 8;
   }
 
   return {
     score: Math.round(Math.min(100, score) * 100) / 100,
     motivos,
+    chips,
     fatoMaisRecente: maisRecente,
     confiancaMaxima: confMax,
   };

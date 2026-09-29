@@ -7,12 +7,35 @@ import { useAuth } from '@/hooks/useAuth';
 // Cores do design-alvo (dark deep-space + cyan). Aditivo: rota nova, nada existente muda.
 
 interface Resultado {
-  profissional: { id: number; name: string; title: string; city?: string | null };
+  profissional: { id: number; name: string; title: string; city?: string | null; avatar?: string | null };
   aiMatchScore: number;
   sinalRelacional: number;
   motivos: string[];
+  chips: string[];
   confianca: string | null;
   fatoMaisRecente: string | null;
+}
+
+// Chip do design alvo: badge compacto com ✓.
+function Chip({ label }: { label: string }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: C.ink,
+      background: `${C.blue}14`, border: `1px solid ${C.border}`, borderRadius: 12, padding: '3px 9px',
+    }}>
+      <span style={{ color: C.cyan }}>✓</span>{label}
+    </span>
+  );
+}
+
+// Avatar circular; cai numa inicial se não houver imagem.
+function Avatar({ src, name, size = 44 }: { src?: string | null; name: string; size?: number }) {
+  if (src) return <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}` }} />;
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: size * 0.4 }}>
+      {name?.[0]?.toUpperCase() || '?'}
+    </div>
+  );
 }
 
 const C = {
@@ -168,44 +191,39 @@ export default function OrbitMatch() {
                       boxShadow: naRede ? `0 0 20px ${C.blue}14` : 'none',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: 16 }}>{r.profissional.name}</div>
-                        <div style={{ color: C.ink3, fontSize: 12 }}>
-                          {r.profissional.title}{r.profissional.city ? ` · ${r.profissional.city}` : ''}
-                        </div>
-                      </div>
-                      <button
-                        style={{
-                          border: 'none', cursor: 'pointer', borderRadius: 20, padding: '8px 18px',
-                          background: naRede ? `linear-gradient(135deg, ${C.cyan}, ${C.blue})` : 'transparent',
-                          color: naRede ? '#012' : C.ink2, fontWeight: 600, fontSize: 13,
-                          boxShadow: naRede ? `0 0 14px ${C.blue}44` : 'none',
-                          ...(naRede ? {} : { border: `1px solid ${C.border}` }),
-                        }}
-                      >Conectar</button>
-                    </div>
-
-                    {/* POR QUE APARECEU — o coração da tese, §9 */}
-                    {naRede ? (
-                      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        {r.motivos.map((m, i) => (
-                          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13, color: C.ink }}>
-                            <span style={{ color: C.cyan }}>✓</span> {m}
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                      <Avatar src={r.profissional.avatar} name={r.profissional.name} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: 16 }}>{r.profissional.name}</div>
+                            <div style={{ color: C.ink3, fontSize: 12 }}>
+                              {r.profissional.title}{r.profissional.city ? ` · ${r.profissional.city}` : ''}
+                            </div>
                           </div>
-                        ))}
-                        {r.confianca && (
-                          <span style={{
-                            alignSelf: 'flex-start', marginTop: 4, fontSize: 11, color: C.cyan,
-                            border: `1px solid ${C.border}`, borderRadius: 12, padding: '2px 10px',
-                          }}>{CONF_LABEL[r.confianca] || r.confianca}</span>
+                          <button
+                            style={{
+                              border: 'none', cursor: 'pointer', borderRadius: 20, padding: '8px 18px', flexShrink: 0,
+                              background: naRede ? `linear-gradient(135deg, ${C.cyan}, ${C.blue})` : 'transparent',
+                              color: naRede ? '#012' : C.ink2, fontWeight: 600, fontSize: 13,
+                              boxShadow: naRede ? `0 0 14px ${C.blue}44` : 'none',
+                              ...(naRede ? {} : { border: `1px solid ${C.border}` }),
+                            }}
+                          >Conectar</button>
+                        </div>
+
+                        {/* POR QUE APARECEU — chips (design alvo, §9) */}
+                        {naRede ? (
+                          <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {r.chips.map((c, i) => <Chip key={i} label={c} />)}
+                          </div>
+                        ) : (
+                          <div style={{ marginTop: 8, fontSize: 12, color: C.ink3 }}>
+                            A rede ainda não tem experiências registradas com essa pessoa.
+                          </div>
                         )}
                       </div>
-                    ) : (
-                      <div style={{ marginTop: 10, fontSize: 12, color: C.ink3 }}>
-                        A rede ainda não tem experiências registradas com essa pessoa.
-                      </div>
-                    )}
+                    </div>
                   </div>
                 );
               })}

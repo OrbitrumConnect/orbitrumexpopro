@@ -124,6 +124,7 @@ export interface CandidatoComContexto<T> {
   /** quanto a rede sabe sobre a relação entre ESTE solicitante e ESTE profissional */
   sinalRelacional: number;
   motivos: string[];
+  chips: string[];
   confianca: string | null;
   fatoMaisRecente: Date | null;
 }
@@ -156,6 +157,7 @@ export async function comporBusca<T>(
       aiMatchScore: c.aiMatchScore,
       sinalRelacional: ctx.score,
       motivos: ctx.motivos,
+      chips: ctx.chips,
       confianca: ctx.confiancaMaxima,
       fatoMaisRecente: ctx.fatoMaisRecente,
     });

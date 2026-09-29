@@ -3072,7 +3072,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const candidatos = (profissionais as any[]).map((p: any) => ({
-        profissional: { id: p.id, name: p.name, title: p.title, city: p.city },
+        profissional: { id: p.id, name: p.name, title: p.title, city: p.city, avatar: p.avatar },
         profissionalUserId: p.userId ?? p.id,
         aiMatchScore: Math.round((p.rating ?? 0) * 20), // score de atributo existente, intocado
       }));

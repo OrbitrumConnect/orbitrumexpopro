@@ -26,8 +26,21 @@ const CONF_LABEL: Record<string, string> = {
 };
 
 interface Rec {
-  profissional: { id: number; name: string; title: string; city?: string | null };
-  sinalRelacional: number; motivos: string[]; confianca: string | null;
+  profissional: { id: number; name: string; title: string; city?: string | null; avatar?: string | null };
+  sinalRelacional: number; motivos: string[]; chips: string[]; confianca: string | null;
+}
+
+function Chip({ label }: { label: string }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: C.ink,
+      background: `${C.blue}14`, border: `1px solid ${C.border}`, borderRadius: 11, padding: '2px 8px' }}>
+      <span style={{ color: C.cyan }}>✓</span>{label}
+    </span>
+  );
+}
+function Avatar({ src, name }: { src?: string | null; name: string }) {
+  if (src) return <img src={src} alt={name} style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}` }} />;
+  return <div style={{ width: 38, height: 38, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700 }}>{name?.[0]?.toUpperCase() || '?'}</div>;
 }
 
 // Órbita: núcleo + nós nomeados (design alvo). SVG leve, sem libs.
@@ -152,19 +165,18 @@ export default function Inicio() {
               )}
               {recs.map(r => (
                 <div key={r.profissional.id} onClick={() => setLocation('/orbitmatch')}
-                  style={{ borderTop: `1px solid ${C.border}`, padding: '12px 0', cursor: 'pointer' }}>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{r.profissional.name}</div>
-                  <div style={{ color: C.ink3, fontSize: 12, marginBottom: 6 }}>{r.profissional.title}</div>
-                  {r.motivos.slice(0, 2).map((m, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 6, fontSize: 12, color: C.ink, marginBottom: 3 }}>
-                      <span style={{ color: C.cyan }}>✓</span>{m}
+                  style={{ borderTop: `1px solid ${C.border}`, padding: '12px 0', cursor: 'pointer', display: 'flex', gap: 10 }}>
+                  <Avatar src={r.profissional.avatar} name={r.profissional.name} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{r.profissional.name}</div>
+                      <button style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '5px 14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
                     </div>
-                  ))}
-                  {r.confianca && (
-                    <span style={{ display: 'inline-block', marginTop: 4, fontSize: 10, color: C.cyan, border: `1px solid ${C.border}`, borderRadius: 10, padding: '1px 8px' }}>
-                      {CONF_LABEL[r.confianca] || r.confianca}
-                    </span>
-                  )}
+                    <div style={{ color: C.ink3, fontSize: 12, marginBottom: 6 }}>{r.profissional.title}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                      {r.chips.slice(0, 3).map((c, i) => <Chip key={i} label={c} />)}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
