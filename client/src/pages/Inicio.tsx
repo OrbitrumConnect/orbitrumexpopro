@@ -18,7 +18,9 @@ const C = {
   ink: '#F4FAFF', ink2: '#91A9BD', ink3: '#607A91',
 };
 
-const MENU_ECON = ['Orbit Credits', 'Recompensas', 'Assinatura'];
+const MENU_ECON: Array<[string, string]> = [
+  ['Orbit Credits', '/tokens'], ['Recompensas', '/tokens'], ['Assinatura', '/planos'],
+];
 
 const CONF_LABEL: Record<string, string> = {
   declarado: 'Declarado', indicado: 'Indicado',
@@ -180,14 +182,14 @@ export default function Inicio() {
 
           {/* CONTA — dinheiro embaixo, menor destaque (§30: reward is not the product). */}
           <div style={{ height: 1, background: C.border, margin: '12px 4px' }} />
-          {MENU_ECON.map(label => (
-            <button key={label} onClick={() => setLocation('/tokens')} style={{ textAlign: 'left', padding: '9px 14px', borderRadius: 9, border: '1px solid transparent', background: 'transparent', color: C.ink2, fontSize: 13, cursor: 'pointer' }}>{label}</button>
+          {MENU_ECON.map(([label, rota]) => (
+            <button key={label} onClick={() => setLocation(rota)} style={{ textAlign: 'left', padding: '9px 14px', borderRadius: 9, border: '1px solid transparent', background: 'transparent', color: C.ink2, fontSize: 13, cursor: 'pointer' }}>{label}</button>
           ))}
         </nav>
         <div style={{ border: `1px solid ${C.borderHot}`, borderRadius: 12, padding: 14, background: C.bg2, marginTop: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600 }}>Plano Pro</div>
           <div style={{ fontSize: 12, color: C.ink2, marginBottom: 8 }}>R$ 29,90/mês</div>
-          <button style={{ width: '100%', border: 'none', borderRadius: 8, padding: '7px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>Gerenciar</button>
+          <button onClick={() => setLocation('/planos')} style={{ width: '100%', border: 'none', borderRadius: 8, padding: '7px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>Gerenciar</button>
         </div>
       </aside>
 
@@ -338,6 +340,16 @@ export default function Inicio() {
             </p>
           </aside>
         </div>
+
+        {/* RODAPÉ — nada órfão: cadastro de profissional + páginas legais acessíveis da home */}
+        <footer style={{ borderTop: `1px solid ${C.border}`, padding: '16px 24px', display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+          <button onClick={() => setLocation('/cadastro-profissional')} style={{ background: 'transparent', border: `1px solid ${C.borderHot}`, borderRadius: 16, padding: '7px 16px', color: C.ink, fontSize: 12, cursor: 'pointer' }}>Seja profissional na rede</button>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            {([['Termos', '/termos'], ['Privacidade', '/privacidade'], ['Regras', '/regras'], ['Certificações', '/certificacoes']] as Array<[string, string]>).map(([label, rota]) => (
+              <button key={rota} onClick={() => setLocation(rota)} style={{ background: 'none', border: 'none', color: C.ink3, fontSize: 12, cursor: 'pointer' }}>{label}</button>
+            ))}
+          </div>
+        </footer>
       </div>
 
       {/* perfil-tese ao clicar num profissional orbitando */}
