@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import MiniMapa from '@/components/MiniMapa';
+import Continuar from '@/components/Continuar';
 
 // CONVERSA INLINE — o ciclo acontece na MESMA tela (não muda de aba).
 // Overlay sobre a home: conversa → serviço combinado → concluído → os dois
@@ -158,6 +159,13 @@ export default function ConversaModal({ profId, onClose }: Props) {
             <div style={{ color: C.cyan, fontSize: 13, fontWeight: 600 }}>✓ Experiência validada — a rede aprendeu</div>
           )}
         </div>
+
+        {/* Continuidade: ao validar, "o que deseja fazer agora?" (deep-links + nova busca) */}
+        {estado === 'validado' && prof && (
+          <div style={{ padding: '0 18px 14px' }}>
+            <Continuar prof={prof} onNovaBusca={onClose} />
+          </div>
+        )}
 
         {/* input */}
         <div style={{ display: 'flex', gap: 8, padding: 14, borderTop: `1px solid ${C.border}` }}>

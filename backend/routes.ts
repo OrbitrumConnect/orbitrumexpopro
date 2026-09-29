@@ -3129,6 +3129,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           city: prof.city, state: prof.state, avatar: prof.avatar,
           services: prof.services ?? [], available: prof.available,
           userId: profUserId, // user id (para registrar a experiência/fato)
+          // Camada de Continuidade: deep-links reais (só o que existe no banco, nada fabricado)
+          phone: prof.phone ?? null, address: prof.address ?? null,
+          latitude: prof.latitude ?? null, longitude: prof.longitude ?? null,
+          linkedinUrl: prof.linkedinUrl ?? null,
         },
         ...perfil,
       });

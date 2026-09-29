@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import Continuar from '@/components/Continuar';
 
 // PERFIL PROFISSIONAL — versão TESE (substitui o antigo modal de tokens).
 // Sem tokens, sem estrelas. Mostra: por que apareceu, placar de experiências/
@@ -182,6 +183,9 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
             <p style={{ color: C.ink3, fontSize: 11, textAlign: 'center', marginTop: 12 }}>
               Cliente e profissional combinam direto — a rede conecta e registra a experiência.
             </p>
+
+            {/* Camada de Continuidade: deep-links pro ecossistema (só o que o banco tem) */}
+            <Continuar prof={p} />
           </>
         )}
       </div>
