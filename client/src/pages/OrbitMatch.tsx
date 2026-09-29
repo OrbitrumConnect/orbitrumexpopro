@@ -64,6 +64,7 @@ interface Perfil {
   placar: { experiencias: number; experienciasValidadas: number; indicacoes: number; validacoes: number };
   experienciasRelevantes: Array<{ categoria: string | null; detalhe: string | null; confianca: string }>;
   qualificacoes: string[];
+  caminho: Array<{ nome: string; descricao: string }>;
 }
 
 export default function OrbitMatch() {
@@ -77,6 +78,15 @@ export default function OrbitMatch() {
   const [erro, setErro] = useState('');
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [perfilCarregando, setPerfilCarregando] = useState(false);
+  const [aba, setAba] = useState<'rede' | 'indicacoes' | 'proximos'>('rede');
+
+  // Classifica cada resultado por ORIGEM, a partir dos chips (que vêm do banco).
+  // Indicação: tem chip "Indicado...". Rede: tem experiência/trabalhou. Próximos: sem fato.
+  function origemDe(r: Resultado): 'rede' | 'indicacoes' | 'proximos' {
+    if (r.chips.some(c => c.startsWith('Indicado'))) return 'indicacoes';
+    if (r.chips.some(c => c.startsWith('Experiência') || c.startsWith('Trabalhou') || c.includes(' em '))) return 'rede';
+    return 'proximos';
+  }
 
   async function abrirPerfil(profId: number) {
     setPerfilCarregando(true);
@@ -172,14 +182,45 @@ export default function OrbitMatch() {
         {erro && <p style={{ color: '#ff6b6b' }}>{erro}</p>}
         {carregando && <p style={{ color: C.ink2 }}>Consultando a rede…</p>}
 
-        {resultados && (
+        {resultados && (() => {
+          const grupos = {
+            rede: resultados.filter(r => origemDe(r) === 'rede'),
+            indicacoes: resultados.filter(r => origemDe(r) === 'indicacoes'),
+            proximos: resultados.filter(r => origemDe(r) === 'proximos'),
+          };
+          const abas: Array<['rede' | 'indicacoes' | 'proximos', string]> = [
+            ['rede', 'Sua rede'], ['indicacoes', 'Indicações'], ['proximos', 'Próximos'],
+          ];
+          const visiveis = grupos[aba];
+          return (
           <>
-            <p style={{ color: C.ink2, fontSize: 13, marginBottom: 16 }}>
-              {resultados.filter(r => r.motivos.length).length} conexões na sua rede
+            <p style={{ color: C.ink2, fontSize: 13, marginBottom: 12 }}>
+              {resultados.filter(r => r.motivos.length).length} conexões encontradas
               {' · '}{resultados.length} no total
             </p>
+            {/* TABS por origem (design alvo) */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {abas.map(([k, label]) => (
+                <button key={k} onClick={() => setAba(k)}
+                  style={{
+                    background: aba === k ? `${C.blue}22` : 'transparent',
+                    border: `1px solid ${aba === k ? C.borderHot : C.border}`,
+                    color: aba === k ? C.ink : C.ink2, borderRadius: 16,
+                    padding: '6px 14px', fontSize: 13, cursor: 'pointer',
+                  }}>
+                  {label} ({grupos[k].length})
+                </button>
+              ))}
+            </div>
+            {visiveis.length === 0 && (
+              <p style={{ color: C.ink3, fontSize: 13, padding: '12px 0' }}>
+                {aba === 'rede' && 'Ainda não há ninguém da sua rede com experiência aqui.'}
+                {aba === 'indicacoes' && 'Nenhuma indicação da sua rede para esta necessidade ainda.'}
+                {aba === 'proximos' && 'Sem outros profissionais próximos no momento.'}
+              </p>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {resultados.map(r => {
+              {visiveis.map(r => {
                 const naRede = r.motivos.length > 0;
                 return (
                   <div
@@ -232,7 +273,8 @@ export default function OrbitMatch() {
               A rede explica por que cada pessoa apareceu — nunca mostra o grafo inteiro.
             </p>
           </>
-        )}
+          );
+        })()}
       </div>
 
       {/* PERFIL / CONTEXTO — substitui o modal de tokens. Sem preço, sem estrela: contexto. */}
@@ -272,6 +314,28 @@ export default function OrbitMatch() {
                     </div>
                   ))}
                 </div>
+
+                {/* COMO VOCÊ CHEGOU ATÉ ELE? — o caminho relacional (§6/§18), Trust Graph como camada */}
+                {perfil.caminho.length > 1 && (
+                  <div style={{ marginBottom: 18, background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 14 }}>
+                    <div style={{ fontSize: 12, color: C.ink3, marginBottom: 12, letterSpacing: 1 }}>COMO VOCÊ CHEGOU ATÉ ELE?</div>
+                    {perfil.caminho.map((p, i) => (
+                      <div key={i}>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: 13, flexShrink: 0 }}>{p.nome[0]?.toUpperCase()}</div>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600 }}>{p.nome}</div>
+                            <div style={{ fontSize: 11, color: C.ink3 }}>{p.descricao}</div>
+                          </div>
+                        </div>
+                        {i < perfil.caminho.length - 1 && (
+                          <div style={{ marginLeft: 14, color: C.cyan, fontSize: 14, lineHeight: '18px' }}>↓</div>
+                        )}
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 10, color: C.ink3, marginTop: 10 }}>Trust &amp; Referral Graph · Transparência em cada conexão.</div>
+                  </div>
+                )}
 
                 {/* por que apareceu */}
                 {perfil.contexto.motivos.length > 0 && (

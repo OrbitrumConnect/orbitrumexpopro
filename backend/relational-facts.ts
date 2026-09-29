@@ -470,6 +470,9 @@ export interface PerfilRelacional {
   // experiências relevantes: mais que número, o que a pessoa fez (design alvo)
   experienciasRelevantes: Array<{ categoria: string | null; detalhe: string | null; confianca: string; quando: Date }>;
   qualificacoes: string[];
+  // "Como você chegou até ele?" (§6/§18). Você → intermediário → profissional.
+  // §35: só nomeia o intermediário quando ele é conexão direta de quem procura.
+  caminho: Array<{ nome: string; descricao: string }>;
 }
 
 export async function perfilRelacional(
@@ -498,6 +501,27 @@ export async function perfilRelacional(
     .slice(0, 6)
     .map(f => ({ categoria: f.contextCategory, detalhe: f.contextDetail, confianca: f.confidence, quando: new Date(f.occurredAt) }));
 
+  // "Como você chegou até ele?" — acha um intermediário que é conexão de quem procura
+  // E que se liga ao profissional (indicou ou trabalhou_com).
+  const conns = await store.listConnections();
+  const minhasConexoes = new Set<number>();
+  for (const c of conns) {
+    if (c.status !== 'active') continue;
+    if (c.userAId === requesterId) minhasConexoes.add(c.userBId);
+    if (c.userBId === requesterId) minhasConexoes.add(c.userAId);
+  }
+  const caminho: Array<{ nome: string; descricao: string }> = [{ nome: 'Você', descricao: 'Seu perfil' }];
+  // Preferir indicação; depois experiência conjunta.
+  const viaIndic = indicacoes.find(f => minhasConexoes.has(f.subjectId));
+  const viaTrab = trabalhos.find(f => f.objectUserId != null && minhasConexoes.has(f.objectUserId));
+  const interId = viaIndic?.subjectId ?? viaTrab?.objectUserId ?? null;
+  const nomeProf = opts.nomePorId?.(profissionalUserId) || 'Profissional';
+  if (interId != null) {
+    const nomeInter = opts.nomePorId?.(interId) || 'Uma conexão sua';
+    caminho.push({ nome: nomeInter, descricao: viaIndic ? `Indicou ${nomeProf.split(' ')[0]}` : `Trabalhou com ${nomeProf.split(' ')[0]}` });
+  }
+  caminho.push({ nome: nomeProf, descricao: validados.length ? 'Experiência validada' : 'Profissional' });
+
   return {
     contexto: await contextoRelacional(store, requesterId, profissionalUserId, {
       categoria: opts.categoria,
@@ -512,5 +536,6 @@ export async function perfilRelacional(
     },
     experienciasRelevantes,
     qualificacoes: quali.map(q => q.objectValue).filter(Boolean) as string[],
+    caminho,
   };
 }
