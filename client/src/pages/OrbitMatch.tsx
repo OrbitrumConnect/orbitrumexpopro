@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 // OrbitMatch — o coração da tese, vestido com o design alvo.
 // "O que você precisa resolver?" → resultado com O MOTIVO (por que apareceu).
@@ -43,9 +44,11 @@ interface Perfil {
 }
 
 export default function OrbitMatch() {
+  const { user } = useAuth();
+  // Quem procura é o usuário logado; cai em 1 (admin) só se não houver sessão ainda.
+  const userId = String(user?.id_interno ?? user?.id ?? 1);
   const [necessidade, setNecessidade] = useState('');
   const [categoria, setCategoria] = useState('');
-  const [userId, setUserId] = useState('1');
   const [resultados, setResultados] = useState<Resultado[] | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');

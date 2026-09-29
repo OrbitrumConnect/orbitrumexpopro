@@ -120,15 +120,11 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
       const authUser = data.user;
       if (authUser) {
-        // Enriquece com o registro de public.users (papel, admin_level, tokens...).
-        // O RLS libera o próprio registro por supabase_id = auth.uid().
+        // Enriquece com o registro de public.users via RPC get_my_profile()
+        // (SECURITY DEFINER, pela sessão recém-criada do login).
         let perfil: any = {};
         try {
-          const { data: row } = await supabase
-            .from('users')
-            .select('*')
-            .eq('supabase_id', authUser.id)
-            .maybeSingle();
+          const { data: row } = await supabase.rpc('get_my_profile');
           if (row) perfil = row;
         } catch (e) {
           console.warn('Perfil de public.users não carregado:', e);
@@ -136,6 +132,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         const user = {
           ...authUser,
           ...perfil,
+          id: authUser.id, // mantém o UUID do Supabase
+          id_interno: perfil.id, // id numérico de public.users
           email: authUser.email,
           isAdmin: (perfil.admin_level ?? 0) >= 1 || perfil.user_type === 'admin',
         };

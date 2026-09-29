@@ -3,16 +3,20 @@ import { supabase } from '@/lib/supabase';
 // import { User } from '../../shared/schema';
 
 // Enriquece o usuário com o registro de public.users (papel, admin_level, id real).
-// Defensivo: qualquer falha só retorna o user como está — nunca quebra a sessão.
+// Usa a RPC get_my_profile() (SECURITY DEFINER) — funciona pela sessão do Supabase,
+// contornando RLS e timing. Defensivo: qualquer falha retorna o user como está.
 async function enriquecerComPerfil(u: any): Promise<any> {
   try {
-    const sid = u?.id || u?.supabase_id;
-    if (!sid) return u;
-    const { data: row } = await supabase.from('users').select('*').eq('supabase_id', sid).maybeSingle();
+    // Garante que a sessão do Supabase esteja ativa (não só o localStorage do app).
+    const { data: sess } = await supabase.auth.getSession();
+    if (!sess?.session) return u;
+    const { data: row } = await supabase.rpc('get_my_profile');
     if (!row) return u;
     return {
       ...u,
       ...row,
+      id: u.id, // mantém o UUID do Supabase (outras telas dependem dele)
+      id_interno: (row as any).id, // id numérico de public.users (OrbitMatch/fatos)
       email: u.email ?? (row as any).email,
       isAdmin: ((row as any).admin_level ?? 0) >= 1 || (row as any).user_type === 'admin',
     };
