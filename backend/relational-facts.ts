@@ -472,14 +472,14 @@ export interface PerfilRelacional {
   qualificacoes: string[];
   // "Como você chegou até ele?" (§6/§18). Você → intermediário → profissional.
   // §35: só nomeia o intermediário quando ele é conexão direta de quem procura.
-  caminho: Array<{ nome: string; descricao: string }>;
+  caminho: Array<{ nome: string; descricao: string; avatar?: string | null }>;
 }
 
 export async function perfilRelacional(
   store: FactStore,
   profissionalUserId: number,
   requesterId: number,
-  opts: { categoria?: string | null; nomePorId?: (id: number) => string | undefined; now?: Date } = {},
+  opts: { categoria?: string | null; nomePorId?: (id: number) => string | undefined; avatarPorId?: (id: number) => string | undefined; now?: Date } = {},
 ): Promise<PerfilRelacional> {
   const now = opts.now ?? new Date();
   const facts = await store.listFacts();
@@ -510,7 +510,10 @@ export async function perfilRelacional(
     if (c.userAId === requesterId) minhasConexoes.add(c.userBId);
     if (c.userBId === requesterId) minhasConexoes.add(c.userAId);
   }
-  const caminho: Array<{ nome: string; descricao: string }> = [{ nome: 'Você', descricao: 'Seu perfil' }];
+  const av = (id: number) => opts.avatarPorId?.(id) ?? null; // foto no círculo (não só do profissional)
+  const caminho: Array<{ nome: string; descricao: string; avatar?: string | null }> = [
+    { nome: 'Você', descricao: 'Seu perfil', avatar: av(requesterId) },
+  ];
   // Preferir indicação; depois experiência conjunta.
   const viaIndic = indicacoes.find(f => minhasConexoes.has(f.subjectId));
   const viaTrab = trabalhos.find(f => f.objectUserId != null && minhasConexoes.has(f.objectUserId));
@@ -518,9 +521,9 @@ export async function perfilRelacional(
   const nomeProf = opts.nomePorId?.(profissionalUserId) || 'Profissional';
   if (interId != null) {
     const nomeInter = opts.nomePorId?.(interId) || 'Uma conexão sua';
-    caminho.push({ nome: nomeInter, descricao: viaIndic ? `Indicou ${nomeProf.split(' ')[0]}` : `Trabalhou com ${nomeProf.split(' ')[0]}` });
+    caminho.push({ nome: nomeInter, descricao: viaIndic ? `Indicou ${nomeProf.split(' ')[0]}` : `Trabalhou com ${nomeProf.split(' ')[0]}`, avatar: av(interId) });
   }
-  caminho.push({ nome: nomeProf, descricao: validados.length ? 'Experiência validada' : 'Profissional' });
+  caminho.push({ nome: nomeProf, descricao: validados.length ? 'Experiência validada' : 'Profissional', avatar: av(profissionalUserId) });
 
   return {
     contexto: await contextoRelacional(store, requesterId, profissionalUserId, {

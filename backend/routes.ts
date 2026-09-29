@@ -3112,7 +3112,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         || (usuarios as any[]).find(u => u.id === id)?.fullName
         || (usuarios as any[]).find(u => u.id === id)?.username;
 
-      const perfil = await perfilRelacional(factStore, profUserId, quemProcura, { nomePorId });
+      // foto no círculo do caminho (Você/intermediário/profissional) — não só do profissional
+      const avatarDeProfPorUserId = new Map<number, string>();
+      for (const p of profissionais as any[]) if (p.userId && p.avatar) avatarDeProfPorUserId.set(p.userId, p.avatar);
+      const avatarPorId = (id: number) => avatarDeProfPorUserId.get(id)
+        || (usuarios as any[]).find(u => u.id === id)?.profileImage
+        || (usuarios as any[]).find(u => u.id === id)?.avatar;
+
+      const perfil = await perfilRelacional(factStore, profUserId, quemProcura, { nomePorId, avatarPorId });
 
       res.json({
         success: true,

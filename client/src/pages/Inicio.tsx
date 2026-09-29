@@ -5,6 +5,7 @@ import { isAdminUser } from '@/lib/isAdmin';
 import { OrbitSystem } from '@/components/orbit-system';
 import { ProfessionalModal } from '@/components/professional-modal';
 import ConversaModal from '@/components/ConversaModal';
+import { StarfieldBackground } from '@/components/starfield-background';
 
 // HOME no design alvo — "Sua rede em movimento".
 // Coração da tese: necessidade → OrbitMatch → recomendação COM MOTIVO.
@@ -45,37 +46,49 @@ function Avatar({ src, name }: { src?: string | null; name: string }) {
 // Órbita: núcleo + nós nomeados (design alvo). SVG leve, sem libs.
 // REGRA: nenhum número é inventado. Cada nó só mostra contagem quando ela vem
 // do banco (prop `counts`). Sem dado → só o rótulo (componente estrutural).
-function OrbitNetwork({ counts, onNucleo }: { counts?: Record<string, number>; onNucleo?: () => void }) {
+// NEURAL CORE (design-alvo, imagem 3): núcleo ORBITRUM + nós de CATEGORIA orbitando.
+// Não é só profissionais — inclui Empresas e Oportunidades (pedido do Pedro).
+// Cada nó é clicável: Profissionais/Indicações/Sua rede disparam a busca; Empresas/
+// Oportunidades ainda "em breve" (honesto). Números só quando vêm do banco (nunca fake).
+function OrbitNetwork({ counts, onNode }: { counts?: Record<string, number>; onNode?: (key: string) => void }) {
   const sub = (chave: string) => {
     const n = counts?.[chave];
-    return typeof n === 'number' ? String(n) : undefined; // undefined = não renderiza número fake
+    return typeof n === 'number' ? String(n) : undefined;
   };
   const nos = [
-    { key: 'profissionais', label: 'Profissionais', sub: sub('profissionais'), x: 250, y: 70 },
-    { key: 'empresas', label: 'Empresas', sub: sub('empresas'), x: 470, y: 130 },
-    { key: 'oportunidades', label: 'Oportunidades', sub: sub('oportunidades'), x: 470, y: 300 },
-    { key: 'rede', label: 'Sua rede', sub: sub('rede'), x: 250, y: 360 },
-    { key: 'indicacoes', label: 'Indicações', sub: sub('indicacoes'), x: 40, y: 215 },
+    { key: 'rede', label: 'Sua rede', glyph: '◎', x: 150, y: 92, ativo: true },
+    { key: 'profissionais', label: 'Profissionais', glyph: '👤', x: 410, y: 92, ativo: true },
+    { key: 'indicacoes', label: 'Indicações', glyph: '🔗', x: 60, y: 240, ativo: true },
+    { key: 'oportunidades', label: 'Oportunidades', glyph: '📌', x: 500, y: 240, ativo: false },
+    { key: 'empresas', label: 'Empresas', glyph: '🏢', x: 280, y: 372, ativo: false },
   ];
   return (
     <svg viewBox="0 0 560 420" style={{ width: '100%', maxWidth: 560, display: 'block', margin: '0 auto' }}>
       <defs>
-        <radialGradient id="core" cx="50%" cy="45%">
-          <stop offset="0%" stopColor={C.cyan} /><stop offset="55%" stopColor={C.blue} /><stop offset="100%" stopColor="transparent" />
+        <radialGradient id="core" cx="50%" cy="42%">
+          <stop offset="0%" stopColor="#BFF4FF" /><stop offset="40%" stopColor={C.cyan} />
+          <stop offset="72%" stopColor={C.blue} /><stop offset="100%" stopColor="transparent" />
         </radialGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="3.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
       </defs>
-      {[150, 190].map(r => <ellipse key={r} cx="280" cy="215" rx={r} ry={r * 0.62} fill="none" stroke={C.border} />)}
-      {nos.map(n => <line key={n.label} x1="280" y1="215" x2={n.x} y2={n.y} stroke={C.border} />)}
-      <circle cx="280" cy="215" r="52" fill="url(#core)" style={{ cursor: onNucleo ? 'pointer' : 'default' }} onClick={onNucleo} />
-      <text x="280" y="285" textAnchor="middle" fill={C.ink3} fontSize="10">clique para buscar</text>
-      <circle cx="280" cy="215" r="52" fill="none" stroke={C.cyan} strokeOpacity="0.4" />
+      {[120, 165, 200].map(r => <ellipse key={r} cx="280" cy="215" rx={r} ry={r * 0.58} fill="none" stroke={C.border} strokeOpacity="0.5" />)}
+      {nos.map(n => <line key={n.label} x1="280" y1="215" x2={n.x} y2={n.y} stroke={C.border} strokeOpacity="0.6" />)}
+      {/* núcleo ORBITRUM */}
+      <g style={{ cursor: onNode ? 'pointer' : 'default' }} onClick={() => onNode?.('rede')}>
+        <circle cx="280" cy="215" r="46" fill="url(#core)" filter="url(#glow)" />
+        <circle cx="280" cy="215" r="46" fill="none" stroke={C.cyan} strokeOpacity="0.5" />
+        <text x="280" y="212" textAnchor="middle" fill="#00131F" fontSize="12" fontWeight="800" letterSpacing="1">ORBITRUM</text>
+        <text x="280" y="228" textAnchor="middle" fill="#00131F" fontSize="8.5" opacity="0.8">buscar</text>
+      </g>
+      {/* nós de categoria */}
       {nos.map(n => (
-        <g key={n.label}>
-          <circle cx={n.x} cy={n.y} r="6" fill={C.cyan} />
-          <text x={n.x} y={n.y - 12} textAnchor="middle" fill={C.ink} fontSize="12" fontWeight="600">{n.label}</text>
-          {n.sub !== undefined && (
-            <text x={n.x} y={n.y + 20} textAnchor="middle" fill={C.ink3} fontSize="10">{n.sub}</text>
-          )}
+        <g key={n.label} style={{ cursor: onNode ? 'pointer' : 'default' }} onClick={() => onNode?.(n.key)}>
+          <circle cx={n.x} cy={n.y} r="19" fill="#04223A" stroke={n.ativo ? C.cyan : C.border} strokeWidth={n.ativo ? 1.4 : 1} />
+          <text x={n.x} y={n.y + 5} textAnchor="middle" fontSize="15">{n.glyph}</text>
+          <text x={n.x} y={n.y - 26} textAnchor="middle" fill={n.ativo ? C.ink : C.ink3} fontSize="12" fontWeight="600">{n.label}</text>
+          {sub(n.key) !== undefined
+            ? <text x={n.x} y={n.y + 34} textAnchor="middle" fill={C.cyan} fontSize="11" fontWeight="700">{sub(n.key)}</text>
+            : (!n.ativo && <text x={n.x} y={n.y + 34} textAnchor="middle" fill={C.ink3} fontSize="9">em breve</text>)}
         </g>
       ))}
     </svg>
@@ -121,9 +134,11 @@ export default function Inicio() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', position: 'relative' }}>
+      {/* Fundo espacial (cometas + estrelas) — o mesmo do sistema orbit, atrás do design */}
+      <StarfieldBackground />
       {/* SIDEBAR */}
-      <aside style={{ width: 186, borderRight: `1px solid ${C.border}`, background: '#03111F', padding: '20px 14px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <aside style={{ width: 186, borderRight: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', backdropFilter: 'blur(6px)', padding: '20px 14px', display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
           <div style={{ width: 24, height: 24, borderRadius: '50%', background: `radial-gradient(circle at 50% 40%, ${C.cyan}, ${C.blue} 60%, transparent)` }} />
           <span style={{ letterSpacing: 2, fontWeight: 700, fontSize: 15 }}>ORBITRUM</span>
@@ -177,7 +192,7 @@ export default function Inicio() {
       </aside>
 
       {/* CONTEÚDO */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
         {/* header */}
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, maxWidth: 460 }}>
@@ -201,8 +216,23 @@ export default function Inicio() {
               <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Sua rede em movimento</h1>
               <p style={{ color: C.ink3, fontSize: 13, margin: '4px 0 0' }}>Cada conexão fortalece o seu ecossistema.</p>
             </div>
-            {/* MIOLO ORBITAL — o sistema orbit original (profissionais orbitando + busca).
-                Clicar num profissional abre o perfil-tese (não o modal de tokens). */}
+            {/* Categorias da rede — não só profissionais: Empresas e Oportunidades também.
+                Faixa ADITIVA acima do orbit (não altera o sistema orbit). Ativas buscam; futuras "em breve". */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+              {([
+                ['👤', 'Profissionais', true], ['🔗', 'Indicações', true], ['◎', 'Sua rede', true],
+                ['🏢', 'Empresas', false], ['📌', 'Oportunidades', false],
+              ] as Array<[string, string, boolean]>).map(([ic, label, ativo]) => (
+                <button key={label} onClick={() => ativo && buscar()} disabled={!ativo}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 16,
+                    border: `1px solid ${ativo ? C.border : 'rgba(120,150,170,0.15)'}`, background: ativo ? `${C.blue}12` : 'transparent',
+                    color: ativo ? C.ink : C.ink3, fontSize: 12, cursor: ativo ? 'pointer' : 'default' }}>
+                  <span>{ic}</span>{label}{!ativo && <span style={{ fontSize: 9, color: C.ink3 }}>· em breve</span>}
+                </button>
+              ))}
+            </div>
+            {/* MIOLO ORBITAL — o sistema orbit ORIGINAL (profissionais orbitando + busca).
+                NÃO remover. Clicar num profissional abre o perfil-tese. */}
             <div style={{ position: 'relative', minHeight: 420 }}>
               <OrbitSystem onOpenProfessional={(id: number) => setProfModalId(id)} onOpenLogin={() => {}} />
             </div>

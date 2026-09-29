@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import MiniMapa from '@/components/MiniMapa';
 
 // CONVERSA INLINE — o ciclo acontece na MESMA tela (não muda de aba).
 // Overlay sobre a home: conversa → serviço combinado → concluído → os dois
@@ -13,12 +14,13 @@ const C = {
   ink: '#EAF8FF', ink2: '#7FA9C2', ink3: '#5b7a90',
 };
 
-type Estado = 'conversando' | 'combinado' | 'concluido' | 'validado';
+type Estado = 'conversando' | 'combinado' | 'a_caminho' | 'concluido' | 'validado';
 const FLUXO: Array<[Estado, string]> = [
   ['conversando', 'Conversando'],
-  ['combinado', 'Serviço combinado'],
-  ['concluido', 'Serviço concluído'],
-  ['validado', 'Experiência validada'],
+  ['combinado', 'Combinado'],
+  ['a_caminho', 'A caminho'],
+  ['concluido', 'Concluído'],
+  ['validado', 'Validada'],
 ];
 
 interface Msg { de: 'eu' | 'ele'; texto: string }
@@ -116,7 +118,12 @@ export default function ConversaModal({ profId, onClose }: Props) {
 
         {/* conversa */}
         <div style={{ flex: 1, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', minHeight: 160 }}>
-          {msgs.length === 0 && (
+          {/* MINI-MAPA no próprio card quando o profissional aceita e está a caminho.
+              Toda a imersão acontece aqui — não abre outra tela. */}
+          {(estado === 'a_caminho' || estado === 'concluido') && (
+            <MiniMapa nomeProf={prof?.name ?? 'Profissional'} origem={null} />
+          )}
+          {msgs.length === 0 && estado === 'conversando' && (
             <div style={{ color: C.ink3, fontSize: 13, textAlign: 'center', marginTop: 20 }}>
               Combine o serviço direto com {prof?.name?.split(' ')[0] ?? 'o profissional'}.<br />
               Quando acontecer e os dois confirmarem, a rede registra a experiência.
@@ -139,7 +146,10 @@ export default function ConversaModal({ profId, onClose }: Props) {
             <button onClick={() => setEstado('combinado')} style={botao(C)}>Combinamos o serviço</button>
           )}
           {estado === 'combinado' && (
-            <button onClick={marcarConcluido} style={botao(C)}>Marcar serviço como concluído</button>
+            <button onClick={() => setEstado('a_caminho')} style={botao(C)}>Aceitar — profissional a caminho</button>
+          )}
+          {estado === 'a_caminho' && (
+            <button onClick={marcarConcluido} style={botao(C)}>Cheguei · serviço concluído</button>
           )}
           {estado === 'concluido' && factId && (
             <button onClick={confirmar} style={botao(C)}>Confirmar experiência (os dois lados)</button>

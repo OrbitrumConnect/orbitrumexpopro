@@ -51,7 +51,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
   const chips: string[] = perfil?.contexto?.chips ?? [];
   const motivos: string[] = perfil?.contexto?.motivos ?? [];
   const placar = perfil?.placar;
-  const caminho: Array<{ nome: string; descricao: string }> = perfil?.caminho ?? [];
+  const caminho: Array<{ nome: string; descricao: string; avatar?: string | null }> = perfil?.caminho ?? [];
   const experiencias = perfil?.experienciasRelevantes ?? [];
   const especialidades: string[] = p?.services ?? [];
 
@@ -109,7 +109,9 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
                 {caminho.map((s, i) => (
                   <div key={i}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: 12 }}>{s.nome[0]?.toUpperCase()}</div>
+                      {s.avatar
+                        ? <img src={s.avatar} alt={s.nome} style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.borderHot}` }} />
+                        : <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: 12 }}>{s.nome[0]?.toUpperCase()}</div>}
                       <div><div style={{ fontSize: 13, fontWeight: 600 }}>{s.nome}</div><div style={{ fontSize: 11, color: C.ink3 }}>{s.descricao}</div></div>
                     </div>
                     {i < caminho.length - 1 && <div style={{ marginLeft: 13, color: C.cyan, fontSize: 14 }}>↓</div>}
