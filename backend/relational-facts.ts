@@ -473,6 +473,7 @@ export interface PerfilRelacional {
   // "Como você chegou até ele?" (§6/§18). Você → intermediário → profissional.
   // §35: só nomeia o intermediário quando ele é conexão direta de quem procura.
   caminho: Array<{ nome: string; descricao: string; avatar?: string | null }>;
+  conexoesEmComum: number; // quantas conexões o solicitante e o profissional têm em comum (design)
 }
 
 export async function perfilRelacional(
@@ -525,6 +526,16 @@ export async function perfilRelacional(
   }
   caminho.push({ nome: nomeProf, descricao: validados.length ? 'Experiência validada' : 'Profissional', avatar: av(profissionalUserId) });
 
+  // conexões em comum: interseção das conexões ativas do solicitante e do profissional
+  const conexoesProf = new Set<number>();
+  for (const c of conns) {
+    if (c.status !== 'active') continue;
+    if (c.userAId === profissionalUserId) conexoesProf.add(c.userBId);
+    if (c.userBId === profissionalUserId) conexoesProf.add(c.userAId);
+  }
+  let conexoesEmComum = 0;
+  for (const id of minhasConexoes) if (conexoesProf.has(id)) conexoesEmComum++;
+
   return {
     contexto: await contextoRelacional(store, requesterId, profissionalUserId, {
       categoria: opts.categoria,
@@ -540,5 +551,6 @@ export async function perfilRelacional(
     experienciasRelevantes,
     qualificacoes: quali.map(q => q.objectValue).filter(Boolean) as string[],
     caminho,
+    conexoesEmComum,
   };
 }

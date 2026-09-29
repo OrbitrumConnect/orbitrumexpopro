@@ -51,6 +51,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
   const chips: string[] = perfil?.contexto?.chips ?? [];
   const motivos: string[] = perfil?.contexto?.motivos ?? [];
   const placar = perfil?.placar;
+  const conexoesEmComum: number = perfil?.conexoesEmComum ?? 0;
   const caminho: Array<{ nome: string; descricao: string; avatar?: string | null }> = perfil?.caminho ?? [];
   const experiencias = perfil?.experienciasRelevantes ?? [];
   const especialidades: string[] = p?.services ?? [];
@@ -73,20 +74,31 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
                   : <div style={{ width: 60, height: 60, borderRadius: '50%', background: `${C.blue}33`, border: `2px solid ${C.borderHot}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: 24 }}>{p.name?.[0]}</div>}
                 <div>
                   <div style={{ fontSize: 20, fontWeight: 600 }}>{p.name}</div>
-                  <div style={{ color: C.ink3, fontSize: 13 }}>{p.title}{p.city ? ` · ${p.city}` : ''}</div>
+                  {/* o que faz (escopo dos serviços) — perfil mais robusto, dado real */}
+                  <div style={{ color: C.ink2, fontSize: 13 }}>{p.title}{especialidades.length ? ` · ${especialidades.slice(0, 2).join(' e ')}` : ''}</div>
+                  {/* onde + disponibilidade (só o que o banco tem; sem distância fabricada) */}
+                  <div style={{ color: C.ink3, fontSize: 12, marginTop: 2 }}>
+                    {p.city ? `${p.city}${p.state ? '/' + p.state : ''}` : 'Região a combinar'}
+                    {p.available ? <span style={{ color: C.cyan }}> · Disponível</span> : ''}
+                  </div>
                 </div>
               </div>
               <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.ink2, fontSize: 22, cursor: 'pointer' }}>×</button>
             </div>
 
             {/* chips de fato */}
-            {chips.length > 0 && (
+            {(chips.length > 0 || conexoesEmComum > 0) && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
                 {chips.map((c, i) => (
                   <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.ink, background: `${C.blue}14`, border: `1px solid ${C.border}`, borderRadius: 12, padding: '3px 10px' }}>
                     <span style={{ color: C.cyan }}>✓</span>{c}
                   </span>
                 ))}
+                {conexoesEmComum > 0 && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.ink2, background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 12, padding: '3px 10px' }}>
+                    <span style={{ color: C.cyan }}>◎</span>{conexoesEmComum} {conexoesEmComum === 1 ? 'conexão em comum' : 'conexões em comum'}
+                  </span>
+                )}
               </div>
             )}
 
