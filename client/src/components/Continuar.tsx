@@ -39,7 +39,8 @@ export default function Continuar({ prof, onIndicar, onNovaBusca, onSolicitar }:
 
   const acoes: Array<{ label: string; icon: string; href?: string; onClick?: () => void }> = [];
   if (whats) acoes.push({ label: 'Conversar no WhatsApp', icon: '💬', href: `https://wa.me/55${whats}` });
-  if (temGeo) acoes.push({ label: 'Ir até ele (Uber)', icon: '🚗', href: `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${prof.latitude}&dropoff[longitude]=${prof.longitude}&dropoff[nickname]=${encodeURIComponent(prof.name)}` });
+  if (temGeo) acoes.push({ label: 'Ir de Uber', icon: '🚗', href: `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${prof.latitude}&dropoff[longitude]=${prof.longitude}&dropoff[nickname]=${encodeURIComponent(prof.name)}` });
+  if (temGeo) acoes.push({ label: 'Ir de 99', icon: '🚕', href: `https://99app.com/` });
   if (destino) acoes.push({ label: 'Ver rota no mapa', icon: '📍', href: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}` });
   if (prof.linkedinUrl) acoes.push({ label: 'Ver LinkedIn', icon: '💼', href: prof.linkedinUrl });
   if (onIndicar) acoes.push({ label: 'Indicar para alguém', icon: '🔗', onClick: onIndicar });

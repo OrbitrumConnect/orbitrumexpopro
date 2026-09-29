@@ -59,9 +59,9 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
 
   return (
     <div onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.82)', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: 20, overflowY: 'auto', zIndex: 60, fontFamily: 'Inter, system-ui, sans-serif' }}>
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.82)', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: 'clamp(6px, 2.5vw, 20px)', overflowY: 'auto', zIndex: 60, fontFamily: 'Inter, system-ui, sans-serif' }}>
       <div onClick={e => e.stopPropagation()}
-        style={{ background: C.bg2, border: `1px solid ${C.borderHot}`, borderRadius: 18, maxWidth: 520, width: '100%', marginTop: 24, padding: 24, color: C.ink, boxShadow: `0 0 44px ${C.blue}22` }}>
+        style={{ background: C.bg2, border: `1px solid ${C.borderHot}`, borderRadius: 18, maxWidth: 'min(760px, 96vw)', width: '100%', marginTop: 'clamp(8px, 2vh, 24px)', padding: 'clamp(16px, 4vw, 24px)', color: C.ink, boxShadow: `0 0 44px ${C.blue}22` }}>
 
         {carregando && <p style={{ color: C.ink2 }}>Carregando contexto…</p>}
 

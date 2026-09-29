@@ -26,7 +26,7 @@ import {
   aoConcluirServico, aoConfirmarExperiencia, aoConfirmarIndicacao,
   aoAprovarValidacao, aoMudarDisponibilidade, comporBusca,
 } from './relational-triggers';
-import { perfilRelacional } from './relational-facts';
+import { perfilRelacional, atividadeRecente } from './relational-facts';
 import { eq as _eq } from 'drizzle-orm';
 
 // Helper functions para carteira administrativa
@@ -3139,6 +3139,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Erro no perfil relacional:", error);
       res.status(500).json({ success: false, message: "Falha ao montar o perfil" });
+    }
+  });
+
+  // Atividade recente da rede do usuário (design-alvo, faixa inferior). Vem dos fatos, §35.
+  app.get("/api/orbitmatch/atividade", async (req, res) => {
+    try {
+      const userId = parseInt(String(req.query.userId || "0"));
+      const usuarios = await _db.select().from(_users);
+      const profissionais = await _db.select().from(_professionals);
+      const nomeProf = new Map<number, string>(); const avaProf = new Map<number, string>();
+      for (const p of profissionais as any[]) { if (p.userId) { nomeProf.set(p.userId, p.name); if (p.avatar) avaProf.set(p.userId, p.avatar); } }
+      const nomePorId = (id: number) => nomeProf.get(id) || (usuarios as any[]).find(u => u.id === id)?.fullName || (usuarios as any[]).find(u => u.id === id)?.username;
+      const avatarPorId = (id: number) => avaProf.get(id) || (usuarios as any[]).find(u => u.id === id)?.profileImage;
+      const itens = await atividadeRecente(factStore, userId, { nomePorId, avatarPorId, limite: 6 });
+      res.json({ success: true, itens });
+    } catch (error) {
+      console.error("Erro na atividade recente:", error);
+      res.status(500).json({ success: false, message: "Falha ao montar a atividade" });
     }
   });
 

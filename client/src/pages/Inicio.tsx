@@ -109,6 +109,7 @@ export default function Inicio() {
   const [resultados, setResultados] = useState<Rec[]>([]);
   const [buscou, setBuscou] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [atividade, setAtividade] = useState<Array<{ texto: string; quando: string; avatar?: string | null }>>([]);
   const userId = String(user?.id_interno ?? 1);
 
   useEffect(() => {
@@ -120,6 +121,10 @@ export default function Inicio() {
     fetch(`/api/orbitmatch/search?userId=${userId}`)
       .then(r => r.json())
       .then(j => { if (j.success) setRecs((j.resultados as Rec[]).filter(r => r.motivos.length).slice(0, 3)); })
+      .catch(() => {});
+    fetch(`/api/orbitmatch/atividade?userId=${userId}`)
+      .then(r => r.json())
+      .then(j => { if (j.success && Array.isArray(j.itens)) setAtividade(j.itens); })
       .catch(() => {});
   }, [userId]);
 
@@ -357,10 +362,23 @@ export default function Inicio() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <span style={{ fontWeight: 600, fontSize: 14 }}>Atividade recente</span>
           </div>
-          <p style={{ color: C.ink2, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
-            Cada indicação, conexão e experiência validada da sua rede aparece aqui —
-            “Ana indicou você para Carlos”, “sua experiência foi validada”. Assim que a rede se mover, você acompanha por aqui.
-          </p>
+          {atividade.length > 0 ? (
+            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+              {atividade.map((a, i) => (
+                <div key={i} style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 8, background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '8px 12px', maxWidth: 280 }}>
+                  {a.avatar
+                    ? <img src={a.avatar} alt="" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                    : <div style={{ width: 26, height: 26, borderRadius: '50%', background: `${C.blue}33`, flexShrink: 0 }} />}
+                  <span style={{ fontSize: 12, color: C.ink }}>{a.texto}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: C.ink2, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
+              Cada indicação, conexão e experiência validada da sua rede aparece aqui —
+              “Ana indicou você para Carlos”, “sua experiência foi validada”. Assim que a rede se mover, você acompanha por aqui.
+            </p>
+          )}
         </div>
 
         {/* RODAPÉ — nada órfão: cadastro de profissional + páginas legais acessíveis da home */}

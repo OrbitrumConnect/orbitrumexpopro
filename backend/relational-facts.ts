@@ -554,3 +554,51 @@ export async function perfilRelacional(
     conexoesEmComum,
   };
 }
+
+
+// ATIVIDADE RECENTE — stream honesto dos fatos da rede do usuário (design-alvo, faixa inferior).
+// §35: só nomeia quem é conexão direta; o resto é "alguém da rede". Nada fabricado — vem dos fatos.
+export async function atividadeRecente(
+  store: FactStore,
+  userId: number,
+  opts: { nomePorId?: (id: number) => string | undefined; avatarPorId?: (id: number) => string | undefined; limite?: number } = {},
+): Promise<Array<{ texto: string; quando: string; avatar?: string | null }>> {
+  const facts = (await store.listFacts()).filter(f => !f.supersededBy);
+  const conns = await store.listConnections();
+  const minhas = new Set<number>();
+  for (const c of conns) {
+    if (c.status !== "active") continue;
+    if (c.userAId === userId) minhas.add(c.userBId);
+    if (c.userBId === userId) minhas.add(c.userAId);
+  }
+  const nome = (id: number | null | undefined) => {
+    if (id == null) return "Alguém";
+    if (id === userId) return "Você";
+    if (minhas.has(id)) return opts.nomePorId?.(id) || "Uma conexão sua";
+    return "Alguém da rede"; // §35
+  };
+  const relevante = (f: RelationalFact) =>
+    f.subjectId === userId || f.objectUserId === userId ||
+    minhas.has(f.subjectId) || (f.objectUserId != null && minhas.has(f.objectUserId));
+  return facts
+    .filter(relevante)
+    .sort((a, b) => +new Date(b.occurredAt) - +new Date(a.occurredAt))
+    .slice(0, opts.limite ?? 6)
+    .map(f => {
+      const a = nome(f.subjectId), b = nome(f.objectUserId);
+      const euEnvolvido = f.subjectId === userId || f.objectUserId === userId;
+      let texto: string;
+      switch (f.predicate) {
+        case PREDICATES.INDICOU: texto = a + " indicou " + b; break;
+        case PREDICATES.TRABALHOU_COM:
+          texto = confidenceRank(f.confidence) >= confidenceRank("validado")
+            ? (euEnvolvido ? "Sua experiência foi validada" : "Experiência validada entre " + a + " e " + b)
+            : a + " registrou uma experiência";
+          break;
+        case PREDICATES.DISPONIVEL_EM: texto = a + " atualizou a disponibilidade"; break;
+        case PREDICATES.TEM_QUALIFICACAO: texto = a + " teve uma qualificação verificada"; break;
+        default: texto = a + " atualizou a rede";
+      }
+      return { texto, quando: new Date(f.occurredAt).toISOString(), avatar: opts.avatarPorId?.(f.subjectId) ?? null };
+    });
+}
