@@ -46,7 +46,7 @@ function Avatar({ src, name }: { src?: string | null; name: string }) {
 // Órbita: núcleo + nós nomeados (design alvo). SVG leve, sem libs.
 // REGRA: nenhum número é inventado. Cada nó só mostra contagem quando ela vem
 // do banco (prop `counts`). Sem dado → só o rótulo (componente estrutural).
-function OrbitNetwork({ counts }: { counts?: Record<string, number> }) {
+function OrbitNetwork({ counts, onNucleo }: { counts?: Record<string, number>; onNucleo?: () => void }) {
   const sub = (chave: string) => {
     const n = counts?.[chave];
     return typeof n === 'number' ? String(n) : undefined; // undefined = não renderiza número fake
@@ -67,7 +67,8 @@ function OrbitNetwork({ counts }: { counts?: Record<string, number> }) {
       </defs>
       {[150, 190].map(r => <ellipse key={r} cx="280" cy="215" rx={r} ry={r * 0.62} fill="none" stroke={C.border} />)}
       {nos.map(n => <line key={n.label} x1="280" y1="215" x2={n.x} y2={n.y} stroke={C.border} />)}
-      <circle cx="280" cy="215" r="52" fill="url(#core)" />
+      <circle cx="280" cy="215" r="52" fill="url(#core)" style={{ cursor: onNucleo ? 'pointer' : 'default' }} onClick={onNucleo} />
+      <text x="280" y="285" textAnchor="middle" fill={C.ink3} fontSize="10">clique para buscar</text>
       <circle cx="280" cy="215" r="52" fill="none" stroke={C.cyan} strokeOpacity="0.4" />
       {nos.map(n => (
         <g key={n.label}>
@@ -154,7 +155,7 @@ export default function Inicio() {
               <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Sua rede em movimento</h1>
               <p style={{ color: C.ink3, fontSize: 13, margin: '4px 0 0' }}>Cada conexão fortalece o seu ecossistema.</p>
             </div>
-            <OrbitNetwork counts={counts} />
+            <OrbitNetwork counts={counts} onNucleo={buscar} />
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 8 }}>
               <div style={{ display: 'flex', gap: 10 }}>
                 <input value={necessidade} onChange={e => setNecessidade(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscar()}

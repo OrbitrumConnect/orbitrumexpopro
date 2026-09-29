@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import BottomNav from '@/components/BottomNav';
 
 // CONVERSA / NEGOCIAÇÃO — mas o chat NÃO é o fim (§20-22 do contrato).
 // A tela leva ao fechamento do ciclo: conversa → serviço → CONCLUÍDO → os dois
@@ -157,6 +158,7 @@ export default function Conversa() {
           style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: '11px 16px', color: C.ink, fontSize: 14, outline: 'none' }} />
         <button onClick={enviar} style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 700 }}>↑</button>
       </div>
+      <BottomNav />
     </div>
   );
 }

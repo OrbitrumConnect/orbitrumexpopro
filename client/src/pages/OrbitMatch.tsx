@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import BottomNav from '@/components/BottomNav';
 
 // OrbitMatch — o coração da tese, vestido com o design alvo.
 // "O que você precisa resolver?" → resultado com O MOTIVO (por que apareceu).
@@ -375,6 +376,7 @@ export default function OrbitMatch() {
           </div>
         </div>
       )}
+      <BottomNav />
     </div>
   );
 }

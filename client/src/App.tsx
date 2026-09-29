@@ -74,7 +74,8 @@ function AppContent() {
           onClose={handleCloseWelcome}
         />
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/" component={Inicio} />
+        <Route path="/classico" component={Home} />
         <Route path="/orbitmatch" component={OrbitMatch} />
         <Route path="/inicio" component={Inicio} />
         <Route path="/conversa/:profId" component={Conversa} />
