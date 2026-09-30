@@ -3171,6 +3171,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Disponíveis no MAPA — só quem tem disponivel_em VIGENTE + coordenada. Estado real/temporal.
+  app.get("/api/orbitmatch/disponiveis", async (req, res) => {
+    try {
+      const agora = new Date();
+      const facts = await factStore.listFacts();
+      const disp = new Set<number>();
+      for (const f of facts as any[]) {
+        if (f.predicate === 'disponivel_em' && !f.supersededBy) {
+          const vu = f.validUntil ? new Date(f.validUntil) : null;
+          if (!vu || vu > agora) disp.add(f.subjectId);
+        }
+      }
+      const profissionais = await _db.select().from(_professionals);
+      const itens = (profissionais as any[])
+        .filter(p => p.latitude != null && p.longitude != null && disp.has(p.userId ?? p.id))
+        .map(p => ({ id: p.id, name: p.name, title: p.title, avatar: p.avatar, latitude: p.latitude, longitude: p.longitude, available: true }));
+      res.json({ success: true, itens });
+    } catch (error) {
+      console.error("Erro em disponiveis:", error);
+      res.status(500).json({ success: false, message: "Falha ao listar disponíveis" });
+    }
+  });
+
   app.post("/api/professional/update-service-status", async (req, res) => {
     try {
       const { serviceId, status, reason, professionalId, timestamp } = req.body;
