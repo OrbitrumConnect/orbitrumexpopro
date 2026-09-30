@@ -1,56 +1,39 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Users, Star, X, UserPlus, Crown, Briefcase, ArrowLeft, Eye, UserMinus, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
+import { Users, X, UserPlus, Briefcase, Eye, UserMinus, Lock, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/Sidebar";
 import { ProfessionalModal } from "@/components/professional-modal";
-import { StarfieldBackground } from "@/components/starfield-background";
 import { Link, useLocation } from "wouter";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import type { Professional, User } from "@shared/schema";
 
+const C = {
+  bg: '#020914', bg2: '#061A2D', card: 'rgba(3,18,32,0.9)',
+  cyan: '#00E5FF', blue: '#00AEEF',
+  border: 'rgba(0,174,255,0.18)', borderHot: 'rgba(0,220,255,0.5)',
+  ink: '#F4FAFF', ink2: '#91A9BD', ink3: '#607A91',
+};
+
 export default function Teams() {
-  const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
+  const [expandedTeam, setExpandedTeam] = useState<number | null>(null);
   const [professionalModalOpen, setProfessionalModalOpen] = useState(false);
   const [selectedProfessionalId, setSelectedProfessionalId] = useState<number | null>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const isMobile = useIsMobile();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user: authUser } = useAuth();
   const [, setLocation] = useLocation();
 
-  const { user: authUser } = useAuth();
-  
   const { data: user } = useQuery<User>({
     queryKey: ["/api/users/1"],
-    enabled: isAuthenticated && !authUser?.email, // Só buscar se não há usuário autenticado
+    enabled: isAuthenticated && !authUser?.email,
   });
 
-  // Admin por papel/admin_level (não por e-mail fixo), coerente com useAuth/AdminDashboard.
-  const isAdmin = (authUser as any)?.isAdmin === true
-    || ((authUser as any)?.admin_level ?? 0) >= 1
-    || (authUser as any)?.user_type === 'admin';
-  
-  // Usar usuário autenticado ou fallback para demo
   const currentUser = authUser || user;
-  
-  // Debug para verificar status do admin
-  console.log('🎯 TEAMS ACCESS CHECK:', {
-    isAuthenticated,
-    authUser: authUser?.email,
-    isAdmin,
-    currentUserPlan: currentUser?.plan,
-    shouldBlock: currentUser?.plan === 'free' && !isAdmin
-  });
 
-  // A queryFn do projeto pode retornar null (não só undefined), e `= []` não cobre null.
-  // Normaliza para SEMPRE array — protege todos os usos (filter, find, map) de uma vez.
   const { data: teamsData, isLoading } = useQuery<any[]>({
     queryKey: ["/api/teams"],
     enabled: isAuthenticated,
@@ -62,34 +45,15 @@ export default function Teams() {
   });
   const professionals = professionalsData ?? [];
 
-
-
   const removeFromTeamMutation = useMutation({
     mutationFn: async ({ teamId, professionalId }: { teamId: number; professionalId: number }) => {
-      return apiRequest(`/api/teams/${teamId}/remove-professional`, 'POST', JSON.stringify({
-        professionalId,
-      }));
+      return apiRequest(`/api/teams/${teamId}/remove-professional`, 'POST', JSON.stringify({ professionalId }));
     },
     onSuccess: () => {
-      toast({
-        title: "Profissional removido",
-        description: "Profissional removido do time com sucesso.",
-      });
+      toast({ title: "Profissional removido", description: "Removido do time com sucesso." });
       queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
     },
   });
-
-  const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    return (
-      <div className="flex items-center">
-        {Array.from({ length: fullStars }, (_, i) => (
-          <Star key={i} className="text-[var(--neon-cyan)] w-3 h-3 fill-current" />
-        ))}
-        <span className="ml-1 text-sm">{rating}</span>
-      </div>
-    );
-  };
 
   const getTeamProfessionals = (team: any) => {
     if (!team.professionalIds || team.professionalIds.length === 0) return [];
@@ -107,333 +71,177 @@ export default function Teams() {
     }
   };
 
-  // Validação de acesso - usuários deslogados
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
-        <StarfieldBackground />
-        <div className="min-h-screen text-white flex items-center justify-center px-4 relative z-10">
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-600 rounded-lg p-4 text-center max-w-xs">
-            <Lock className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-            <h2 className="text-lg font-semibold mb-2">Acesso Restrito</h2>
-            <p className="text-gray-400 text-xs mb-3">
-              Teams exclusivo para usuários cadastrados
-            </p>
-            <div className="space-y-1.5">
-              <Button className="neon-button w-full text-xs py-1.5">
-                Login
-              </Button>
-              <Link href="/" className="block">
-                <Button variant="outline" className="w-full border-gray-500 text-gray-400 hover:bg-gray-700 text-xs py-1.5">
-                  Voltar
-                </Button>
-              </Link>
-            </div>
-          </div>
+      <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28, textAlign: 'center', maxWidth: 320 }}>
+          <Lock size={28} color={C.ink3} style={{ margin: '0 auto 12px' }} />
+          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 6 }}>Acesso restrito</div>
+          <div style={{ color: C.ink2, fontSize: 13, marginBottom: 16 }}>Faça login para acessar seus times</div>
+          <Link href="/">
+            <button style={{ border: 'none', borderRadius: 10, padding: '9px 24px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+              Voltar ao Início
+            </button>
+          </Link>
         </div>
       </div>
     );
   }
 
-  // Validação de acesso - plano gratuito (admin bypass)
-  if (currentUser?.plan === 'free' && !isAdmin) {
-    return (
-      <div className="min-h-screen relative overflow-hidden">
-        <StarfieldBackground />
-        <div className="min-h-screen text-white flex items-center justify-center px-4 relative z-10">
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-600 rounded-lg p-4 text-center max-w-xs">
-            <Crown className="mx-auto h-8 w-8 text-[var(--neon-cyan)] mb-2" />
-            <h2 className="text-lg font-semibold mb-2">Teams Premium</h2>
-            <p className="text-gray-400 text-xs mb-3">
-              Disponível apenas para planos pagos
-            </p>
-            <div className="space-y-1.5">
-              <Button className="neon-button w-full text-xs py-1.5">
-                Fazer Upgrade
-              </Button>
-              <Link href="/dashboard-client" className="block">
-                <Button variant="outline" className="w-full border-gray-500 text-gray-400 hover:bg-gray-700 text-xs py-1.5">
-                  <ArrowLeft className="w-3 h-3 mr-1" />
-                  Voltar
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const customTeams = teams.filter(t => t.name !== "Por Todos");
+  const porTodos = teams.find(t => t.name === "Por Todos");
+  const porTodosProfessionals = porTodos ? getTeamProfessionals(porTodos) : [];
 
   return (
-    <div className="min-h-screen bg-[var(--space-black)] text-white relative flex">
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
       <Sidebar />
-      <div className="flex-1 min-w-0 max-w-7xl mx-auto px-3 sm:px-6 pt-6">
-        <div className="mb-6 sm:mb-8">
-          {/* Botão Voltar */}
-          <div className="mb-4">
-            <Button
-              variant="outline"
-              onClick={() => setLocation('/dashboard-client')}
-              className="border-cyan-400 text-cyan-400 hover:bg-cyan-400/20 text-sm"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar ao Dashboard
-            </Button>
-          </div>
-          
-          <h1 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4" style={{ 
-            color: '#EAF8FF', 
-            textShadow: 'none',
-            filter: 'brightness(0.9)'
-          }}>
-            <Users className="inline mr-2 sm:mr-3 h-6 sm:h-10 w-6 sm:w-10" />
-            Meus Times
-          </h1>
-          <p className="text-gray-400 text-sm sm:text-base">
-            Monte equipes de até 10 profissionais para seus projetos
-          </p>
-        </div>
-
-        {/* Team Types */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
-          {/* Individual Teams */}
-          <div className="glassmorphism rounded-xl sm:rounded-2xl p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
-              <h2 className="text-lg sm:text-2xl font-semibold" style={{ 
-                color: '#EAF8FF', 
-                textShadow: 'none',
-                filter: 'brightness(0.9)'
-              }}>
-                <UserPlus className="inline mr-1 sm:mr-2 h-5 sm:h-6 w-5 sm:w-6" />
-                Times Personalizados
-              </h2>
-              <Button
-                onClick={() => {
-                  // Redirecionar para home para adicionar mais profissionais
-                  window.location.href = '/';
-                }}
-                variant="outline"
-                className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 touch-manipulation transition-all duration-200 text-sm px-4 py-3 sm:px-4 sm:py-2 w-full sm:w-auto min-h-[44px] active:scale-98"
-              >
-                <UserPlus className="mr-2 h-4 w-4" />
-                Adicionar Profissionais
-              </Button>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Header */}
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', flexWrap: 'wrap', gap: 8 }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Users size={18} /> Equipes
             </div>
+            <div style={{ fontSize: 13, color: C.ink2 }}>Monte times de profissionais para seus projetos</div>
+          </div>
+          <button onClick={() => setLocation('/')}
+            style={{ background: 'none', border: `1px solid ${C.borderHot}`, borderRadius: 10, padding: '8px 16px', color: C.cyan, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <UserPlus size={14} /> Adicionar da rede
+          </button>
+        </header>
 
-            <div className="space-y-4">
-              {(teams || []).filter(team => team.name !== "Por Todos").map((team) => {
-                const teamProfessionals = getTeamProfessionals(team);
-                return (
-                  <motion.div
-                    key={team.id}
-                    className="glassmorphism rounded-lg p-4 cursor-pointer hover:bg-white/10 transition-all touch-manipulation active:scale-98"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedTeam(selectedTeam === team.id ? null : team.id)}
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-semibold text-lg">{team.name}</h3>
-                      <span className="text-[var(--neon-cyan)] text-sm">
-                        {teamProfessionals.length}/10 profissionais
-                      </span>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: 'clamp(16px, 3vw, 28px)' }}>
+          {/* Times personalizados */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 24 }}>
+            {customTeams.map(team => {
+              const profs = getTeamProfessionals(team);
+              const isOpen = expandedTeam === team.id;
+              return (
+                <div key={team.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                  <button onClick={() => setExpandedTeam(isOpen ? null : team.id)}
+                    style={{ width: '100%', textAlign: 'left', padding: '16px 18px', background: 'none', border: 'none', color: C.ink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 15 }}>{team.name}</div>
+                      <div style={{ fontSize: 12, color: C.ink2, marginTop: 2 }}>{profs.length}/10 profissionais</div>
                     </div>
+                    {isOpen ? <ChevronUp size={16} color={C.ink3} /> : <ChevronDown size={16} color={C.ink3} />}
+                  </button>
+                  {isOpen && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '0 18px 16px', borderTop: `1px solid ${C.border}` }}>
+                      {profs.length === 0 ? (
+                        <div style={{ color: C.ink2, fontSize: 13, padding: '16px 0', textAlign: 'center' }}>
+                          Nenhum profissional adicionado. Busque na rede e adicione ao time.
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 12 }}>
+                          {profs.map(prof => (
+                            <ProfCard key={prof.id} prof={prof}
+                              onView={() => handleViewProfile(prof.id)}
+                              onRemove={() => handleRemoveFromTeam(team.id, prof.id)} />
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
-                    {selectedTeam === team.id && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mt-4 space-y-3"
-                      >
-                        {teamProfessionals.length === 0 ? (
-                          <p className="text-gray-400 text-sm">
-                            Nenhum profissional adicionado ainda. 
-                            Adicione profissionais através de seus perfis.
-                          </p>
-                        ) : (
-                          <div className="grid grid-cols-1 gap-2 sm:gap-3">
-                            {teamProfessionals.map((prof) => (
-                              <div
-                                key={prof.id}
-                                className="flex items-center justify-between bg-black/30 rounded-lg p-2 sm:p-3"
-                              >
-                                <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                                  <img
-                                    src={prof.avatar}
-                                    alt={prof.name}
-                                    className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-[var(--neon-cyan)] flex-shrink-0"
-                                  />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="font-medium text-xs sm:text-sm truncate">{prof.name}</p>
-                                    <p className="text-xs text-gray-400 truncate">{prof.title}</p>
-                                    <div className="flex items-center">
-                                      <div className="flex">
-                                        {Array.from({ length: Math.floor(prof.rating) }, (_, i) => (
-                                          <Star key={i} className="text-[var(--neon-cyan)] w-2 h-2 sm:w-3 sm:h-3 fill-current" />
-                                        ))}
-                                      </div>
-                                      <span className="ml-1 text-xs">{prof.rating}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex space-x-2 flex-shrink-0">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleViewProfile(prof.id);
-                                    }}
-                                    className="text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)] hover:text-black touch-manipulation transition-all duration-200 p-2 h-10 w-10 sm:p-1 sm:h-8 sm:w-8 active:scale-95"
-                                  >
-                                    <Eye className="h-4 w-4 sm:h-3 sm:w-3" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRemoveFromTeam(team.id, prof.id);
-                                    }}
-                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/20 touch-manipulation transition-all duration-200 p-2 h-10 w-10 sm:p-1 sm:h-8 sm:w-8 active:scale-95"
-                                  >
-                                    <UserMinus className="h-4 w-4 sm:h-3 sm:w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </motion.div>
-                );
-              })}
+          {/* Empty state */}
+          {customTeams.length === 0 && (
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 28, textAlign: 'center', marginBottom: 24 }}>
+              <Users size={32} color={C.ink3} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+              <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Nenhum time criado</div>
+              <div style={{ color: C.ink2, fontSize: 13, lineHeight: 1.6, maxWidth: 360, margin: '0 auto' }}>
+                Navegue pelos perfis na tela inicial e clique em "Adicionar ao Time" nos profissionais que desejar.
+              </div>
+            </div>
+          )}
 
-              {(teams || []).filter(team => team.name !== "Por Todos").length === 0 && (
-                <div className="text-center text-gray-400 py-8">
-                  <Users className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                  <p>Nenhum time criado ainda.</p>
-                  <p className="text-sm">Crie seu primeiro time para começar!</p>
+          {/* Equipe completa */}
+          {porTodos && (
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 20, marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Briefcase size={16} color={C.cyan} /> Equipe completa
+                  </div>
+                  <div style={{ fontSize: 12, color: C.ink2, marginTop: 2 }}>Todos os profissionais disponíveis na rede</div>
+                </div>
+                <span style={{ fontSize: 13, color: C.cyan }}>{porTodosProfessionals.length} profissionais</span>
+              </div>
+              {porTodosProfessionals.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8, maxHeight: 320, overflowY: 'auto' }}>
+                  {porTodosProfessionals.slice(0, 20).map(prof => (
+                    <ProfCard key={prof.id} prof={prof} onView={() => handleViewProfile(prof.id)} compact />
+                  ))}
+                </div>
+              ) : (
+                <div style={{ color: C.ink2, fontSize: 13, textAlign: 'center', padding: '16px 0' }}>
+                  Nenhum profissional cadastrado ainda na rede.
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          {/* "Por Todos" Team */}
-          <div className="glassmorphism rounded-2xl p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold" style={{ 
-                color: '#EAF8FF', 
-                textShadow: 'none',
-                filter: 'brightness(0.9)'
-              }}>
-                <Briefcase className="inline mr-2 h-6 w-6" />
-                Por Todos
-              </h2>
-              <p className="text-gray-400 text-sm mt-2">
-                Equipe completa para empresas e profissionais que precisam de uma força de trabalho robusta
-              </p>
-            </div>
-
-            {(() => {
-              const porTodosTeam = teams.find(team => team.name === "Por Todos");
-              const teamProfessionals = porTodosTeam ? getTeamProfessionals(porTodosTeam) : [];
-              
-              return (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[var(--neon-cyan)]">
-                      {teamProfessionals.length} profissionais disponíveis
-                    </span>
-                    <Button className="neon-button text-sm">
-                      Contratar Time Completo
-                    </Button>
-                  </div>
-
-                  {teamProfessionals.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                      {teamProfessionals.slice(0, 20).map((prof) => (
-                        <div
-                          key={prof.id}
-                          className="flex items-center space-x-3 bg-black/30 rounded-lg p-3"
-                        >
-                          <img
-                            src={prof.avatar}
-                            alt={prof.name}
-                            className="w-8 h-8 rounded-full border border-[var(--neon-cyan)]"
-                          />
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{prof.name}</p>
-                            <p className="text-xs text-gray-400">{prof.title}</p>
-                            {renderStars(prof.rating)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="glassmorphism rounded-lg p-4 text-center">
-                    <h3 className="font-semibold text-[var(--neon-cyan)] mb-2">
-                      💼 Ideal para Empresas
-                    </h3>
-                    <p className="text-sm text-gray-300">
-                      Acesso a todos os profissionais da plataforma para projetos grandes e complexos.
-                      Perfeito para empresas que precisam de múltiplas especialidades.
-                    </p>
-                  </div>
+          {/* Como funciona */}
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 20 }}>
+            <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 14 }}>Como funciona</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+              {[
+                { icon: <UserPlus size={20} color={C.cyan} />, title: 'Adicione profissionais', desc: 'Navegue pelos perfis na rede e adicione quem precisar ao seu time.' },
+                { icon: <Users size={20} color={C.cyan} />, title: 'Organize times', desc: 'Monte equipes de até 10 profissionais para diferentes projetos.' },
+                { icon: <Briefcase size={20} color={C.cyan} />, title: 'Coordene', desc: 'Gerencie suas equipes e coordene diferentes especialidades num projeto.' },
+              ].map((step, i) => (
+                <div key={i} style={{ textAlign: 'center' }}>
+                  <div style={{ margin: '0 auto 8px', width: 40, height: 40, borderRadius: 10, background: `${C.cyan}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{step.icon}</div>
+                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>{step.title}</div>
+                  <div style={{ color: C.ink2, fontSize: 12, lineHeight: 1.5 }}>{step.desc}</div>
                 </div>
-              );
-            })()}
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="glassmorphism rounded-2xl p-6">
-          <h3 className="text-xl font-semibold mb-4" style={{ 
-            color: '#EAF8FF', 
-            textShadow: 'none',
-            filter: 'brightness(0.9)'
-          }}>Como Funciona</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="text-center">
-              <UserPlus className="mx-auto h-8 w-8 text-[var(--neon-cyan)] mb-2" />
-              <h4 className="font-semibold mb-2">1. Adicione Profissionais</h4>
-              <p className="text-gray-400">
-                Navegue pelos perfis e clique em "Adicionar ao Time" nos profissionais que desejar.
-              </p>
-            </div>
-            <div className="text-center">
-              <Users className="mx-auto h-8 w-8 text-[var(--neon-cyan)] mb-2" />
-              <h4 className="font-semibold mb-2">2. Monte Sua Equipe</h4>
-              <p className="text-gray-400">
-                Organize times de até 10 profissionais para diferentes projetos ou necessidades.
-              </p>
-            </div>
-            <div className="text-center">
-              <Briefcase className="mx-auto h-8 w-8 text-[var(--neon-cyan)] mb-2" />
-              <h4 className="font-semibold mb-2">3. Gerencie Projetos</h4>
-              <p className="text-gray-400">
-                Use seus times para colaborar em projetos e coordenar diferentes especialidades.
-              </p>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Professional Modal */}
       {professionalModalOpen && selectedProfessionalId && (
         <ProfessionalModal
           isOpen={professionalModalOpen}
-          onClose={() => {
-            setProfessionalModalOpen(false);
-            setSelectedProfessionalId(null);
-          }}
+          onClose={() => { setProfessionalModalOpen(false); setSelectedProfessionalId(null); }}
           professionalId={selectedProfessionalId}
         />
       )}
+    </div>
+  );
+}
 
-
+function ProfCard({ prof, onView, onRemove, compact }: { prof: Professional; onView: () => void; onRemove?: () => void; compact?: boolean }) {
+  return (
+    <div style={{ background: 'rgba(0,8,20,0.5)', border: `1px solid ${C.border}`, borderRadius: 10, padding: compact ? '10px 12px' : '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+      {prof.avatar ? (
+        <img src={prof.avatar} alt={prof.name} style={{ width: compact ? 30 : 36, height: compact ? 30 : 36, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}`, flexShrink: 0 }} />
+      ) : (
+        <div style={{ width: compact ? 30 : 36, height: compact ? 30 : 36, borderRadius: '50%', background: `${C.cyan}22`, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
+          {prof.name?.[0]?.toUpperCase() || '?'}
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 500, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prof.name}</div>
+        <div style={{ color: C.ink2, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prof.title}</div>
+      </div>
+      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        <button onClick={e => { e.stopPropagation(); onView(); }}
+          style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 6, padding: 6, color: C.cyan, cursor: 'pointer', display: 'flex' }}>
+          <Eye size={14} />
+        </button>
+        {onRemove && (
+          <button onClick={e => { e.stopPropagation(); onRemove(); }}
+            style={{ background: 'none', border: '1px solid rgba(255,74,74,0.25)', borderRadius: 6, padding: 6, color: '#FF7A7A', cursor: 'pointer', display: 'flex' }}>
+            <UserMinus size={14} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
