@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: fed60a5d-0b67-496a-9c51-713a1af5c318
-  modified: 2026-09-30T06:44:00.700Z
+  modified: 2026-09-30T13:41:35.842Z
 ---
 
 # CHECKLIST FINAL ROBUSTO — ORBITRUM
@@ -67,8 +67,14 @@ Guia vivo. Regra: só marca `[x]` o que foi **rodado e verificado** (empírico).
 - [ ] Revogar a PAT · trocar a senha do Pedro (as duas foram ao chat).
 - [ ] Remover os 138 console.log do build; db.ts não logar credencial; queryClient retornar `[]` (não `null`) p/ listas.
 
-## 6. FASE E — PRODUÇÃO ("só Supabase")
-- [ ] Converter rotas críticas em **RPC Postgres** (SECURITY DEFINER); merge do branch p/ main; Vercel (frontend).
+## 6. FASE E — PRODUÇÃO (Vercel + Supabase — reavaliado, ver [[orbitrum-deploy]])
+Vercel 2026 **hospeda backend Node/Express** → não precisa Railway. Motor da tese é stateless+DB-backed
+(compatível com functions). [x] main/master no GitHub (push feito 30/09).
+- [ ] **Adaptar o boot pra Vercel:** exportar o app (não `server.listen`); gatear init persistente
+      (WebSocket/cron/supabaseSync/health) com `!process.env.VERCEL`; vercel.json roteia /api → backend
+      Node + resto → client/dist. Testar em deploy real.
+- [ ] Env no Vercel (VITE_SUPABASE_* + DATABASE_URL/SUPABASE_* do backend); domínio orbitrum.com.br.
+- [ ] Worker (Fase F) = Vercel Cron/fila (não function HTTP). RPC Postgres é opção, não obrigatório agora.
 
 ## 7. FASE F — AGENTES + WORKER (a virada da tese) + DENSIDADE ([[orbitrum-agentes]])
 Correção do Pedro (30/09): **não é "colocar IA no app".** Orbitrum = camada de contexto+registro que

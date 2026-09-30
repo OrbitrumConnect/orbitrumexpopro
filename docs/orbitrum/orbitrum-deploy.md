@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: fed60a5d-0b67-496a-9c51-713a1af5c318
-  modified: 2026-09-30T13:00:53.770Z
+  modified: 2026-09-30T13:41:24.202Z
 ---
 
 # DEPLOY + CONEXÕES — ORBITRUM (registro pra reconexão)
@@ -14,12 +14,32 @@ Histórico: o app rodava em **orbitrum.com.br** com PIX (formato antigo de token
 antigo expirou/se perdeu** → app parado ~9 meses. Voltou. **Supabase NOVO** criado: `wuaupjjbfvctelvyyfda`
 (sa-east-1). Este doc lista TODAS as conexões, o estado e os passos de reconexão.
 
-## Realidade arquitetural (ler antes)
-- **Vercel serve o FRONTEND** (estático). **O motor da tese (Express) NÃO roda em Vercel** (serverless,
-  sem processo vivo — node-cron/websocket/estado). Ver [[orbitrum-visao]] (só Supabase, sem Railway).
-- Pra o site voltar **com cérebro**: (E1) portar rotas críticas pra **RPC Postgres/Supabase** (Fase E,
-  limpo, sem custo de servidor, é trabalho real) OU (E2) hospedar o backend Express num host always-on
-  barato (Render/Fly) pra pilotar rápido. Decisão do Pedro. Ver [[orbitrum-checklist]] Fase E.
+## Realidade arquitetural (REAVALIADA — Vercel 2026, Pedro 30/09)
+**O diagnóstico antigo "Vercel = só frontend, precisa Railway" está DESATUALIZADO.** Em 2026 a Vercel
+hospeda **backend Node/Express** (zero-config, detecta server.ts na raiz), functions até ~30min em
+certos planos, WebSockets em beta, Vercel Cron, Node 24 padrão (Node 20 descontinua 01/10/2026).
+**Então NÃO adicionar Railway por reflexo.** Direção "só Supabase" pode virar **Vercel (frontend +
+backend API) + Supabase (dados)** — exatamente a Fase E.
+
+**Auditoria do backend do orbitrumexpopro (o que roda / o que precisa adaptar pra Vercel):**
+- ✅ **Motor da tese é stateless + DB-backed:** `factStore` usa `DrizzleFactStore` (Postgres) quando há
+  `DATABASE_URL`; as rotas `/api/orbitmatch/*` leem/gravam o banco por request. **Compatível com functions.**
+- ✅ **Sem escrita em filesystem** (nada de fs.write) — ok pro fs read-only do serverless.
+- ⚠️ **Precisa adaptar (é trabalho, não config):**
+  1. `index.ts` faz `server.listen({port,host,reusePort})` (linha ~178) — na Vercel se **exporta o app**
+     (handler), não se dá listen. Guardar o listen pra rodar só local (`if (!process.env.VERCEL)`).
+  2. **Init persistente no boot** (WebSocket, plan-expiry, supabaseSync a cada 5min, notification-system,
+     health-monitoring) — serverless não segura processo. **Gatear off na Vercel**; a maioria é economia/ops
+     (CONGELADA/adiável). Vira **Vercel Cron** depois se precisar.
+  3. **WebSocket** (behavior-tracker/notifications/payment/routes) — beta na Vercel; **adiar** (a tese é
+     HTTP req/resp; real-time depois via Supabase Realtime/polling).
+  4. **vercel.json:** rotear `/api/*` pro backend Node + resto pro `client/dist`.
+- **Worker (Fase F):** o loop contínuo NÃO vai numa function HTTP — vira **Vercel Cron / função agendada /
+  fila**. Não misturar com a API. Ver [[orbitrum-agentes]].
+
+**Veredito:** **Vercel + Supabase é viável** (sem Railway). O motor da tese pode rodar como functions; falta
+a **adaptação do boot** (exportar handler + gatear init persistente + roteio). É a Fase E, feita direito.
+Precisa de um **deploy de teste real na Vercel** pra validar (conta do Pedro).
 
 ## ENV VARS (inventário do código)
 **Frontend (client, `VITE_*` — embutidas no build; precisam estar no Vercel):**
