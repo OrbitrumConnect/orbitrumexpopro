@@ -3028,6 +3028,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   /** Profissional declara disponibilidade. Não edita o fato anterior: substitui. */
+  // Estado atual de presença de um usuário (pro toggle iniciar certo). disponivel_em vigente?
+  app.get("/api/facts/availability/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const agora = new Date();
+      const facts = await factStore.listFacts();
+      const ativo = (facts as any[]).some(f => f.subjectId === userId && f.predicate === 'disponivel_em' && !f.supersededBy && (!f.validUntil || new Date(f.validUntil) > agora));
+      res.json({ success: true, ativo });
+    } catch (error) {
+      res.status(500).json({ success: false, ativo: false });
+    }
+  });
+
   app.post("/api/facts/availability", async (req, res) => {
     try {
       const { professionalUserId, regiao, ativo } = req.body;

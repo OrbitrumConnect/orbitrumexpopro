@@ -139,6 +139,13 @@ export default function Inicio() {
       .then(r => r.json())
       .then(j => { if (j.success && Array.isArray(j.itens)) setAtividade(j.itens); })
       .catch(() => {});
+    // Estado real de presença (toggle começa certo, não sempre "Indisponível")
+    if (user?.id_interno) {
+      fetch(`/api/facts/availability/${user.id_interno}`)
+        .then(r => r.json())
+        .then(j => { if (j.success) setDisponivel(!!j.ativo); })
+        .catch(() => {});
+    }
   }, [userId]);
 
   // Busca INLINE: mostra os resultados na própria home (funil sem trocar de aba).
