@@ -3030,15 +3030,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   /** Profissional declara disponibilidade. Não edita o fato anterior: substitui. */
   app.post("/api/facts/availability", async (req, res) => {
     try {
-      const { professionalUserId, regiao } = req.body;
-      if (!professionalUserId || !regiao) {
-        return res.status(400).json({ success: false, message: "professionalUserId e regiao são obrigatórios" });
+      const { professionalUserId, regiao, ativo } = req.body;
+      if (!professionalUserId) {
+        return res.status(400).json({ success: false, message: "professionalUserId é obrigatório" });
+      }
+      if (ativo === false) {
+        // OFF (sair da rede pra chamadas): expira a disponibilidade atual. Fato NUNCA se apaga —
+        // só ganha validUntil = agora e deixa de ser vigente.
+        const facts = await factStore.listFacts();
+        const atual = facts.find((f: any) => f.subjectId === Number(professionalUserId) && f.predicate === 'disponivel_em' && !f.supersededBy);
+        if (atual) await factStore.updateFact(atual.id, { validUntil: new Date() } as any);
+        return res.json({ success: true, ativo: false });
+      }
+      if (!regiao) {
+        return res.status(400).json({ success: false, message: "regiao é obrigatória para ficar disponível" });
       }
       const fato = await aoMudarDisponibilidade(factStore, {
         profissionalUserId: Number(professionalUserId),
         regiao: String(regiao),
       });
-      res.json({ success: true, factId: fato.id, validUntil: fato.validUntil });
+      res.json({ success: true, ativo: true, factId: fato.id, validUntil: fato.validUntil });
     } catch (error) {
       console.error("Erro ao registrar disponibilidade:", error);
       res.status(500).json({ success: false, message: "Falha ao registrar disponibilidade" });

@@ -111,7 +111,19 @@ export default function Inicio() {
   const [buscou, setBuscou] = useState(false);
   const [carregando, setCarregando] = useState(false);
   const [atividade, setAtividade] = useState<Array<{ texto: string; quando: string; avatar?: string | null }>>([]);
+  const [disponivel, setDisponivel] = useState(false);
   const userId = String(user?.id_interno ?? 1);
+
+  // Presença on/off: liga/desliga o perfil na rede pra receber chamada/indicação.
+  // ON registra o fato disponivel_em; OFF expira (fato nunca se apaga). Estado explícito e temporal.
+  const toggleDisponibilidade = () => {
+    const novo = !disponivel;
+    setDisponivel(novo);
+    fetch('/api/facts/availability', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ professionalUserId: user?.id_interno, regiao: user?.city || 'geral', ativo: novo }),
+    }).catch(() => setDisponivel(!novo));
+  };
 
   useEffect(() => {
     // Contadores reais do banco (só os que existem hoje). Nada é fabricado.
@@ -211,6 +223,12 @@ export default function Inicio() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {user ? (
               <>
+                {/* Presença on/off — disponível pra chamada/indicação (fato disponivel_em) */}
+                <button onClick={toggleDisponibilidade} title="Ficar disponível na rede pra receber chamada/indicação"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: disponivel ? `${C.cyan}1f` : 'transparent', border: `1px solid ${disponivel ? C.borderHot : C.border}`, borderRadius: 16, padding: '5px 12px', color: disponivel ? C.cyan : C.ink3, fontSize: 12, cursor: 'pointer' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: disponivel ? C.cyan : C.ink3, boxShadow: disponivel ? `0 0 6px ${C.cyan}` : 'none' }} />
+                  {disponivel ? 'Disponível' : 'Indisponível'}
+                </button>
                 <span style={{ fontSize: 13, color: C.ink2 }}>{user?.full_name || user?.username || user?.email || 'Participante'}</span>
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}` }} />
                 <button onClick={() => { logout(); setLocation('/'); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '5px 12px', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Sair</button>
