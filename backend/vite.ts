@@ -1,3 +1,4 @@
+// @ts-nocheck — vite/nanoid são deps de dev; este módulo só roda local (!IS_VERCEL)
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";

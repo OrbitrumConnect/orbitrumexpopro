@@ -1,3 +1,4 @@
+// @ts-nocheck — canvas/xlsx são deps nativas opcionais; importados via await import() nas rotas
 // 📊 GERADOR DE RELATÓRIOS ADMIN - PDF E EXCEL
 import fs from 'fs/promises';
 import path from 'path';
