@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ProfessionalModal } from '@/components/professional-modal';
 import ConversaModal from '@/components/ConversaModal';
+import Sidebar from '@/components/Sidebar';
 
 // MAPA DA REDE — só quem está DISPONÍVEL (fato disponivel_em vigente). Mapa CONTIDO (com borda) +
 // lista dos disponíveis abaixo. O usuário vê no mapa e conecta ali. Grátis (OSM/Leaflet). Nada fabricado.
@@ -64,9 +65,10 @@ export default function MapaDisponiveis() {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: `radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)`, color: C.ink, fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: `radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)`, color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
+      <Sidebar />
+      <div style={{ flex: 1, minWidth: 0 }}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)' }}>
-        <button onClick={() => setLocation('/')} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '6px 14px', color: C.ink2, fontSize: 13, cursor: 'pointer' }}>← Início</button>
         <div style={{ fontWeight: 700, letterSpacing: 1 }}>Mapa da rede</div>
         <div style={{ fontSize: 12, color: C.ink2 }}>{carregou ? `${profs.length} disponíveis` : '…'}</div>
       </header>
@@ -121,6 +123,7 @@ export default function MapaDisponiveis() {
       {conversaId != null && (
         <ConversaModal profId={conversaId} onClose={() => setConversaId(null)} />
       )}
+      </div>
     </div>
   );
 }
