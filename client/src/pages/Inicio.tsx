@@ -110,7 +110,7 @@ export default function Inicio() {
   const [resultados, setResultados] = useState<Rec[]>([]);
   const [buscou, setBuscou] = useState(false);
   const [carregando, setCarregando] = useState(false);
-  const [viewAtiva, setViewAtiva] = useState<'inicio' | 'rede' | 'profissionais' | 'indicacoes'>('inicio');
+  const [viewAtiva, setViewAtiva] = useState<'inicio' | 'rede' | 'profissionais' | 'indicacoes' | 'oportunidades' | 'conversas'>('inicio');
   const [atividade, setAtividade] = useState<Array<{ texto: string; quando: string; avatar?: string | null }>>([]);
   const [disponivel, setDisponivel] = useState(false);
   const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
@@ -157,7 +157,7 @@ export default function Inicio() {
     }
   }, [userId]);
 
-  const buscar = (view?: 'rede' | 'profissionais' | 'indicacoes') => {
+  const buscar = (view?: 'rede' | 'profissionais' | 'indicacoes' | 'oportunidades' | 'conversas') => {
     const v = view || viewAtiva;
     if (view) setViewAtiva(view);
     setBuscou(true); setCarregando(true);
@@ -179,8 +179,8 @@ export default function Inicio() {
   useEffect(() => {
     if (viewParamHandled.current) return;
     const params = new URLSearchParams(window.location.search);
-    const v = params.get('view') as 'rede' | 'profissionais' | 'indicacoes' | null;
-    if (v && ['rede', 'profissionais', 'indicacoes'].includes(v)) {
+    const v = params.get('view') as 'rede' | 'profissionais' | 'indicacoes' | 'oportunidades' | 'conversas' | null;
+    if (v && ['rede', 'profissionais', 'indicacoes', 'oportunidades', 'conversas'].includes(v)) {
       viewParamHandled.current = true;
       window.history.replaceState({}, '', '/');
       setTimeout(() => buscar(v), 300);
@@ -223,12 +223,20 @@ export default function Inicio() {
               </button>
             );
           })}
-          {/* Seções da tese ainda não construídas — honesto: "em breve", nunca link morto que finge. */}
-          {['Oportunidades', 'Conversas'].map(label => (
-            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 14px', color: C.ink3, fontSize: 15 }}>
-              <span>{label}</span><span style={{ fontSize: 9, color: C.ink3, border: `1px solid ${C.border}`, borderRadius: 8, padding: '1px 6px' }}>em breve</span>
-            </div>
-          ))}
+          {/* Oportunidades e Conversas — abas ativas na sidebar inline */}
+          {([
+            ['Oportunidades', 'oportunidades' as const],
+            ['Conversas', 'conversas' as const],
+          ] as Array<[string, string]>).map(([label, view]) => {
+            const active = viewAtiva === view && buscou;
+            return (
+              <button key={label} onClick={() => { setViewAtiva(view as any); setBuscou(true); setResultados([]); }}
+                style={{ textAlign: 'left', padding: '11px 14px', borderRadius: 9, border: active ? `1px solid ${C.borderHot}` : '1px solid transparent',
+                  background: active ? `${C.blue}22` : 'transparent', color: active ? C.ink : '#A9C6DC', fontSize: 15, fontWeight: active ? 600 : 400, letterSpacing: 0.2, cursor: 'pointer', width: '100%', display: 'block' }}>
+                {label}
+              </button>
+            );
+          })}
 
           {/* FERRAMENTAS — páginas utilitárias reais (sem regressão: nada some do app). */}
           <div style={{ fontSize: 10, color: C.ink3, letterSpacing: 1.5, margin: '14px 14px 6px' }}>FERRAMENTAS</div>
@@ -250,11 +258,7 @@ export default function Inicio() {
             <button key={label} onClick={() => setLocation(rota)} style={{ textAlign: 'left', padding: '9px 14px', borderRadius: 9, border: '1px solid transparent', background: 'transparent', color: C.ink2, fontSize: 13, cursor: 'pointer' }}>{label}</button>
           ))}
         </nav>
-        <div style={{ border: `1px solid ${C.borderHot}`, borderRadius: 12, padding: 14, background: C.bg2, marginTop: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 600 }}>Plano Pro</div>
-          <div style={{ fontSize: 12, color: C.ink2, marginBottom: 8 }}>R$ 29,90/mês</div>
-          <button onClick={() => setLocation('/planos')} style={{ width: '100%', border: 'none', borderRadius: 8, padding: '7px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>Gerenciar</button>
-        </div>
+        {/* Bloco C removido da UI (economia congelada) */}
       </aside>
 
       {/* CONTEÚDO */}
@@ -302,8 +306,8 @@ export default function Inicio() {
                 ['profissionais' as const, 'Profissionais', true],
                 ['indicacoes' as const, 'Indicações', true],
                 ['rede' as const, 'Sua rede', true],
+                ['oportunidades' as const, 'Oportunidades', true],
                 [null, 'Empresas', false],
-                [null, 'Oportunidades', false],
               ] as Array<[typeof viewAtiva | null, string, boolean]>).map(([view, label, ativo]) => {
                 const selected = view !== null && viewAtiva === view && buscou;
                 return (
@@ -343,6 +347,8 @@ export default function Inicio() {
                     {carregando ? 'Buscando na sua rede…'
                       : viewAtiva === 'rede' ? `${resultados.length} na sua rede`
                       : viewAtiva === 'indicacoes' ? `${resultados.length} ${resultados.length === 1 ? 'indicação' : 'indicações'}`
+                      : viewAtiva === 'oportunidades' ? `${resultados.length} ${resultados.length === 1 ? 'oportunidade' : 'oportunidades'}`
+                      : viewAtiva === 'conversas' ? `${resultados.length} ${resultados.length === 1 ? 'conversa' : 'conversas'}`
                       : `${resultados.length} ${resultados.length === 1 ? 'profissional' : 'profissionais'}`}
                   </span>
                   <button onClick={() => { setBuscou(false); setResultados([]); }} style={{ background: 'none', border: 'none', color: C.ink3, fontSize: 12, cursor: 'pointer' }}>Limpar</button>

@@ -27,6 +27,7 @@ export default function Sidebar() {
 
   const rede: Array<[string, string]> = [
     ['Início', '/'], ['Minha Rede', '/?view=rede'], ['Profissionais', '/?view=profissionais'], ['Indicações', '/?view=indicacoes'],
+    ['Oportunidades', '/?view=oportunidades'], ['Conversas', '/?view=conversas'],
   ];
   const ferramentas: Array<[string, string]> = [
     ['Meu Painel', '/dashboard-selector'], ['Equipes', '/teams'], ['Mapa · GPS', '/mapa'],
