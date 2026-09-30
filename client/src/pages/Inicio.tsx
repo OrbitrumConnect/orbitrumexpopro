@@ -99,7 +99,7 @@ function OrbitNetwork({ counts, onNode }: { counts?: Record<string, number>; onN
 }
 
 export default function Inicio() {
-  const { user, logout, showLoginModal, setShowLoginModal } = useAuth();
+  const { user, logout, showLoginModal, setShowLoginModal, login } = useAuth();
   const [, setLocation] = useLocation();
   const ehAdmin = isAdminUser(user);
   const [necessidade, setNecessidade] = useState('');
@@ -404,8 +404,10 @@ export default function Inicio() {
         <ConversaModal profId={conversaId} onClose={() => setConversaId(null)} />
       )}
 
-      {/* Login — sem isso, quem desloga não consegue voltar a entrar na home nova */}
-      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      {/* Login — onSuccess chama useAuth.login (atualiza o estado); sem isso autentica no
+          Supabase mas o app não loga ("nada acontece"). */}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)}
+        onSuccess={(u: any, remember?: boolean) => { login(u, remember ?? false); setShowLoginModal(false); }} />
     </div>
   );
 }
