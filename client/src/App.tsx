@@ -10,7 +10,6 @@ import { PlanExpiryNotification } from "@/components/plan-expiry-notification";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Route, Switch, Redirect } from "wouter";
-import Home from "@/pages/home";
 // import Landing from "@/pages/landing";
 import Teams from "@/pages/teams";
 import Termos from "@/pages/termos";
@@ -29,7 +28,6 @@ import ClientDashboard from "@/pages/dashboard-client";
 import ProfessionalDashboard from "@/pages/dashboard-professional";
 import DocumentVerification from "@/pages/DocumentVerification";
 import ChatWindow from "@/pages/ChatWindow";
-import OrbitMatch from "@/pages/OrbitMatch";
 import Inicio from "@/pages/Inicio";
 import Conversa from "@/pages/Conversa";
 import MapaDisponiveis from "@/pages/MapaDisponiveis";
@@ -76,9 +74,8 @@ function AppContent() {
         />
       <Switch>
         <Route path="/" component={Inicio} />
-        <Route path="/home" component={Home} />
+        <Route path="/home"><Redirect to="/" /></Route>
         <Route path="/painel" component={Inicio} />
-        {/* /orbitmatch virou órfã: o funil de busca acontece inline na home. Redireciona. */}
         <Route path="/orbitmatch"><Redirect to="/" /></Route>
         <Route path="/inicio" component={Inicio} />
         <Route path="/conversa/:profId" component={Conversa} />
@@ -108,7 +105,7 @@ function AppContent() {
           {(params) => <ChatWindow chatId={params.chatId} />}
         </Route>
         <Route>
-          <Home />
+          <Inicio />
         </Route>
       </Switch>
       </TooltipProvider>
