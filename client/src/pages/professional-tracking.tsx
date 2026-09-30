@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import ProfessionalTrackingPanel from '@/components/ProfessionalTrackingPanel';
 import { useAuth } from '@/hooks/useAuth';
+import Sidebar from '@/components/Sidebar';
 
 // Dados de demonstração para o profissional
 const demoServices = [
@@ -59,7 +60,9 @@ export default function ProfessionalTracking() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900" style={{ position: 'relative', zIndex: 1 }}>
+    <div className="min-h-screen bg-gray-900 flex" style={{ position: 'relative', zIndex: 1 }}>
+      <Sidebar />
+      <div className="flex-1 min-w-0">
       {/* Header */}
       <div className="border-b border-gray-700/50 bg-black/20 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
@@ -114,6 +117,7 @@ export default function ProfessionalTracking() {
           services={services}
           onUpdateService={handleUpdateService}
         />
+      </div>
       </div>
     </div>
   );
