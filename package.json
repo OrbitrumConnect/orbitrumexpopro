@@ -1,47 +1,49 @@
 {
-  "name": "orbitrum-monorepo",
+  "name": "orbitrum-connect",
   "version": "1.0.0",
-  "description": "Monorepo para Orbitrum - Expo Frontend + Railway Backend + Supabase",
+  "description": "Orbitrum Connect — rede profissional relacional (Vercel + Supabase)",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "dev:frontend": "cd frontend && npm start",
-    "dev:backend": "cd backend && npm run dev",
-    "build": "npm run build:frontend && npm run build:backend",
-    "build:frontend": "cd frontend && npm run build",
-    "build:backend": "cd backend && npm run build",
-    "start": "npm run start:backend",
-    "start:backend": "cd backend && npm start",
-    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
-    "clean": "npm run clean:frontend && npm run clean:backend",
-    "clean:frontend": "cd frontend && rm -rf node_modules",
-    "clean:backend": "cd backend && rm -rf node_modules",
-    "test": "npm run test:frontend && npm run test:backend",
-    "test:frontend": "cd frontend && npm test",
-    "test:backend": "cd backend && npm test"
+    "dev:backend": "cd backend && npx tsx watch index.ts",
+    "dev:client": "cd client && npm run dev",
+    "start": "cd backend && npx tsx index.ts",
+    "build:client": "cd client && npm run build:no-check",
+    "vercel-build": "cd client && npm install && npm run build:no-check"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0",
+    "@supabase/supabase-js": "^2.53.0",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "drizzle-orm": "^0.44.4",
+    "drizzle-zod": "^0.8.2",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mercadopago": "^2.0.0",
+    "moment-timezone": "^0.5.45",
+    "node-cron": "^3.0.3",
+    "postgres": "^3.4.3",
+    "qrcode": "^1.5.3",
+    "ws": "^8.14.2",
+    "xlsx": "^0.18.5",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/obritrum/orbitrumexpopro.git"
+    "url": "https://github.com/OrbitrumConnect/orbitrumexpopro.git"
   },
-  "keywords": [
-    "expo",
-    "react-native",
-    "railway",
-    "supabase",
-    "monorepo"
-  ],
   "author": "Orbitrum Team",
   "license": "MIT"
 }

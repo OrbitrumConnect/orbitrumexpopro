@@ -1,18 +1,16 @@
 {
   "version": 2,
+  "installCommand": "npm install && cd client && npm install",
   "buildCommand": "cd client && npm run build:no-check",
   "outputDirectory": "client/dist",
-  "installCommand": "npm install",
-  "framework": "vite",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "backend/**,shared/**"
     }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.ts" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "env": {
     "NODE_ENV": "production"

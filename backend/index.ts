@@ -14,7 +14,8 @@ import { ensureHealthEndpoint, protectHealthRoute } from "./health-protection";
 import { startHealthMonitoring } from "./health-monitor";
 
 
-const app = express();
+export const app = express();
+const IS_VERCEL = !!process.env.VERCEL; // na Vercel: exporta handler, sem listen/processos vivos
 
 // PROTEÇÃO CRÍTICA DO HEALTH ENDPOINT - NUNCA PODE FALHAR
 protectHealthRoute(app);
@@ -85,7 +86,7 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
+export const ready = (async () => {
   // GARANTIR HEALTH ENDPOINT ANTES DE QUALQUER COISA
   ensureHealthEndpoint(app);
   
@@ -98,25 +99,26 @@ app.use((req, res, next) => {
   app.use('/api/free-plan', freePlanRouter);
   
   const server = await registerRoutes(app);
-  
 
-  
-  // Inicializar WebSocket para comunicação em tempo real
-  const dashboardWS = initializeWebSocket(server);
-  console.log('🔗 WebSocket inicializado para comunicação em tempo real dos dashboards');
+  // Processos VIVOS (WebSocket, cron, sync) — só fora da Vercel (serverless não segura processo).
+  if (!IS_VERCEL) {
+    // Inicializar WebSocket para comunicação em tempo real
+    const dashboardWS = initializeWebSocket(server);
+    console.log('🔗 WebSocket inicializado para comunicação em tempo real dos dashboards');
 
-  // Importar e inicializar sistema de expiração de planos
-  const { planExpirySystem } = await import("./plan-expiry-system");
-  planExpirySystem.initialize();
+    // Importar e inicializar sistema de expiração de planos
+    const { planExpirySystem } = await import("./plan-expiry-system");
+    planExpirySystem.initialize();
 
-  // Inicializar sincronização automática com Supabase
-  const { supabaseSync } = await import("./supabase-sync");
-  supabaseSync.start();
-  console.log('🔄 Sincronização automática Supabase ativa (a cada 5 minutos)');
-  
-  // Inicializar sistema de notificações em tempo real
-  const { notificationSystem } = await import("./notification-system");
-  console.log('📧 Sistema de notificações em tempo real inicializado');
+    // Inicializar sincronização automática com Supabase
+    const { supabaseSync } = await import("./supabase-sync");
+    supabaseSync.start();
+    console.log('🔄 Sincronização automática Supabase ativa (a cada 5 minutos)');
+
+    // Inicializar sistema de notificações em tempo real
+    const { notificationSystem } = await import("./notification-system");
+    console.log('📧 Sistema de notificações em tempo real inicializado');
+  }
 
   // 🤖 Telegram Bot TEMPORARIAMENTE DESABILITADO para estabilizar servidor
   console.log('⚠️ Telegram Bot desabilitado temporariamente para estabilidade');
@@ -131,13 +133,13 @@ app.use((req, res, next) => {
   // 🛡️ Error handler seguro que não expõe detalhes
   app.use(secureErrorHandler);
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+  // Vite/estático — só fora da Vercel (na Vercel o frontend é servido pelo próprio Vercel).
+  if (!IS_VERCEL) {
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
   }
 
   // ALWAYS serve the app on port 5000
@@ -175,20 +177,20 @@ app.use((req, res, next) => {
     next();
   });
   
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, async () => {
-    log(`serving on port ${port}`);
-    console.log(`🌐 Servidor ativo em: http://0.0.0.0:${port}`);
-    console.log(`🌐 Domínio customizado: www.orbitrum.com.br`);
-    console.log(`🌐 Replit URL: ${process.env.REPLIT_DOMAINS}`);
-    
-    // Verificar SSL e configuração do domínio (temporariamente desabilitado)
-    console.log('✅ SERVIDOR INICIALIZADO - OAuth Google pronto para teste!');
-  
-  // INICIAR MONITORAMENTO CONTÍNUO DO HEALTH ENDPOINT
-  startHealthMonitoring();
-  });
+  // listen + monitoramento — só fora da Vercel (serverless não dá listen; exporta o handler).
+  if (!IS_VERCEL) {
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, async () => {
+      log(`serving on port ${port}`);
+      console.log(`🌐 Servidor ativo em: http://0.0.0.0:${port}`);
+      console.log(`🌐 Domínio customizado: www.orbitrum.com.br`);
+      console.log(`🌐 Replit URL: ${process.env.REPLIT_DOMAINS}`);
+      console.log('✅ SERVIDOR INICIALIZADO - OAuth Google pronto para teste!');
+      startHealthMonitoring();
+    });
+  }
+  return app;
 })();
