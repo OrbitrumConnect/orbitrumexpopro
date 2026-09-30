@@ -2,8 +2,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { isAdminUser } from '@/lib/isAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, Briefcase, Home, Shield } from "lucide-react";
-import { Link, useLocation } from "wouter";
+import { User, Briefcase, Shield } from "lucide-react";
+import { useLocation } from "wouter";
+import Sidebar from "@/components/Sidebar";
 
 export default function DashboardSelector() {
   const { user, isAuthenticated } = useAuth();
@@ -29,17 +30,11 @@ export default function DashboardSelector() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900" style={{ position: 'relative', zIndex: 1 }}>
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-900 flex" style={{ position: 'relative', zIndex: 1 }}>
+      <Sidebar />
+      <div className="flex-1 min-w-0 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/">
-            <Button variant="ghost" className="absolute top-4 left-4 text-gray-300 hover:text-cyan-400 scale-90">
-              <Home className="w-4 h-4 mr-2" />
-              Voltar ao Orbit
-            </Button>
-          </Link>
-          
           <h1 className="text-4xl font-bold text-white mb-4">Escolha seu Dashboard</h1>
           <p className="text-gray-300">
             Olá <span className="text-cyan-400">{user?.username || "Usuário"}</span>, 
