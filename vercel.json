@@ -3,16 +3,8 @@
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build:no-check",
   "outputDirectory": "client/dist",
-  "functions": {
-    "api/index.ts": {
-      "includeFiles": "backend/**,shared/**"
-    }
-  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.ts" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
