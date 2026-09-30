@@ -182,8 +182,8 @@ export default function Teams() {
           </div>
           
           <h1 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4" style={{ 
-            color: 'hsl(180, 100%, 50%)', 
-            textShadow: '0 0 10px hsl(180, 100%, 50%), 0 0 20px hsl(180, 100%, 50%), 0 0 30px hsl(180, 100%, 50%)',
+            color: '#EAF8FF', 
+            textShadow: 'none',
             filter: 'brightness(0.9)'
           }}>
             <Users className="inline mr-2 sm:mr-3 h-6 sm:h-10 w-6 sm:w-10" />
@@ -200,8 +200,8 @@ export default function Teams() {
           <div className="glassmorphism rounded-xl sm:rounded-2xl p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
               <h2 className="text-lg sm:text-2xl font-semibold" style={{ 
-                color: 'hsl(180, 100%, 50%)', 
-                textShadow: '0 0 8px hsl(180, 100%, 50%), 0 0 16px hsl(180, 100%, 50%)',
+                color: '#EAF8FF', 
+                textShadow: 'none',
                 filter: 'brightness(0.9)'
               }}>
                 <UserPlus className="inline mr-1 sm:mr-2 h-5 sm:h-6 w-5 sm:w-6" />
@@ -324,8 +324,8 @@ export default function Teams() {
           <div className="glassmorphism rounded-2xl p-6">
             <div className="mb-6">
               <h2 className="text-2xl font-semibold" style={{ 
-                color: 'hsl(180, 100%, 50%)', 
-                textShadow: '0 0 8px hsl(180, 100%, 50%), 0 0 16px hsl(180, 100%, 50%)',
+                color: '#EAF8FF', 
+                textShadow: 'none',
                 filter: 'brightness(0.9)'
               }}>
                 <Briefcase className="inline mr-2 h-6 w-6" />
@@ -391,8 +391,8 @@ export default function Teams() {
         {/* Instructions */}
         <div className="glassmorphism rounded-2xl p-6">
           <h3 className="text-xl font-semibold mb-4" style={{ 
-            color: 'hsl(180, 100%, 50%)', 
-            textShadow: '0 0 6px hsl(180, 100%, 50%), 0 0 12px hsl(180, 100%, 50%)',
+            color: '#EAF8FF', 
+            textShadow: 'none',
             filter: 'brightness(0.9)'
           }}>Como Funciona</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
