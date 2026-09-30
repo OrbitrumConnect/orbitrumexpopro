@@ -9,6 +9,7 @@ import { Copy, Check, QrCode, Sparkles, Crown, Star, Zap, ArrowLeft, CreditCard 
 import { apiRequest } from '@/lib/queryClient';
 import { Link } from 'wouter';
 import { DocumentVerificationModal } from '@/components/document-verification-modal';
+import Sidebar from '@/components/Sidebar';
 
 interface Plan {
   id: string;
@@ -211,27 +212,31 @@ export default function PlanosPagamento() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-black p-4">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: '#F4FAFF', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
+      <Sidebar />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: '1px solid rgba(0,174,255,0.18)', background: 'rgba(4,17,31,0.82)' }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CreditCard size={18} /> Planos
+            </div>
+            <div style={{ fontSize: 13, color: '#91A9BD' }}>Escolha seu plano e desbloqueie o poder completo</div>
+          </div>
           <Link href="/">
-            <Button variant="outline" className="flex items-center space-x-2">
-              <ArrowLeft className="w-4 h-4" />
-              <span>Voltar ao App</span>
-            </Button>
+            <button style={{ background: 'none', border: '1px solid rgba(0,174,255,0.18)', borderRadius: 8, padding: '6px 12px', color: '#91A9BD', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <ArrowLeft size={14} /> Início
+            </button>
           </Link>
+        </header>
+      <div className="p-4">
+      <div className="max-w-6xl mx-auto">
+
+        {/* Aviso legal */}
+        <div className="flex items-center justify-center mb-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-2">
-              Orbitrum Connect
-            </h1>
-            <p className="text-gray-300 text-lg">
-              Escolha seu plano e desbloqueie o poder completo
-            </p>
             <div className="mt-4 p-3 bg-yellow-900/30 border border-yellow-500/50 rounded-lg">
               <p className="text-yellow-200 text-sm">
-                <strong>⚠️ IMPORTANTE:</strong> Plataforma de networking profissional. 
+                <strong>⚠️ IMPORTANTE:</strong> Plataforma de networking profissional.
                 Tokens e cashbacks são benefícios de uso, não produtos financeiros.
                 <span className="text-xs block mt-1">✅ Sistema 100% conforme CVM e LGPD - Atualizado 17/07/2025</span>
               </p>
@@ -446,6 +451,8 @@ export default function PlanosPagamento() {
           window.location.href = '/verificacao-documentos';
         }}
       />
+    </div>
+    </div>
     </div>
   );
 }

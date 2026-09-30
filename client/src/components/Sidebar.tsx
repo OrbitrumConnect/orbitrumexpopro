@@ -26,7 +26,7 @@ export default function Sidebar() {
   }, []);
 
   const rede: Array<[string, string]> = [
-    ['Início', '/'], ['Minha Rede', '/'], ['Profissionais', '/'], ['Indicações', '/'],
+    ['Início', '/'], ['Minha Rede', '/?view=rede'], ['Profissionais', '/?view=profissionais'], ['Indicações', '/?view=indicacoes'],
   ];
   const ferramentas: Array<[string, string]> = [
     ['Meu Painel', '/dashboard-selector'], ['Equipes', '/teams'], ['Mapa · GPS', '/mapa'],
@@ -38,8 +38,12 @@ export default function Sidebar() {
 
   const ir = (rota: string) => { setLocation(rota); setAberta(false); };
 
+  const search = typeof window !== 'undefined' ? window.location.search : '';
   const item = (label: string, rota: string, size = 15) => {
-    const on = (label === 'Início' && loc === '/') || (loc === rota && rota !== '/');
+    const isViewLink = rota.startsWith('/?view=');
+    const on = isViewLink
+      ? loc === '/' && search === rota.slice(1)
+      : (label === 'Início' && loc === '/' && !search.includes('view=')) || (loc === rota && rota !== '/');
     return (
       <button key={label + rota} onClick={() => ir(rota)}
         style={{ textAlign: 'left', padding: '10px 14px', borderRadius: 9, border: on ? `1px solid ${C.borderHot}` : '1px solid transparent',

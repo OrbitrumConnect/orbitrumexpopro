@@ -16,7 +16,6 @@ import {
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import GPSTracking from "@/components/GPSTracking";
 import InteractiveCalendar from "@/components/InteractiveCalendar";
 import ProfileEditor from "@/components/profile/ProfileEditor";
 import { DocumentUpload } from "@/components/dashboard/DocumentUpload";
@@ -108,7 +107,20 @@ export function CleanClientDashboard({ user }: ClientDashboardProps) {
               </div>
             )}
             {activeTab === 'calendar' && <InteractiveCalendar userType="client" userId={user?.id || 1} />}
-            {activeTab === 'map' && <GPSTracking userType="client" userId={user?.id || 1} username={user?.username || 'Cliente'} />}
+            {activeTab === 'map' && (
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 28, textAlign: 'center' }}>
+                <MapPin size={28} color={C.cyan} style={{ margin: '0 auto 12px' }} />
+                <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Mapa da Rede</div>
+                <div style={{ color: C.ink2, fontSize: 13, lineHeight: 1.6, maxWidth: 400, margin: '0 auto' }}>
+                  Veja quem está disponível perto de você no mapa interativo. Localização autorizada e temporária — só quando você ativar.
+                </div>
+                <Link href="/mapa">
+                  <button style={{ marginTop: 16, border: 'none', borderRadius: 10, padding: '9px 20px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, margin: '16px auto 0' }}>
+                    <MapPin size={14} /> Abrir Mapa
+                  </button>
+                </Link>
+              </div>
+            )}
           </motion.div>
 
           {/* CTA profissional */}

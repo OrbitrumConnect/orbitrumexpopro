@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { isAdminUser } from '@/lib/isAdmin';
@@ -110,6 +110,7 @@ export default function Inicio() {
   const [resultados, setResultados] = useState<Rec[]>([]);
   const [buscou, setBuscou] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [viewAtiva, setViewAtiva] = useState<'inicio' | 'rede' | 'profissionais' | 'indicacoes'>('inicio');
   const [atividade, setAtividade] = useState<Array<{ texto: string; quando: string; avatar?: string | null }>>([]);
   const [disponivel, setDisponivel] = useState(false);
   const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
@@ -119,6 +120,7 @@ export default function Inicio() {
     window.addEventListener('resize', onR);
     return () => window.removeEventListener('resize', onR);
   }, []);
+
   const userId = String(user?.id_interno ?? 1);
 
   // Presença on/off: liga/desliga o perfil na rede pra receber chamada/indicação.
@@ -155,17 +157,35 @@ export default function Inicio() {
     }
   }, [userId]);
 
-  // Busca INLINE: mostra os resultados na própria home (funil sem trocar de aba).
-  // Ranqueia pelo sinal relacional (comporBusca). Sem filtro de texto fabricado —
-  // quando o backend aceitar busca por termo, plugamos `necessidade` aqui.
-  const buscar = () => {
+  const buscar = (view?: 'rede' | 'profissionais' | 'indicacoes') => {
+    const v = view || viewAtiva;
+    if (view) setViewAtiva(view);
     setBuscou(true); setCarregando(true);
     fetch(`/api/orbitmatch/search?userId=${userId}`)
       .then(r => r.json())
-      .then(j => { if (j.success) setResultados(j.resultados as Rec[]); })
+      .then(j => {
+        if (!j.success) return;
+        let lista = j.resultados as Rec[];
+        if (v === 'rede') lista = lista.filter(r => r.sinalRelacional > 0);
+        else if (v === 'indicacoes') lista = lista.filter(r => r.motivos.some(m => m.toLowerCase().includes('indic')));
+        setResultados(lista);
+      })
       .catch(() => {})
       .finally(() => setCarregando(false));
   };
+  const irParaInicio = () => { setViewAtiva('inicio'); setBuscou(false); setResultados([]); };
+
+  const viewParamHandled = useRef(false);
+  useEffect(() => {
+    if (viewParamHandled.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const v = params.get('view') as 'rede' | 'profissionais' | 'indicacoes' | null;
+    if (v && ['rede', 'profissionais', 'indicacoes'].includes(v)) {
+      viewParamHandled.current = true;
+      window.history.replaceState({}, '', '/');
+      setTimeout(() => buscar(v), 300);
+    }
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', position: 'relative' }}>
@@ -188,19 +208,21 @@ export default function Inicio() {
           <span style={{ letterSpacing: 2, fontWeight: 700, fontSize: 15 }}>ORBITRUM</span>
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflowY: 'auto' }}>
-          {/* REDE — o eixo da tese (§30: rede em cima). Fluxo acontece inline, sem trocar de aba. */}
           {([
-            ['Início', true, () => { setBuscou(false); setResultados([]); }],
-            ['Minha Rede', false, buscar],
-            ['Profissionais', false, buscar],
-            ['Indicações', false, buscar],
-          ] as Array<[string, boolean, () => void]>).map(([label, active, onClick]) => (
-            <button key={label} onClick={onClick}
-              style={{ textAlign: 'left', padding: '11px 14px', borderRadius: 9, border: active ? `1px solid ${C.borderHot}` : '1px solid transparent',
-                background: active ? `${C.blue}22` : 'transparent', color: active ? C.ink : '#A9C6DC', fontSize: 15, fontWeight: active ? 600 : 400, letterSpacing: 0.2, cursor: 'pointer' }}>
-              {label}
-            </button>
-          ))}
+            ['Início', 'inicio' as const, irParaInicio],
+            ['Minha Rede', 'rede' as const, () => buscar('rede')],
+            ['Profissionais', 'profissionais' as const, () => buscar('profissionais')],
+            ['Indicações', 'indicacoes' as const, () => buscar('indicacoes')],
+          ] as Array<[string, typeof viewAtiva, () => void]>).map(([label, view, onClick]) => {
+            const active = viewAtiva === view;
+            return (
+              <button key={label} onClick={onClick}
+                style={{ textAlign: 'left', padding: '11px 14px', borderRadius: 9, border: active ? `1px solid ${C.borderHot}` : '1px solid transparent',
+                  background: active ? `${C.blue}22` : 'transparent', color: active ? C.ink : '#A9C6DC', fontSize: 15, fontWeight: active ? 600 : 400, letterSpacing: 0.2, cursor: 'pointer' }}>
+                {label}
+              </button>
+            );
+          })}
           {/* Seções da tese ainda não construídas — honesto: "em breve", nunca link morto que finge. */}
           {['Oportunidades', 'Conversas'].map(label => (
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 14px', color: C.ink3, fontSize: 15 }}>
@@ -238,13 +260,15 @@ export default function Inicio() {
       {/* CONTEÚDO */}
       <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
         {/* header */}
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '12px 14px 12px 56px' : '16px 24px', borderBottom: `1px solid ${C.border}`, gap: 10, flexWrap: mobile ? 'wrap' : 'nowrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, maxWidth: mobile ? '100%' : 460 }}>
-            <input value={necessidade} onChange={e => setNecessidade(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscar()}
-              placeholder="O que você precisa resolver?"
-              style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: mobile ? '9px 14px' : '10px 18px', color: C.ink, fontSize: 14, outline: 'none', minWidth: 0 }} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 8 : 12, flexWrap: 'wrap' }}>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '10px 10px 10px 52px' : '16px 24px', borderBottom: `1px solid ${C.border}`, gap: 10, flexWrap: mobile ? 'nowrap' : 'nowrap' }}>
+          {!mobile && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, maxWidth: 460 }}>
+              <input value={necessidade} onChange={e => setNecessidade(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscar()}
+                placeholder="O que você precisa resolver?"
+                style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: '10px 18px', color: C.ink, fontSize: 14, outline: 'none', minWidth: 0 }} />
+            </div>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 8 : 12 }}>
             {user ? (
               <>
                 <button onClick={toggleDisponibilidade} title="Ficar disponível na rede pra receber chamada/indicação"
@@ -265,29 +289,41 @@ export default function Inicio() {
         <div style={{ display: 'flex', gap: 20, padding: 24, flexWrap: 'wrap' }}>
           {/* coluna principal */}
           <main style={{ flex: '1 1 440px', minWidth: 0 }}>
-            <div style={{ textAlign: 'center', marginBottom: 8 }}>
-              <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Sua rede em movimento</h1>
-              <p style={{ color: C.ink3, fontSize: 13, margin: '4px 0 0' }}>Cada conexão fortalece o seu ecossistema.</p>
-            </div>
+            {!mobile && (
+              <div style={{ textAlign: 'center', marginBottom: 8 }}>
+                <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Sua rede em movimento</h1>
+                <p style={{ color: C.ink3, fontSize: 13, margin: '4px 0 0' }}>Cada conexão fortalece o seu ecossistema.</p>
+              </div>
+            )}
             {/* Categorias da rede — não só profissionais: Empresas e Oportunidades também.
                 Faixa ADITIVA acima do orbit (não altera o sistema orbit). Ativas buscam; futuras "em breve". */}
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+            <div style={{ display: 'flex', gap: 8, justifyContent: mobile ? 'flex-start' : 'center', flexWrap: mobile ? 'nowrap' : 'wrap', marginBottom: 6, overflowX: mobile ? 'auto' : 'visible', paddingBottom: mobile ? 4 : 0, WebkitOverflowScrolling: 'touch' }}>
               {([
-                ['👤', 'Profissionais', true], ['🔗', 'Indicações', true], ['◎', 'Sua rede', true],
-                ['🏢', 'Empresas', false], ['📌', 'Oportunidades', false],
-              ] as Array<[string, string, boolean]>).map(([ic, label, ativo]) => (
-                <button key={label} onClick={() => ativo && buscar()} disabled={!ativo}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 16,
-                    border: `1px solid ${ativo ? C.border : 'rgba(120,150,170,0.15)'}`, background: ativo ? `${C.blue}12` : 'transparent',
-                    color: ativo ? C.ink : C.ink3, fontSize: 12, cursor: ativo ? 'pointer' : 'default' }}>
-                  <span>{ic}</span>{label}{!ativo && <span style={{ fontSize: 9, color: C.ink3 }}>· em breve</span>}
-                </button>
-              ))}
+                ['profissionais' as const, 'Profissionais', true],
+                ['indicacoes' as const, 'Indicações', true],
+                ['rede' as const, 'Sua rede', true],
+                [null, 'Empresas', false],
+                [null, 'Oportunidades', false],
+              ] as Array<[typeof viewAtiva | null, string, boolean]>).map(([view, label, ativo]) => {
+                const selected = view !== null && viewAtiva === view && buscou;
+                return (
+                  <button key={label} onClick={() => view && buscar(view)} disabled={!ativo}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 16,
+                      border: `1px solid ${selected ? C.borderHot : ativo ? C.border : 'rgba(120,150,170,0.15)'}`,
+                      background: selected ? `${C.blue}22` : ativo ? `${C.blue}12` : 'transparent',
+                      color: selected ? C.cyan : ativo ? C.ink : C.ink3, fontSize: 12, fontWeight: selected ? 600 : 400,
+                      cursor: ativo ? 'pointer' : 'default' }}>
+                    {label}{!ativo && <span style={{ fontSize: 9, color: C.ink3 }}>· em breve</span>}
+                  </button>
+                );
+              })}
             </div>
             {/* MIOLO ORBITAL — o sistema orbit ORIGINAL (profissionais orbitando + busca).
                 NÃO remover. Clicar num profissional abre o perfil-tese. */}
-            <div style={{ position: 'relative', minHeight: mobile ? 280 : 420, maxHeight: mobile ? '55vh' : 'none', overflow: 'hidden' }}>
-              <OrbitSystem onOpenProfessional={(id: number) => setProfModalId(id)} onOpenLogin={() => {}} />
+            <div style={{ position: 'relative', overflow: 'hidden', ...(mobile ? { height: 'clamp(280px, 55vh, 420px)' } : { height: 'clamp(340px, 48vh, 480px)' }) }}>
+              <div style={{ transform: 'scale(0.85)', transformOrigin: 'center top', width: '100%', position: 'absolute', top: mobile ? '-12vh' : '-16vh', left: 0 }}>
+                <OrbitSystem onOpenProfessional={(id: number) => setProfModalId(id)} onOpenLogin={() => {}} />
+              </div>
             </div>
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 8 }}>
               <div style={{ display: 'flex', gap: 10 }}>
@@ -304,7 +340,10 @@ export default function Inicio() {
               <div style={{ marginTop: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <span style={{ fontWeight: 600, fontSize: 15 }}>
-                    {carregando ? 'Buscando na sua rede…' : `${resultados.length} ${resultados.length === 1 ? 'pessoa' : 'pessoas'} — ordenadas pela sua rede`}
+                    {carregando ? 'Buscando na sua rede…'
+                      : viewAtiva === 'rede' ? `${resultados.length} na sua rede`
+                      : viewAtiva === 'indicacoes' ? `${resultados.length} ${resultados.length === 1 ? 'indicação' : 'indicações'}`
+                      : `${resultados.length} ${resultados.length === 1 ? 'profissional' : 'profissionais'}`}
                   </span>
                   <button onClick={() => { setBuscou(false); setResultados([]); }} style={{ background: 'none', border: 'none', color: C.ink3, fontSize: 12, cursor: 'pointer' }}>Limpar</button>
                 </div>
@@ -358,7 +397,27 @@ export default function Inicio() {
           </main>
 
           {/* coluna lateral: recomendações com MOTIVO */}
-          <aside style={{ flex: '0 1 320px', minWidth: 260 }}>
+          <aside style={{ flex: '0 1 320px', minWidth: mobile ? 0 : 260, width: mobile ? '100%' : undefined }}>
+            {mobile && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>Oportunidades</div>
+                  <p style={{ color: C.ink2, fontSize: 11, margin: 0, lineHeight: 1.4 }}>
+                    Necessidades da sua região aparecem aqui — responda ou indique.
+                  </p>
+                </div>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>Atividade</div>
+                  {atividade.length > 0 ? (
+                    <div style={{ fontSize: 11, color: C.ink }}>{atividade[0]?.texto}</div>
+                  ) : (
+                    <p style={{ color: C.ink2, fontSize: 11, margin: 0, lineHeight: 1.4 }}>
+                      Indicações e validações da rede aparecem aqui.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
                 <span style={{ fontWeight: 600, fontSize: 15 }}>Recomendações para você</span>
@@ -387,35 +446,36 @@ export default function Inicio() {
               ))}
             </div>
 
-            {/* Oportunidades próximas (design-alvo). Empty-state que ENSINA — sem dado fabricado. */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 14 }}>
-              <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 8 }}>Oportunidades próximas</div>
-              <p style={{ color: C.ink2, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
-                Quando alguém publica uma necessidade na sua região, ela aparece aqui — você pode
-                responder ou indicar quem resolve. É a rede trabalhando a seu favor.
-              </p>
-            </div>
-
-            {/* Atividade recente — na coluna direita, abaixo de Oportunidades (pedido do Pedro).
-                Vem dos fatos reais (§35); empty-state que ensina quando vazio. */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 14 }}>
-              <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 8 }}>Atividade recente</div>
-              {atividade.length > 0 ? (
-                atividade.map((a, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderTop: i ? `1px solid ${C.border}` : 'none' }}>
-                    {a.avatar
-                      ? <img src={a.avatar} alt="" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                      : <div style={{ width: 26, height: 26, borderRadius: '50%', background: `${C.blue}33`, flexShrink: 0 }} />}
-                    <span style={{ fontSize: 12, color: C.ink }}>{a.texto}</span>
-                  </div>
-                ))
-              ) : (
+            {!mobile && (
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 14 }}>
+                <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 8 }}>Oportunidades próximas</div>
                 <p style={{ color: C.ink2, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
-                  Cada indicação, conexão e experiência validada da sua rede aparece aqui.
-                  Assim que a rede se mover, você acompanha por aqui.
+                  Quando alguém publica uma necessidade na sua região, ela aparece aqui — você pode
+                  responder ou indicar quem resolve. É a rede trabalhando a seu favor.
                 </p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {!mobile && (
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 14 }}>
+                <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 8 }}>Atividade recente</div>
+                {atividade.length > 0 ? (
+                  atividade.map((a, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderTop: i ? `1px solid ${C.border}` : 'none' }}>
+                      {a.avatar
+                        ? <img src={a.avatar} alt="" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                        : <div style={{ width: 26, height: 26, borderRadius: '50%', background: `${C.blue}33`, flexShrink: 0 }} />}
+                      <span style={{ fontSize: 12, color: C.ink }}>{a.texto}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p style={{ color: C.ink2, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
+                    Cada indicação, conexão e experiência validada da sua rede aparece aqui.
+                    Assim que a rede se mover, você acompanha por aqui.
+                  </p>
+                )}
+              </div>
+            )}
 
             <p style={{ color: C.ink2, fontSize: 11, marginTop: 14, textAlign: 'center' }}>
               A rede explica por que cada pessoa apareceu.

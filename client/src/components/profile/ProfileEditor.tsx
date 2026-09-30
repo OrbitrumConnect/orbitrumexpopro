@@ -293,13 +293,13 @@ export default function ProfileEditor({ userType }: ProfileEditorProps) {
         </Card>
       </DialogTrigger>
 
-      <DialogContent className="glassmorphism max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="glassmorphism max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: 'rgba(2,9,20,0.96)', border: '1px solid rgba(0,174,255,0.25)', color: '#F4FAFF' }}>
         <DialogHeader>
-          <DialogTitle className="text-cyan-400 flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2" style={{ color: '#00E5FF' }}>
             <User className="w-5 h-5" />
             {userType === 'professional' ? 'Perfil Profissional' : 'Perfil do Cliente'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription style={{ color: '#91A9BD' }}>
             Complete seu perfil para {userType === 'professional' ? 'aparecer nas buscas e receber mais solicitações' : 'uma melhor experiência na plataforma'}
           </DialogDescription>
         </DialogHeader>
@@ -337,8 +337,8 @@ export default function ProfileEditor({ userType }: ProfileEditorProps) {
                 }}
               />
               
-              <p className="text-xs text-gray-400 text-center">
-                {userType === 'professional' 
+              <p className="text-xs text-center" style={{ color: '#91A9BD' }}>
+                {userType === 'professional'
                   ? 'Foto profissional aumenta suas chances de ser contratado'
                   : 'Adicione uma foto para personalizar seu perfil'
                 }
@@ -540,11 +540,12 @@ export default function ProfileEditor({ userType }: ProfileEditorProps) {
 
             {/* Botões */}
             <div className="flex gap-3 pt-4">
-              <Button 
-                type="button" 
-                variant="ghost" 
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setIsOpen(false)}
                 className="flex-1"
+                style={{ color: '#91A9BD', borderColor: 'rgba(0,174,255,0.25)' }}
               >
                 Cancelar
               </Button>

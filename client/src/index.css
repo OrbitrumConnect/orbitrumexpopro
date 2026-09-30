@@ -54,6 +54,17 @@
     backdrop-filter: blur(8px);
     border: 1px solid rgba(0, 190, 255, 0.22);
     box-shadow: 0 0 16px rgba(0, 190, 255, 0.08);
+    color: #F4FAFF;
+  }
+  .glassmorphism input,
+  .glassmorphism textarea,
+  .glassmorphism select,
+  .glassmorphism label {
+    color: #F4FAFF;
+  }
+  .glassmorphism input::placeholder,
+  .glassmorphism textarea::placeholder {
+    color: #607A91;
   }
   
   /* Mobile Optimization for Telegram */

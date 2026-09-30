@@ -21,6 +21,10 @@ export default function Teams() {
   const [expandedTeam, setExpandedTeam] = useState<number | null>(null);
   const [professionalModalOpen, setProfessionalModalOpen] = useState(false);
   const [selectedProfessionalId, setSelectedProfessionalId] = useState<number | null>(null);
+  const [criarOpen, setCriarOpen] = useState(false);
+  const [nomeTime, setNomeTime] = useState('');
+  const [profsSelecionados, setProfsSelecionados] = useState<string[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -54,6 +58,33 @@ export default function Teams() {
       queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
     },
   });
+
+  const criarTimeMutation = useMutation({
+    mutationFn: async () => {
+      const team = await apiRequest('/api/teams', 'POST', JSON.stringify({
+        userId: currentUser?.id || 1,
+        name: nomeTime.trim() || 'Meu Time',
+        professionalIds: profsSelecionados,
+      }));
+      return team;
+    },
+    onSuccess: () => {
+      toast({ title: "Time criado", description: `"${nomeTime.trim() || 'Meu Time'}" criado com sucesso.` });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      setCriarOpen(false);
+      setNomeTime('');
+      setProfsSelecionados([]);
+    },
+    onError: () => {
+      toast({ title: "Erro", description: "Não foi possível criar o time.", variant: "destructive" });
+    },
+  });
+
+  const toggleProf = (id: string) => {
+    setProfsSelecionados(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : prev.length >= 10 ? prev : [...prev, id]
+    );
+  };
 
   const getTeamProfessionals = (team: any) => {
     if (!team.professionalIds || team.professionalIds.length === 0) return [];
@@ -104,9 +135,9 @@ export default function Teams() {
             </div>
             <div style={{ fontSize: 13, color: C.ink2 }}>Monte times de profissionais para seus projetos</div>
           </div>
-          <button onClick={() => setLocation('/')}
-            style={{ background: 'none', border: `1px solid ${C.borderHot}`, borderRadius: 10, padding: '8px 16px', color: C.cyan, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <UserPlus size={14} /> Adicionar da rede
+          <button onClick={() => { setCriarOpen(true); setNomeTime(''); setProfsSelecionados([]); }}
+            style={{ background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, border: 'none', borderRadius: 10, padding: '8px 16px', color: '#012', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <UserPlus size={14} /> Criar Time
           </button>
         </header>
 
@@ -204,6 +235,84 @@ export default function Teams() {
           </div>
         </div>
       </div>
+
+      {/* Modal Criar Time */}
+      {criarOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={(e) => { if (e.target === e.currentTarget) setCriarOpen(false); }}>
+          <div style={{ background: '#061222', border: `1px solid ${C.borderHot}`, borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, maxHeight: '80vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, fontSize: 17, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Users size={18} color={C.cyan} /> Criar Time
+              </div>
+              <button onClick={() => setCriarOpen(false)} style={{ background: 'none', border: 'none', color: C.ink3, cursor: 'pointer' }}><X size={18} /></button>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: C.ink2, marginBottom: 6, display: 'block' }}>Nome do time</label>
+              <input value={nomeTime} onChange={e => setNomeTime(e.target.value)} placeholder="Ex: Reforma da casa"
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1px solid ${C.border}`, background: 'rgba(0,8,20,0.7)', color: C.ink, fontSize: 14, outline: 'none' }} />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: C.ink2, marginBottom: 6, display: 'block' }}>
+                Profissionais ({profsSelecionados.length}/10)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <button onClick={() => setDropdownOpen(!dropdownOpen)}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1px solid ${C.border}`, background: 'rgba(0,8,20,0.7)', color: C.ink2, fontSize: 13, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>{profsSelecionados.length > 0 ? `${profsSelecionados.length} selecionado${profsSelecionados.length > 1 ? 's' : ''}` : 'Selecionar profissionais...'}</span>
+                  <ChevronDown size={14} />
+                </button>
+                {dropdownOpen && professionals.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: '#071829', border: `1px solid ${C.borderHot}`, borderRadius: 10, marginTop: 4, maxHeight: 240, overflowY: 'auto' }}>
+                    {professionals.map(p => {
+                      const sel = profsSelecionados.includes(p.id.toString());
+                      return (
+                        <button key={p.id} onClick={() => toggleProf(p.id.toString())}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: sel ? `${C.cyan}15` : 'transparent', border: 'none', borderBottom: `1px solid ${C.border}`, color: C.ink, cursor: 'pointer', textAlign: 'left' }}>
+                          {p.avatar ? (
+                            <img src={p.avatar} alt={p.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}` }} />
+                          ) : (
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${C.cyan}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: 11 }}>{p.name?.[0]?.toUpperCase() || '?'}</div>
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 500, fontSize: 13 }}>{p.name}</div>
+                            <div style={{ color: C.ink2, fontSize: 11 }}>{p.title}</div>
+                          </div>
+                          <div style={{ width: 18, height: 18, borderRadius: 4, border: `1px solid ${sel ? C.cyan : C.border}`, background: sel ? C.cyan : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            {sel && <span style={{ color: '#012', fontSize: 12, fontWeight: 700 }}>✓</span>}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {profsSelecionados.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+                {profsSelecionados.map(id => {
+                  const p = professionals.find(pr => pr.id.toString() === id);
+                  if (!p) return null;
+                  return (
+                    <span key={id} onClick={() => toggleProf(id)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: `${C.cyan}18`, border: `1px solid ${C.border}`, borderRadius: 16, padding: '4px 10px', fontSize: 12, color: C.ink, cursor: 'pointer' }}>
+                      {p.name} <X size={12} color={C.ink3} />
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            <button onClick={() => criarTimeMutation.mutate()} disabled={criarTimeMutation.isPending}
+              style={{ width: '100%', padding: '11px 0', borderRadius: 10, border: 'none', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 14, cursor: criarTimeMutation.isPending ? 'wait' : 'pointer', opacity: criarTimeMutation.isPending ? 0.7 : 1 }}>
+              {criarTimeMutation.isPending ? 'Criando...' : 'Criar Time'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {professionalModalOpen && selectedProfessionalId && (
         <ProfessionalModal

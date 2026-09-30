@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Coins, Zap, Star, Sparkles, Crown } from "lucide-react";
+import { Coins, Zap, Star, Sparkles, Crown, ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
 import { DocumentVerificationModal } from "@/components/document-verification-modal";
+import Sidebar from "@/components/Sidebar";
 
 interface TokenPackage {
   id: string;
@@ -176,18 +178,30 @@ export default function TokenStore() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white p-4">
-      <div className="max-w-7xl mx-auto pt-20">
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: '#F4FAFF', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
+      <Sidebar />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: '1px solid rgba(0,174,255,0.18)', background: 'rgba(4,17,31,0.82)' }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Coins size={18} /> Orbit Credits
+            </div>
+            <div style={{ fontSize: 13, color: '#91A9BD' }}>Saldo: {userTokens.toLocaleString()} tokens</div>
+          </div>
+          <Link href="/">
+            <button style={{ background: 'none', border: '1px solid rgba(0,174,255,0.18)', borderRadius: 8, padding: '6px 12px', color: '#91A9BD', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <ArrowLeft size={14} /> Início
+            </button>
+          </Link>
+        </header>
+      <div className="p-4 text-white">
+      <div className="max-w-7xl mx-auto">
         {/* Header - Mobile Optimized */}
         <div className="text-center mb-6 sm:mb-12">
           <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
             Loja de Tokens Orbit
           </h1>
           <p className="text-gray-400 mb-2 text-sm sm:text-base">Expanda suas possibilidades com mais tokens</p>
-          <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-cyan-400">
-            <Coins className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Saldo atual: {userTokens.toLocaleString()} tokens</span>
-          </div>
         </div>
 
         {/* Informações importantes - Mobile Optimized */}
@@ -328,6 +342,8 @@ export default function TokenStore() {
         title="Documentos Pendentes"
         description="Para comprar tokens, você precisa verificar seus documentos primeiro."
       />
+    </div>
+    </div>
     </div>
   );
 }

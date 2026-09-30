@@ -5,12 +5,10 @@ import 'leaflet/dist/leaflet.css';
 import { ProfessionalModal } from '@/components/professional-modal';
 import ConversaModal from '@/components/ConversaModal';
 import Sidebar from '@/components/Sidebar';
-
-// MAPA DA REDE — só quem está DISPONÍVEL (fato disponivel_em vigente). Mapa CONTIDO (com borda) +
-// lista dos disponíveis abaixo. O usuário vê no mapa e conecta ali. Grátis (OSM/Leaflet). Nada fabricado.
+import { useAuth } from '@/hooks/useAuth';
 
 const C = {
-  bg: '#00060F', cyan: '#00D9FF', blue: '#00AEEF', ink: '#EAF8FF', ink2: '#7FA9C2', ink3: '#5b7a90',
+  bg: '#00060F', cyan: '#00E5FF', blue: '#00AEEF', ink: '#EAF8FF', ink2: '#7FA9C2', ink3: '#5b7a90',
   border: 'rgba(0,190,255,0.22)', borderHot: 'rgba(0,220,255,0.5)', bg2: '#011527', card: 'rgba(3,18,32,0.9)',
 };
 
@@ -30,19 +28,55 @@ function Avatar({ src, name }: { src?: string | null; name: string }) {
 
 export default function MapaDisponiveis() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const ref = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const [profModalId, setProfModalId] = useState<number | null>(null);
   const [conversaId, setConversaId] = useState<number | null>(null);
   const [profs, setProfs] = useState<Prof[]>([]);
   const [carregou, setCarregou] = useState(false);
+  const [userLocation, setUserLocation] = useState(false);
+  const [disponivel, setDisponivel] = useState(false);
+
+  useEffect(() => {
+    if (user?.id_interno) {
+      fetch(`/api/facts/availability/${user.id_interno}`)
+        .then(r => r.json())
+        .then(j => { if (j.success) setDisponivel(!!j.ativo); })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const toggleDisponibilidade = () => {
+    const novo = !disponivel;
+    setDisponivel(novo);
+    fetch('/api/facts/availability', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ professionalUserId: user?.id_interno, regiao: user?.city || 'geral', ativo: novo }),
+    }).catch(() => setDisponivel(!novo));
+  };
 
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
-    const map = L.map(ref.current, { zoomControl: true, attributionControl: false });
+    const map = L.map(ref.current, { zoomControl: false, attributionControl: false });
     mapRef.current = map;
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-    map.setView([-22.9, -43.2], 11);
+    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '' }).addTo(map);
+    if (ref.current) ref.current.style.filter = 'invert(1) hue-rotate(180deg) brightness(1.5) contrast(0.85)';
+    map.setView([-22.9, -43.2], 12);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          map.setView([latitude, longitude], 14);
+          setUserLocation(true);
+          const meIcon = L.divIcon({ className: '', html: `<div style="width:16px;height:16px;border-radius:50%;background:#00E5FF;border:3px solid #020914;box-shadow:0 0 12px #00E5FF99"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
+          L.marker([latitude, longitude], { icon: meIcon, zIndexOffset: 1000 }).addTo(map).bindTooltip('Você está aqui', { direction: 'top', className: '' });
+        },
+        () => {}
+      );
+    }
 
     fetch('/api/orbitmatch/disponiveis')
       .then(r => r.json())
@@ -68,61 +102,106 @@ export default function MapaDisponiveis() {
     <div style={{ minHeight: '100vh', background: `radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)`, color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
       <Sidebar />
       <div style={{ flex: 1, minWidth: 0 }}>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px 12px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)' }}>
-        <div style={{ fontWeight: 700, letterSpacing: 1 }}>Mapa da rede</div>
-        <div style={{ fontSize: 12, color: C.ink2 }}>{carregou ? `${profs.length} disponíveis` : '…'}</div>
-      </header>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', flexWrap: 'wrap', gap: 8 }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: 0.5 }}>Mapa da Rede</div>
+            <div style={{ fontSize: 13, color: C.ink2 }}>Quem está disponível perto de você</div>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ fontSize: 13, color: C.cyan, fontWeight: 600 }}>{carregou ? `${profs.length} disponíveis` : '…'}</div>
+            {user && (
+              <button onClick={toggleDisponibilidade}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: disponivel ? `${C.cyan}1f` : 'transparent', border: `1px solid ${disponivel ? C.borderHot : C.border}`, borderRadius: 16, padding: '6px 14px', color: disponivel ? C.cyan : C.ink3, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: disponivel ? C.cyan : C.ink3, boxShadow: disponivel ? `0 0 6px ${C.cyan}` : 'none' }} />
+                {disponivel ? 'Você: Disponível' : 'Ativar presença'}
+              </button>
+            )}
+          </div>
+        </header>
 
-      <div style={{ maxWidth: 1040, margin: '0 auto', padding: 'clamp(12px, 3vw, 24px)' }}>
-        <p style={{ color: C.ink2, fontSize: 13, margin: '0 0 12px', display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span style={{ color: C.cyan }}>◉</span> Só quem está <b style={{ color: C.cyan, fontWeight: 600 }}>disponível</b> na rede aparece aqui. Toque no pino ou no card pra ver por que apareceu e conectar.
-        </p>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(12px, 3vw, 24px)' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, fontSize: 13, color: C.ink2 }}>
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: C.cyan, flexShrink: 0 }} />
+            <span>Só quem está <b style={{ color: C.cyan }}>disponível</b> aparece. Toque no pino ou no card pra ver o perfil e conectar.</span>
+            {userLocation && <span style={{ marginLeft: 'auto', fontSize: 11, color: C.ink3 }}>GPS ativo</span>}
+          </div>
 
-        {/* MAPA CONTIDO — com borda, altura fixa responsiva (não full-screen) */}
-        <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: `1px solid ${C.borderHot}`, boxShadow: `0 0 30px ${C.blue}18` }}>
-          <div ref={ref} style={{ height: 'clamp(280px, 42vh, 440px)', width: '100%' }} />
-          {carregou && profs.length === 0 && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-              <div style={{ background: 'rgba(1,21,39,0.94)', border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, maxWidth: 300, textAlign: 'center' }}>
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>Ninguém disponível agora</div>
-                <p style={{ color: C.ink2, fontSize: 12, margin: 0, lineHeight: 1.5 }}>Quando alguém ativar a presença (toggle “Disponível”), aparece aqui pronto pra chamada.</p>
+          <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: `1px solid ${C.borderHot}`, boxShadow: `0 0 40px ${C.blue}12` }}>
+            <div ref={ref} style={{ height: 'clamp(340px, 52vh, 540px)', width: '100%' }} />
+            {carregou && profs.length === 0 && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                <div style={{ background: 'rgba(2,9,20,0.94)', border: `1px solid ${C.border}`, borderRadius: 16, padding: 24, maxWidth: 340, textAlign: 'center', pointerEvents: 'auto' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: `${C.cyan}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                    <span style={{ fontSize: 22 }}>📍</span>
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Ninguém disponível agora</div>
+                  <p style={{ color: C.ink2, fontSize: 12, margin: '0 0 14px', lineHeight: 1.5 }}>
+                    Quando profissionais ativam a presença, aparecem aqui com localização em tempo real. Ative a sua pra ser encontrado também.
+                  </p>
+                  {user && !disponivel && (
+                    <button onClick={toggleDisponibilidade}
+                      style={{ border: 'none', borderRadius: 10, padding: '9px 20px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                      Ativar minha presença
+                    </button>
+                  )}
+                </div>
               </div>
+            )}
+          </div>
+
+          {profs.length > 0 && (
+            <div style={{ textAlign: 'center', padding: '10px 0 0', color: C.ink2, fontSize: 12 }}>
+              ▼ {profs.length} {profs.length === 1 ? 'profissional disponível' : 'profissionais disponíveis'} abaixo
             </div>
           )}
+
+          {profs.length > 0 && (
+            <>
+              <div style={{ fontWeight: 600, fontSize: 15, margin: '20px 0 10px' }}>Disponíveis agora</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                {profs.map(p => (
+                  <div key={p.id} onClick={() => setProfModalId(p.id)}
+                    style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'center', transition: 'border-color .2s' }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = C.borderHot)}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}>
+                    <Avatar src={p.avatar} name={p.name} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</div>
+                      <div style={{ color: C.ink2, fontSize: 12 }}>{p.title}</div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4, fontSize: 11, color: C.cyan }}>
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.cyan, boxShadow: `0 0 6px ${C.cyan}` }} /> Disponível
+                      </div>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); setConversaId(p.id); }}
+                      style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '7px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginTop: 28 }}>
+            {[
+              { icon: '📍', title: 'Localização real', desc: 'Posição autorizada e temporária — só enquanto você ativar. Nada é rastreado.' },
+              { icon: '🔗', title: 'Conecte direto', desc: 'Toque no profissional pra ver por que apareceu e iniciar uma conversa.' },
+              { icon: '🛡️', title: 'Privacidade', desc: 'Sua localização só aparece quando você ativa. Desativou? Saiu do mapa.' },
+            ].map((step, i) => (
+              <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, textAlign: 'center' }}>
+                <div style={{ fontSize: 22, marginBottom: 8 }}>{step.icon}</div>
+                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>{step.title}</div>
+                <div style={{ color: C.ink2, fontSize: 12, lineHeight: 1.5 }}>{step.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* LISTA dos disponíveis (infos embaixo) — cards úteis, escaláveis */}
-        {profs.length > 0 && (
-          <>
-            <div style={{ fontWeight: 600, fontSize: 15, margin: '20px 0 10px' }}>Disponíveis agora</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
-              {profs.map(p => (
-                <div key={p.id} onClick={() => setProfModalId(p.id)}
-                  style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <Avatar src={p.avatar} name={p.name} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</div>
-                    <div style={{ color: C.ink2, fontSize: 12 }}>{p.title}</div>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4, fontSize: 11, color: C.cyan }}>
-                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.cyan, boxShadow: `0 0 6px ${C.cyan}` }} /> Disponível
-                    </div>
-                  </div>
-                  <button onClick={(e) => { e.stopPropagation(); setConversaId(p.id); }}
-                    style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '7px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
-                </div>
-              ))}
-            </div>
-          </>
+        {profModalId != null && (
+          <ProfessionalModal isOpen={true} professionalId={profModalId} onClose={() => setProfModalId(null)}
+            onConectar={(id) => { setProfModalId(null); setConversaId(id); }} />
         )}
-      </div>
-
-      {profModalId != null && (
-        <ProfessionalModal isOpen={true} professionalId={profModalId} onClose={() => setProfModalId(null)}
-          onConectar={(id) => { setProfModalId(null); setConversaId(id); }} />
-      )}
-      {conversaId != null && (
-        <ConversaModal profId={conversaId} onClose={() => setConversaId(null)} />
-      )}
+        {conversaId != null && (
+          <ConversaModal profId={conversaId} onClose={() => setConversaId(null)} />
+        )}
       </div>
     </div>
   );
