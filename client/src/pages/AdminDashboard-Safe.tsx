@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Sidebar from "@/components/Sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -137,7 +138,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
+    <div className="min-h-screen bg-gray-900 text-white flex">
+      <Sidebar />
+      <div className="flex-1 min-w-0 p-4">
       {/* Header Simplificado */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-cyan-400">Dashboard Admin</h1>
@@ -1103,6 +1106,7 @@ export default function AdminDashboard() {
         </TabsContent>
       </Tabs>
 
+      </div>
     </div>
   );
 }
