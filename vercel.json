@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "installCommand": "npm install && cd client && npm install",
-  "buildCommand": "cd client && npm run build:no-check",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build:no-check",
   "outputDirectory": "client/dist",
   "functions": {
     "api/index.ts": {
