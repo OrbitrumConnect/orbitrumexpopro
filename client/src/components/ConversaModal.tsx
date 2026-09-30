@@ -15,13 +15,17 @@ const C = {
   ink: '#EAF8FF', ink2: '#7FA9C2', ink3: '#5b7a90',
 };
 
-type Estado = 'conversando' | 'combinado' | 'a_caminho' | 'concluido' | 'validado';
-const FLUXO: Array<[Estado, string]> = [
-  ['conversando', 'Conversando'],
-  ['combinado', 'Combinado'],
-  ['a_caminho', 'A caminho'],
-  ['concluido', 'Concluído'],
-  ['validado', 'Validada'],
+// Estado OPERACIONAL da relação (Experience Layer §10). A barra 0–100% é o que ACONTECEU
+// na plataforma — o Orbitrum REGISTRA, não executa nem garante. Cada transição gera um fato.
+type Estado = 'conversando' | 'combinado' | 'a_caminho' | 'chegou' | 'em_servico' | 'concluido' | 'validado';
+const FLUXO: Array<[Estado, string, number]> = [
+  ['conversando', 'Conexão realizada', 30],
+  ['combinado', 'Serviço aceito', 40],
+  ['a_caminho', 'A caminho', 55],
+  ['chegou', 'Chegada confirmada', 65],
+  ['em_servico', 'Serviço em andamento', 75],
+  ['concluido', 'Serviço concluído', 85],
+  ['validado', 'Experiência validada', 100],
 ];
 
 interface Msg { de: 'eu' | 'ele'; texto: string }
@@ -107,26 +111,35 @@ export default function ConversaModal({ profId, onClose }: Props) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.ink2, fontSize: 22, cursor: 'pointer' }}>×</button>
         </header>
 
-        {/* trilha do ciclo */}
-        <div style={{ display: 'flex', gap: 6, padding: '10px 18px', borderBottom: `1px solid ${C.border}`, overflowX: 'auto' }}>
-          {FLUXO.map(([e, label], i) => (
-            <div key={e} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <span style={{ fontSize: 11, color: i <= idx ? C.cyan : C.ink3, fontWeight: i === idx ? 700 : 400 }}>{i <= idx ? '●' : '○'} {label}</span>
-              {i < FLUXO.length - 1 && <span style={{ color: C.ink3, fontSize: 11 }}>→</span>}
-            </div>
-          ))}
+        {/* BARRA OPERACIONAL 0–100% — estado real da relação (não gamificação). Cada etapa é um
+            evento registrado; o Orbitrum diz o que aconteceu, não que executou o serviço. */}
+        <div style={{ padding: '12px 18px', borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{FLUXO[idx]?.[1]}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.cyan }}>{FLUXO[idx]?.[2] ?? 0}%</span>
+          </div>
+          <div style={{ height: 8, borderRadius: 6, background: 'rgba(0,190,255,0.12)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${FLUXO[idx]?.[2] ?? 0}%`, borderRadius: 6, background: `linear-gradient(90deg, ${C.blue}, ${C.cyan})`, transition: 'width .4s ease' }} />
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginTop: 8, overflowX: 'auto' }}>
+            {FLUXO.map(([e, label], i) => (
+              <span key={e} style={{ fontSize: 10, color: i < idx ? C.cyan : i === idx ? C.ink : C.ink3, fontWeight: i === idx ? 700 : 400, flexShrink: 0 }}>
+                {i < idx ? '✓' : i === idx ? '●' : '○'} {label}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* conversa */}
         <div style={{ flex: 1, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', minHeight: 160 }}>
           {/* MINI-MAPA no próprio card quando o profissional aceita e está a caminho.
               Toda a imersão acontece aqui — não abre outra tela. */}
-          {(estado === 'a_caminho' || estado === 'concluido') && (
+          {(estado === 'a_caminho' || estado === 'chegou') && (
             <MiniMapa nomeProf={prof?.name ?? 'Profissional'}
               origem={prof?.latitude != null && prof?.longitude != null ? { lat: prof.latitude, lng: prof.longitude } : null} />
           )}
-          {/* "Como ir" aparece JUNTO com o mapa (a caminho) — não no final (aí já rolou). */}
-          {estado === 'a_caminho' && prof && <Continuar prof={prof} />}
+          {/* "Como ir" aparece JUNTO com o mapa (deslocamento) — não no final (aí já rolou). */}
+          {(estado === 'a_caminho' || estado === 'chegou') && prof && <Continuar prof={prof} />}
           {msgs.length === 0 && estado === 'conversando' && (
             <div style={{ color: C.ink3, fontSize: 13, textAlign: 'center', marginTop: 20 }}>
               Combine o serviço direto com {prof?.name?.split(' ')[0] ?? 'o profissional'}.<br />
@@ -153,7 +166,13 @@ export default function ConversaModal({ profId, onClose }: Props) {
             <button onClick={() => setEstado('a_caminho')} style={botao(C)}>Aceitar — profissional a caminho</button>
           )}
           {estado === 'a_caminho' && (
-            <button onClick={marcarConcluido} style={botao(C)}>Cheguei · serviço concluído</button>
+            <button onClick={() => setEstado('chegou')} style={botao(C)}>Cheguei ao local</button>
+          )}
+          {estado === 'chegou' && (
+            <button onClick={() => setEstado('em_servico')} style={botao(C)}>Iniciar serviço</button>
+          )}
+          {estado === 'em_servico' && (
+            <button onClick={marcarConcluido} style={botao(C)}>Serviço concluído</button>
           )}
           {estado === 'concluido' && factId && (
             <button onClick={confirmar} style={botao(C)}>Confirmar experiência (os dois lados)</button>
