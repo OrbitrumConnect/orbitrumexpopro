@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: fed60a5d-0b67-496a-9c51-713a1af5c318
-  modified: 2026-09-30T13:53:47.781Z
+  modified: 2026-09-30T14:22:05.272Z
 ---
 
 # DEPLOY + CONEXÕES — ORBITRUM (registro pra reconexão)
@@ -87,23 +87,41 @@ Ou seja, o Google OAuth é configurado **no painel do Supabase**, não no códig
 `orbitrum.com.br` (o Pedro tem). Apontar o DNS pro Vercel (frontend). Se E2 (backend hospedado),
 o frontend fala com o host do backend (via env) ou com o Supabase (E1).
 
-## PASSO A PASSO PRA VOLTAR AO AR (piloto — caminho rápido E2)
-1. **Supabase:** confirmar tabelas/RLS (já feito) + configurar **Google provider** (acima) + URL config.
-2. **Backend (E2):** subir o Express num host always-on (Render/Fly) com as env vars do backend +
-   `DATABASE_URL` (Supabase pooler). Sem Mercado Pago (congelado).
-3. **Frontend (Vercel):** env `VITE_SUPABASE_*`; se E2, `VITE_API_URL` = URL do backend hospedado
-   (corrigir o vercel.json que aponta pro Railway morto).
-4. **Domínio:** apontar `orbitrum.com.br` pro Vercel.
-5. **Testar:** login (e-mail + Google), busca com motivo, mapa, presença — ponta a ponta online.
-6. **Pagamento:** NÃO religar agora (Bloco C congelado até a spec jurídica). Piloto pago = MP pessoal
-   só recebendo assinatura, sem payout ([[orbitrum-monetizacao]]).
+## ESTADO DO DEPLOY (atualizado 30/09)
 
-## O QUE PRECISA DA AÇÃO DO PEDRO (não dá pra fazer só no código)
-- Configurar **Google OAuth** no Supabase + Google Cloud (client id/secret + redirect URIs).
-- Setar **env vars no Vercel** e apontar o **domínio** (DNS).
-- Escolher **E1 (RPC) ou E2 (host)** pro backend.
-- Chaves de pagamento: só quando a economia sair do congelamento.
+**Arquitetura escolhida: Vercel (frontend + API function) + Supabase (dados).** Sem Railway/Render.
+O motor da tese (Express, fatos relacionais, rotas) roda como Vercel Serverless Function via `api/index.ts`.
 
-## O QUE O ASSISTENTE PODE FAZER NO CÓDIGO (sem os dashboards do Pedro)
-- Corrigir o **vercel.json** (tirar Railway morto). Preparar `.env.example` limpo.
-- Iniciar a **Fase E (RPC)** se o Pedro escolher E1. Ajustar `supabase.ts`/redirects se preciso.
+**O que foi feito (commits 13c8dc0, 501c14c):**
+- `api/index.ts`: entry serverless, importa `app`+`ready` do backend/index.ts
+- `backend/index.ts`: guardado com `IS_VERCEL` (sem listen/WS/cron/vite no serverless)
+- `package.json` raiz: deps do backend na raiz (express, drizzle, postgres, etc.); workspaces removido
+- `vercel.json`: install raiz → build client (com install); functions `api/index.ts`; rewrites
+- `tsconfig.json` raiz: paths `@shared/*` → `backend/shared/*` (schema real do Drizzle)
+- Push feito em orbitrumexpopro + OrbitrumProConnect (main + master)
+
+**Iterações de build:**
+1. ❌ `cd client: No such file` — workspaces morto no package.json
+2. ❌ installCommand encadeado `npm install && cd client && npm install` saiu com 1 — separado
+3. ⏳ Build 501c14c — install raiz + build (com install client) separados — aguardando
+
+**PASSO A PASSO PRA VOLTAR AO AR:**
+1. **Vercel:** Root Directory = vazio (raiz do repo). Env vars (ver abaixo). Deploy automático de main.
+2. **Supabase:** tabelas/RLS ok (feito 29/09). Google provider (painel Supabase, ver "LOGIN COM GOOGLE").
+3. **Domínio:** `orbitrum.com.br` → CNAME/A pro Vercel.
+4. **Testar:** login (Google), busca, mapa, presença — ponta a ponta.
+5. **Pagamento:** NÃO religar (Bloco C congelado até spec jurídica).
+
+## O QUE PRECISA DA AÇÃO DO PEDRO (painel, não código)
+- **Vercel:** Root Directory = vazio; env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
+  `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SESSION_SECRET`).
+- **Supabase Auth:** Google provider (Client ID + Secret) + URL Config (Site URL = orbitrum.com.br).
+- **Google Cloud Console:** Redirect URI = `https://wuaupjjbfvctelvyyfda.supabase.co/auth/v1/callback` ✅ (feito 30/09).
+- **Domínio:** apontar DNS `orbitrum.com.br` → Vercel.
+- Chaves de pagamento: só quando Bloco C sair do congelamento.
+- **Iterar build:** mandar log se falhar (deps/paths — pode precisar 1-2 ajustes).
+
+## O QUE O ASSISTENTE PODE FAZER NO CÓDIGO
+- Ajustes de build (vercel.json, deps, paths) com base no log.
+- Acabamento elite (Fase A), camada de execução (Fase B) — sem regressão.
+- Preparar API de agentes (Fase F) — quando densidade existir.
