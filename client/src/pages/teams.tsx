@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Header } from "@/components/header";
+import Sidebar from "@/components/Sidebar";
 import { ProfessionalModal } from "@/components/professional-modal";
 import { StarfieldBackground } from "@/components/starfield-background";
 import { Link, useLocation } from "wouter";
@@ -165,12 +165,9 @@ export default function Teams() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--space-black)] text-white relative">
-      <Header 
-        onOpenGame={() => window.location.href = '/jogo'}
-        onOpenPlans={() => window.location.href = '/?plans=true'}
-      />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-20 sm:pt-24">
+    <div className="min-h-screen bg-[var(--space-black)] text-white relative flex">
+      <Sidebar />
+      <div className="flex-1 min-w-0 max-w-7xl mx-auto px-3 sm:px-6 pt-6">
         <div className="mb-6 sm:mb-8">
           {/* Botão Voltar */}
           <div className="mb-4">
