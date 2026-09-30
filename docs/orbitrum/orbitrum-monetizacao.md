@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: fed60a5d-0b67-496a-9c51-713a1af5c318
-  modified: 2026-09-30T06:31:03.533Z
+  modified: 2026-09-30T13:01:21.528Z
 ---
 
 # MONETIZAÇÃO — CONCLUSÃO (fundamentada na tese §5 + análise de mercado)
@@ -133,6 +133,18 @@ A arquitetura é **defensável pro Brasil**, mas **não "100% viável" antes de 
   o que é Credit; o que é Reward; o que é "resultado elegível"; quando nasce o direito; quando
   cancela/estorna; como funciona o Ledger; como o PSP paga; quem emite nota e sobre qual receita;
   textos proibidos na UI; e **parecer de advogado+contador antes do 1º saque real**. Só depois, código.
+
+## MERCADO PAGO PESSOAL vs CNPJ — viabilidade (Pedro, 30/09) — ver [[orbitrum-deploy]]
+Separar **entrada** de **saída** de dinheiro:
+- **RECEBER assinatura (inbound):** dá pra começar com **MP pessoal (PF)** num piloto pequeno — MP
+  aceita PF receber PIX/cartão. Serve pra testar densidade. Ressalvas: vira rendimento tributável na
+  PF (carnê-leão/IRPF), sem nota fiscal, limites/scrutínio de MP-PF. Assim que houver receita
+  recorrente de verdade → **MEI** (~R$70/mês, abre em minutos, dá CNPJ + nota).
+- **PAGAR recompensa/saque (outbound):** **NUNCA da conta pessoal** — mover dinheiro a terceiros como
+  PF se parece com atividade de pagamento sem licença e fere "Orbitrum não custodia; o PSP move o BRL".
+  Esse fluxo precisa do PSP + enquadramento jurídico, e está congelado até a spec de qualquer forma.
+- **Régua:** piloto = MP pessoal só RECEBE assinatura, sem payout. Cresceu → MEI → conta MP CNPJ →
+  reward/saque com parecer (advogado/contador). Não correr pro CNPJ antes de provar o loop.
 
 ## O fluxo do saque no Documento Mestre (§14–22, confirma a régua)
 `INDICAÇÃO → CONEXÃO → RESULTADO ELEGÍVEL → CONFIRMAÇÃO/VALIDAÇÃO → EVENTO DE RECOMPENSA →

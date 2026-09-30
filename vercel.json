@@ -15,7 +15,6 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://orbitrum-connect-production.up.railway.app",
     "NODE_ENV": "production"
   }
 }

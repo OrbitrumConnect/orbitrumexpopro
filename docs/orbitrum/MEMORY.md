@@ -4,6 +4,7 @@
 
 - [Visão do sistema e da rede](orbitrum-visao.md) — LER PRIMEIRO. Definição, fato relacional, loop, princípios inegociáveis: não-regressão, seguro por arquitetura, legal para operar, pro/elite por design.
 - [Modo de trabalho](orbitrum-modo-de-trabalho.md) — diário todo dia com timeline; escopo fechado só no Orbitrum; seguir sem pedir menu; subir em localhost:3000.
+- [Deploy + Conexões](orbitrum-deploy.md) — registro de reconexão: env vars (Supabase novo, MP congelado), login Google via Supabase Auth (configurar no painel), vercel.json aponta pro Railway morto (corrigir), domínio orbitrum.com.br, e o passo a passo pra voltar ao ar (E1 RPC ou E2 host). O que precisa da ação do Pedro (dashboards) x do assistente (código).
 - [Checklist vivo](orbitrum-checklist.md) — passos concretos ligados ao escopo: o que já foi provado empírico e o que falta, na ordem do roteiro (Uber/GPS → visual → Bloco C → segurança → produção).
 - [Preservar o existente](orbitrum-preservar-existente.md) — REGRA DURA: nunca remover/trocar o que existe (em especial o sistema orbit); só ADICIONAR o que falta; confirmar antes de mudança estrutural; não sair do escopo. (Erro cometido 2× em 29/09 — não repetir.)
 
