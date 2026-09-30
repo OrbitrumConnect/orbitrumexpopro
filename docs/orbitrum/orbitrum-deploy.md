@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: fed60a5d-0b67-496a-9c51-713a1af5c318
-  modified: 2026-09-30T13:41:24.202Z
+  modified: 2026-09-30T13:53:47.781Z
 ---
 
 # DEPLOY + CONEXÕES — ORBITRUM (registro pra reconexão)
@@ -71,6 +71,17 @@ Ou seja, o Google OAuth é configurado **no painel do Supabase**, não no códig
 - **vercel.json a CORRIGIR:** remover `VITE_API_URL` apontando pro Railway morto. As rotas `/api/*`
   só fazem sentido se houver backend (E2) — senão o frontend chama o Supabase/RPC direto (E1).
 - **Domínio:** `orbitrum.com.br` → adicionar no projeto Vercel (DNS: CNAME/A pra Vercel).
+
+## VALORES DE CONEXÃO (públicos — os SEGREDOS ficam só no painel/env, NUNCA no repo)
+- **Supabase project ref:** `wuaupjjbfvctelvyyfda` · URL: `https://wuaupjjbfvctelvyyfda.supabase.co`
+- **VITE_SUPABASE_ANON_KEY** (público, já vai no bundle): JWT `...role:anon...` (o Pedro tem; setar no Vercel).
+- **Google Cloud:** projeto **ObitrumConnect** (nº 121421440463).
+- **Google OAuth Client ID** (público): `121421440463-0mg5feniels1t555rom2954idbklt37b.apps.googleusercontent.com`
+- **Callback OAuth corrigido (30/09):** `https://wuaupjjbfvctelvyyfda.supabase.co/auth/v1/callback`
+  (era o Supabase ANTIGO `gnvxnsgewhjucdhwrrdi` — trocado). Origem `chatodemais.vercel.app` era de outro projeto.
+- **SEGREDOS (NÃO gravar aqui — só no painel Supabase / env Vercel; rotacionar pois passaram no chat):**
+  service_role key, Google Client Secret (`GOCSPX-...`), DATABASE_URL (tem senha).
+- **Supabase Edge Functions (Deno):** opção pra hospedar worker/motor — reforça "só Supabase".
 
 ## DOMÍNIO
 `orbitrum.com.br` (o Pedro tem). Apontar o DNS pro Vercel (frontend). Se E2 (backend hospedado),
