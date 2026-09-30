@@ -138,9 +138,10 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
           isAdmin: (perfil.admin_level ?? 0) >= 1 || perfil.user_type === 'admin',
         };
         onSuccess?.(user, formData.rememberMe);
-        if (user.isAdmin) {
-          setTimeout(() => setLocation('/admin'), 100);
-        }
+        // Vai pra HOME logado (admin acessa o painel pela sidebar). Antes ia direto pra /admin
+        // em 100ms, mas o isAuthenticated ainda não tinha propagado → AdminDashboard rebatia pra
+        // '/' ("não autenticado") e parecia que o login falhava. Home é determinística.
+        setLocation('/');
       } else {
         showNotification('error', 'Erro no login', 'Usuário não encontrado');
       }

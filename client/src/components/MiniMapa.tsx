@@ -66,7 +66,7 @@ export default function MiniMapa({ origem = null, nomeProf = 'Profissional' }: P
 
   return (
     <div style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${C.border}`, background: C.bg2 }}>
-      <div ref={ref} style={{ height: 'clamp(240px, 40vh, 360px)', minHeight: 240, width: '100%' }} />
+      <div ref={ref} style={{ height: 'clamp(300px, 56vh, 480px)', minHeight: 300, width: '100%' }} />
       <div style={{ padding: '8px 12px', fontSize: 11, color: C.ink2, display: 'flex', gap: 6, alignItems: 'center' }}>
         <span style={{ color: C.cyan }}>◉</span>{status}
       </div>
