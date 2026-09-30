@@ -32,6 +32,7 @@ import ChatWindow from "@/pages/ChatWindow";
 import OrbitMatch from "@/pages/OrbitMatch";
 import Inicio from "@/pages/Inicio";
 import Conversa from "@/pages/Conversa";
+import MapaDisponiveis from "@/pages/MapaDisponiveis";
 // import TrackingDemo from "@/pages/tracking-demo";
 import ProfessionalTracking from "@/pages/professional-tracking";
 import TeamHirings from "@/pages/team-hirings";
@@ -81,6 +82,7 @@ function AppContent() {
         <Route path="/orbitmatch"><Redirect to="/" /></Route>
         <Route path="/inicio" component={Inicio} />
         <Route path="/conversa/:profId" component={Conversa} />
+        <Route path="/mapa" component={MapaDisponiveis} />
         <Route path="/teams" component={Teams} />
         <Route path="/tokens" component={TokenStore} />
         <Route path="/dashboard" component={Dashboard} />

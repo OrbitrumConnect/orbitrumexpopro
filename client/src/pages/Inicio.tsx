@@ -177,7 +177,7 @@ export default function Inicio() {
           {([
             ['Meu Painel', '/dashboard-selector'],
             ['Equipes', '/teams'],
-            ['Mapa · GPS', '/controle-gps'],
+            ['Mapa · GPS', '/mapa'],
             ...(ehAdmin ? [['Admin', '/admin'] as [string, string]] : []),
           ] as Array<[string, string]>).map(([label, rota]) => (
             <button key={label} onClick={() => setLocation(rota)}
