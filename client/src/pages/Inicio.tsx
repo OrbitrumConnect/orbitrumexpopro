@@ -112,6 +112,13 @@ export default function Inicio() {
   const [carregando, setCarregando] = useState(false);
   const [atividade, setAtividade] = useState<Array<{ texto: string; quando: string; avatar?: string | null }>>([]);
   const [disponivel, setDisponivel] = useState(false);
+  const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
+  const [menuAberto, setMenuAberto] = useState(false);
+  useEffect(() => {
+    const onR = () => setMobile(window.innerWidth < 900);
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
   const userId = String(user?.id_interno ?? 1);
 
   // Presença on/off: liga/desliga o perfil na rede pra receber chamada/indicação.
@@ -164,8 +171,18 @@ export default function Inicio() {
     <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', position: 'relative' }}>
       {/* Fundo espacial (cometas + estrelas) — o mesmo do sistema orbit, atrás do design */}
       <StarfieldBackground />
+      {/* Hambúrguer + backdrop (mobile) — desktop não vê nada disso */}
+      {mobile && !menuAberto && (
+        <button aria-label="Menu" onClick={() => setMenuAberto(true)}
+          style={{ position: 'fixed', top: 10, left: 10, zIndex: 1200, width: 40, height: 40, borderRadius: 10, border: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.92)', color: C.ink, fontSize: 18, cursor: 'pointer' }}>☰</button>
+      )}
+      {mobile && menuAberto && <div onClick={() => setMenuAberto(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.6)', zIndex: 1300 }} />}
       {/* SIDEBAR */}
-      <aside style={{ width: 186, borderRight: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', backdropFilter: 'blur(6px)', padding: '20px 14px', display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+      <aside onClick={() => { if (mobile) setMenuAberto(false); }}
+        style={{ width: mobile ? 240 : 186, maxWidth: mobile ? '82vw' : undefined, borderRight: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.92)', backdropFilter: 'blur(6px)', padding: '20px 14px', display: 'flex', flexDirection: 'column', minHeight: '100vh',
+          position: mobile ? 'fixed' : 'relative', top: 0, left: 0, bottom: 0, zIndex: mobile ? 1301 : 1,
+          transform: mobile ? (menuAberto ? 'translateX(0)' : 'translateX(-105%)') : 'none', transition: 'transform .25s ease',
+          boxShadow: mobile && menuAberto ? `0 0 40px ${C.blue}33` : 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
           <div style={{ width: 24, height: 24, borderRadius: '50%', background: `radial-gradient(circle at 50% 40%, ${C.cyan}, ${C.blue} 60%, transparent)` }} />
           <span style={{ letterSpacing: 2, fontWeight: 700, fontSize: 15 }}>ORBITRUM</span>
