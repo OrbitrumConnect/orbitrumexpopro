@@ -49,10 +49,11 @@
 
 @layer utilities {
   .glassmorphism {
-    background: rgba(0, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 255, 255, 0.3);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1), 0 0 10px rgba(255, 64, 128, 0.05);
+    /* Elite/home: navy escuro, cyan como acento sutil, sem glow rosa (contrato visual). */
+    background: rgba(3, 18, 32, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 190, 255, 0.22);
+    box-shadow: 0 0 16px rgba(0, 190, 255, 0.08);
   }
   
   /* Mobile Optimization for Telegram */
