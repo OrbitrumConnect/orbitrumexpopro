@@ -176,7 +176,7 @@ export default function Inicio() {
         <button aria-label="Menu" onClick={() => setMenuAberto(true)}
           style={{ position: 'fixed', top: 10, left: 10, zIndex: 1200, width: 40, height: 40, borderRadius: 10, border: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.92)', color: C.ink, fontSize: 18, cursor: 'pointer' }}>☰</button>
       )}
-      {mobile && menuAberto && <div onClick={() => setMenuAberto(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.6)', zIndex: 1300 }} />}
+      {mobile && menuAberto && <div onClick={() => setMenuAberto(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.82)', zIndex: 1300 }} />}
       {/* SIDEBAR */}
       <aside onClick={() => { if (mobile) setMenuAberto(false); }}
         style={{ width: mobile ? 240 : 186, maxWidth: mobile ? '82vw' : undefined, borderRight: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.92)', backdropFilter: 'blur(6px)', padding: '20px 14px', display: 'flex', flexDirection: 'column', minHeight: '100vh',
@@ -238,22 +238,21 @@ export default function Inicio() {
       {/* CONTEÚDO */}
       <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
         {/* header */}
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, maxWidth: 460 }}>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '12px 14px 12px 56px' : '16px 24px', borderBottom: `1px solid ${C.border}`, gap: 10, flexWrap: mobile ? 'wrap' : 'nowrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, maxWidth: mobile ? '100%' : 460 }}>
             <input value={necessidade} onChange={e => setNecessidade(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscar()}
               placeholder="O que você precisa resolver?"
-              style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: '10px 18px', color: C.ink, fontSize: 14, outline: 'none' }} />
+              style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: mobile ? '9px 14px' : '10px 18px', color: C.ink, fontSize: 14, outline: 'none', minWidth: 0 }} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 8 : 12, flexWrap: 'wrap' }}>
             {user ? (
               <>
-                {/* Presença on/off — disponível pra chamada/indicação (fato disponivel_em) */}
                 <button onClick={toggleDisponibilidade} title="Ficar disponível na rede pra receber chamada/indicação"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: disponivel ? `${C.cyan}1f` : 'transparent', border: `1px solid ${disponivel ? C.borderHot : C.border}`, borderRadius: 16, padding: '5px 12px', color: disponivel ? C.cyan : C.ink3, fontSize: 12, cursor: 'pointer' }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: disponivel ? C.cyan : C.ink3, boxShadow: disponivel ? `0 0 6px ${C.cyan}` : 'none' }} />
                   {disponivel ? 'Disponível' : 'Indisponível'}
                 </button>
-                <span style={{ fontSize: 13, color: C.ink2 }}>{user?.full_name || user?.username || user?.email || 'Participante'}</span>
+                {!mobile && <span style={{ fontSize: 13, color: C.ink2 }}>{user?.full_name || user?.username || user?.email || 'Participante'}</span>}
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}` }} />
                 <button onClick={() => { logout(); setLocation('/'); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '5px 12px', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Sair</button>
               </>
@@ -287,7 +286,7 @@ export default function Inicio() {
             </div>
             {/* MIOLO ORBITAL — o sistema orbit ORIGINAL (profissionais orbitando + busca).
                 NÃO remover. Clicar num profissional abre o perfil-tese. */}
-            <div style={{ position: 'relative', minHeight: 420 }}>
+            <div style={{ position: 'relative', minHeight: mobile ? 280 : 420, maxHeight: mobile ? '55vh' : 'none', overflow: 'hidden' }}>
               <OrbitSystem onOpenProfessional={(id: number) => setProfModalId(id)} onOpenLogin={() => {}} />
             </div>
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 8 }}>

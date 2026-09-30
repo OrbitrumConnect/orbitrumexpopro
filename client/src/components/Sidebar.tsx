@@ -77,7 +77,7 @@ export default function Sidebar() {
         <button aria-label="Menu" onClick={() => setAberta(true)}
           style={{ position: 'fixed', top: 10, left: 10, zIndex: 1200, width: 40, height: 40, borderRadius: 10, border: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.92)', color: C.ink, fontSize: 18, cursor: 'pointer' }}>☰</button>
         {aberta && (
-          <div onClick={() => setAberta(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.6)', zIndex: 1300 }}>
+          <div onClick={() => setAberta(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,4,10,0.82)', zIndex: 1300 }}>
             <aside onClick={e => e.stopPropagation()} style={{ ...asideStyle, width: 240, maxWidth: '82vw', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 1301, boxShadow: `0 0 40px ${C.blue}33` }}>
               <button onClick={() => setAberta(false)} style={{ alignSelf: 'flex-end', background: 'none', border: 'none', color: C.ink2, fontSize: 22, cursor: 'pointer', marginBottom: 4 }}>×</button>
               {conteudo}

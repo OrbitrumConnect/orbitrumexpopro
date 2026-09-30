@@ -68,7 +68,7 @@ export default function MapaDisponiveis() {
     <div style={{ minHeight: '100vh', background: `radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)`, color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
       <Sidebar />
       <div style={{ flex: 1, minWidth: 0 }}>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)' }}>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px 12px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)' }}>
         <div style={{ fontWeight: 700, letterSpacing: 1 }}>Mapa da rede</div>
         <div style={{ fontSize: 12, color: C.ink2 }}>{carregou ? `${profs.length} disponíveis` : '…'}</div>
       </header>

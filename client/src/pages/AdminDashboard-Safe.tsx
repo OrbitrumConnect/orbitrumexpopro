@@ -223,7 +223,7 @@ export default function AdminDashboard() {
 
       {/* Sistema de Abas Completo */}
       <Tabs defaultValue="overview" className="w-full mt-6">
-        <TabsList className="grid w-full grid-cols-9 bg-gray-800/50">
+        <TabsList className="flex w-full overflow-x-auto bg-gray-800/50" style={{ display: 'flex', overflowX: 'auto', WebkitOverflowScrolling: 'touch', gap: 2 }}>
           <TabsTrigger value="overview" className="text-cyan-400 text-xs">Visão Geral</TabsTrigger>
           <TabsTrigger value="users" className="text-green-400 text-xs">Usuários</TabsTrigger>
           <TabsTrigger value="tokens" className="text-blue-400 text-xs">Tokens</TabsTrigger>
