@@ -47,6 +47,11 @@
   }
 }
 
+[style*="scrollbar-width: none"]::-webkit-scrollbar,
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
 @layer utilities {
   .glassmorphism {
     /* Elite/home: navy escuro, cyan como acento sutil, sem glow rosa (contrato visual). */

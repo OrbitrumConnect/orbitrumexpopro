@@ -75,7 +75,7 @@ cd frontend && eas build
 
 ## 🔐 Supabase
 
-- **URL**: `https://gnvxnsgewhjucdhwrrdi.supabase.co`
+- **URL**: configurar via .env (VITE_SUPABASE_URL)
 - **Auth**: JWT + Anonymous Login
 - **Database**: PostgreSQL com Drizzle ORM
 

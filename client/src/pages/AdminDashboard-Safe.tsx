@@ -573,8 +573,8 @@ export default function AdminDashboard() {
         <TabsContent value="withdrawals" className="space-y-6">
           <Card className="glassmorphism">
             <CardHeader>
-              <CardTitle className="text-purple-400">💳 Sistema de Saques</CardTitle>
-              <CardDescription>Gestão completa do sistema de saques 8,7% mensal</CardDescription>
+              <CardTitle className="text-purple-400">Economia da Rede</CardTitle>
+              <CardDescription>Aguardando spec jurídica — conteúdo legado abaixo (Bloco C congelado)</CardDescription>
             </CardHeader>
             <CardContent>
               {/* Status do sistema */}
@@ -1072,32 +1072,32 @@ export default function AdminDashboard() {
                 <div className="p-4 bg-[#061A2D]/50 rounded-lg">
                   <h5 className="text-white font-semibold mb-4">💡 Oportunidades</h5>
                   <div className="space-y-2 text-sm">
-                    <p className="text-green-400">• Cashback 8,7% mensal atrai usuários</p>
+                    <p className="text-green-400">• Rede de confiança atrai profissionais qualificados</p>
                     <p className="text-blue-400">• Profissionais precisam de planos Pro/Max</p>
                     <p className="text-purple-400">• João Vidal candidato ideal para Pro</p>
-                    <p className="text-yellow-400">• Planos mensais = receita recorrente</p>
+                    <p className="text-yellow-400">• Assinaturas = receita recorrente</p>
                     <p className="text-cyan-400">• MRR potencial: R$ 100-300/mês</p>
                   </div>
                 </div>
               </div>
 
-              {/* Sistema de benefícios */}
+              {/* Sistema de economia — aguardando spec jurídica (Bloco C) */}
               <div className="mt-6 p-4 bg-indigo-500/10 rounded-lg border border-indigo-500/30">
-                <h5 className="text-indigo-400 font-semibold mb-4">🎁 Sistema de Benefícios</h5>
+                <h5 className="text-indigo-400 font-semibold mb-4">Economia da Rede</h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-white font-medium mb-2">Cashback Mensal (8,7%):</p>
-                    <p className="text-gray-300">• Básico: R$ 0,61/mês</p>
-                    <p className="text-gray-300">• Standard: R$ 1,22/mês</p>
-                    <p className="text-gray-300">• Pro: R$ 1,83/mês</p>
-                    <p className="text-gray-300">• Max: R$ 2,61/mês</p>
+                    <p className="text-white font-medium mb-2">Planos de assinatura:</p>
+                    <p className="text-gray-300">• Grátis: acesso básico à rede</p>
+                    <p className="text-gray-300">• Indicador: visibilidade + indicações</p>
+                    <p className="text-gray-300">• Pro: ferramentas completas</p>
+                    <p className="text-gray-300">• Empresa: operação integrada</p>
                   </div>
                   <div>
-                    <p className="text-white font-medium mb-2">Saques Disponíveis:</p>
-                    <p className="text-gray-300">• Próxima janela: 3 de Agosto</p>
-                    <p className="text-gray-300">• Pool atual: R$ 0,00</p>
-                    <p className="text-gray-300">• Sistema funcionando 100%</p>
-                    <p className="text-gray-300">• Aprovação manual do admin</p>
+                    <p className="text-white font-medium mb-2">Status:</p>
+                    <p className="text-yellow-300">• Spec jurídica pendente</p>
+                    <p className="text-gray-300">• Crédito = uso (não sacável)</p>
+                    <p className="text-gray-300">• Reward = resultado elegível</p>
+                    <p className="text-gray-300">• Validar nunca paga</p>
                   </div>
                 </div>
               </div>

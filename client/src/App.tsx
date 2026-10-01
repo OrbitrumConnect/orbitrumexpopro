@@ -42,6 +42,7 @@ import { LoginModal } from "@/components/login-modal";
 import { TelegramThemeProvider } from "@/components/telegram-integration";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
 import BottomNav from "@/components/BottomNav";
+import NotificacaoServico from "@/components/NotificacaoServico";
 // import EmergencyFix from "@/pages/emergency-fix";
 import { useState, useEffect } from "react";
 
@@ -115,6 +116,7 @@ function AppContent() {
         </Route>
       </Switch>
       {isMobile && <BottomNav />}
+      <NotificacaoServico />
       </TooltipProvider>
     </TelegramThemeProvider>
   );

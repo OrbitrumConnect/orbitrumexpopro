@@ -539,7 +539,7 @@ export default function Cadastro() {
                 </div>
               </div>
 
-              {/* Seção de Documentos para Cashback - Para usuários também */}
+              {/* Seção de Verificação de Identidade */}
               {formData.tipo === 'user' && (
                 <div className="border-t border-amber-500/30 pt-6 space-y-4">
                   <div className="bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/30 rounded-lg p-4 space-y-4">
@@ -688,7 +688,7 @@ export default function Cadastro() {
                     )}
                   </div>
 
-                  {/* Seção de Documentos para Cashback - Opcional no cadastro */}
+                  {/* Seção de Verificação de Documentos - Opcional no cadastro */}
                   <div className="col-span-full border-t border-amber-500/30 pt-6 mt-6">
                     <div className="bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/30 rounded-lg p-4 space-y-4">
                       <div className="flex items-start space-x-3">

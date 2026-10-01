@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import MiniMapa from '@/components/MiniMapa';
 import Continuar from '@/components/Continuar';
@@ -28,7 +28,7 @@ const FLUXO: Array<[Estado, string, number]> = [
   ['validado', 'Experiência validada', 100],
 ];
 
-interface Msg { de: 'eu' | 'ele'; texto: string }
+interface Msg { de: 'eu' | 'ele' | 'sistema'; texto: string; timestamp?: string }
 
 interface Props { profId: number; onClose: () => void }
 
@@ -40,8 +40,16 @@ export default function ConversaModal({ profId, onClose }: Props) {
   const [estado, setEstado] = useState<Estado>('conversando');
   const [factId, setFactId] = useState<number | null>(null);
   const [aviso, setAviso] = useState('');
+  const chatIdRef = useRef<string | null>(null);
+  const msgsEndRef = useRef<HTMLDivElement | null>(null);
+  const contatoInicio = useRef<number>(Date.now());
+  const [esperaSeg, setEsperaSeg] = useState(0);
+  const [proRespondeu, setProRespondeu] = useState(false);
 
   const clienteUserId = user?.id_interno;
+  const souOPro = prof && clienteUserId && prof.userId === clienteUserId;
+  const outroNome = souOPro ? (prof?.clientName || 'o cliente') : (prof?.name?.split(' ')[0] ?? 'o profissional');
+  const meuNome = user?.name || user?.username || 'Usuário';
 
   useEffect(() => {
     if (!profId) return;
@@ -51,10 +59,97 @@ export default function ConversaModal({ profId, onClose }: Props) {
       .catch(() => {});
   }, [profId, clienteUserId]);
 
-  function enviar() {
+  const criarOuCarregarChat = useCallback(async () => {
+    if (!prof || !clienteUserId) return;
+    const id = `chat-${Math.min(clienteUserId, prof.userId ?? prof.id)}-${Math.max(clienteUserId, prof.userId ?? prof.id)}`;
+    chatIdRef.current = id;
+    try {
+      const r = await fetch(`/api/chats/${id}`);
+      if (r.ok) {
+        const j = await r.json();
+        if (j.messages?.length) {
+          setMsgs(j.messages.map((m: any) => ({
+            de: m.senderId === clienteUserId ? 'eu' as const : 'ele' as const,
+            texto: m.message, timestamp: m.timestamp,
+          })));
+        }
+        return;
+      }
+    } catch {}
+    try {
+      await fetch('/api/chats', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatSession: {
+          id, clientId: clienteUserId, professionalId: prof.userId ?? prof.id,
+          clientName: meuNome, professionalName: prof.name,
+          isActive: true, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        }}),
+      });
+    } catch {}
+  }, [prof, clienteUserId, meuNome]);
+
+  useEffect(() => { criarOuCarregarChat(); }, [criarOuCarregarChat]);
+  useEffect(() => { msgsEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+
+  useEffect(() => {
+    if (proRespondeu || souOPro) return;
+    const t = setInterval(() => {
+      setEsperaSeg(Math.floor((Date.now() - contatoInicio.current) / 1000));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [proRespondeu, souOPro]);
+
+  useEffect(() => {
+    if (msgs.some(m => m.de === 'ele')) setProRespondeu(true);
+  }, [msgs]);
+
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const lastMsgCountRef = useRef(0);
+  useEffect(() => {
+    if (!chatIdRef.current || !clienteUserId) return;
+    const poll = setInterval(async () => {
+      try {
+        const r = await fetch(`/api/chats/${chatIdRef.current}`);
+        if (!r.ok) return;
+        const j = await r.json();
+        if (!j.messages?.length) return;
+        const novas: Msg[] = j.messages.map((m: any) => ({
+          de: m.senderId === clienteUserId ? 'eu' as const : 'ele' as const,
+          texto: m.message, timestamp: m.timestamp,
+        }));
+        if (novas.length > lastMsgCountRef.current) {
+          const diff = novas.slice(lastMsgCountRef.current);
+          const temNova = diff.some(m => m.de === 'ele');
+          if (temNova && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification('Orbitrum — Nova mensagem', {
+              body: `${prof?.name ?? 'Profissional'}: ${diff.filter(m => m.de === 'ele').pop()?.texto ?? ''}`,
+              icon: prof?.avatar || undefined,
+            });
+          }
+          setMsgs(novas);
+          lastMsgCountRef.current = novas.length;
+        }
+      } catch {}
+    }, 3000);
+    return () => clearInterval(poll);
+  }, [clienteUserId, prof]);
+
+  async function enviar() {
     if (!texto.trim()) return;
-    setMsgs(m => [...m, { de: 'eu', texto: texto.trim() }]);
+    const msg = texto.trim();
+    setMsgs(m => [...m, { de: 'eu', texto: msg, timestamp: new Date().toISOString() }]);
     setTexto('');
+    if (chatIdRef.current) {
+      fetch(`/api/chats/${chatIdRef.current}/messages`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senderId: clienteUserId, senderName: meuNome, message: msg }),
+      }).catch(() => {});
+    }
   }
 
   // Serviço concluído → registra o fato (declarado). Depois a confirmação valida.
@@ -136,43 +231,88 @@ export default function ConversaModal({ profId, onClose }: Props) {
               Toda a imersão acontece aqui — não abre outra tela. */}
           {(estado === 'a_caminho' || estado === 'chegou') && (
             <MiniMapa nomeProf={prof?.name ?? 'Profissional'}
-              origem={prof?.latitude != null && prof?.longitude != null ? { lat: prof.latitude, lng: prof.longitude } : null} />
+              origem={prof?.latitude != null && prof?.longitude != null ? { lat: prof.latitude, lng: prof.longitude } : null}
+              avatarProf={prof?.avatar} avatarUser={user?.profilePhoto || (user as any)?.avatar} />
           )}
           {/* "Como ir" aparece JUNTO com o mapa (deslocamento) — não no final (aí já rolou). */}
           {(estado === 'a_caminho' || estado === 'chegou') && prof && <Continuar prof={prof} />}
-          {msgs.length === 0 && estado === 'conversando' && (
-            <div style={{ color: C.ink3, fontSize: 13, textAlign: 'center', marginTop: 20 }}>
-              Combine o serviço direto com {prof?.name?.split(' ')[0] ?? 'o profissional'}.<br />
+          {/* Mensagem automática do sistema — primeiro contato */}
+          {!souOPro && estado === 'conversando' && (
+            <div style={{ alignSelf: 'center', maxWidth: '85%', textAlign: 'center' }}>
+              <div style={{ background: `${C.blue}12`, border: `1px solid ${C.border}`, borderRadius: 14, padding: '10px 16px', fontSize: 13, color: C.ink2 }}>
+                {proRespondeu
+                  ? `${outroNome} está online e respondeu!`
+                  : `${prof?.name ?? 'O profissional'} foi notificado e irá responder em instantes. Aguarde ou envie sua mensagem.`}
+              </div>
+              {!proRespondeu && esperaSeg > 0 && (
+                <div style={{ fontSize: 11, color: C.ink3, marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: C.cyan, animation: 'pulse 1.5s infinite' }} />
+                  Aguardando resposta — {Math.floor(esperaSeg / 60)}:{String(esperaSeg % 60).padStart(2, '0')}
+                </div>
+              )}
+            </div>
+          )}
+          {/* Notificação para o pro — quando ele é chamado */}
+          {souOPro && msgs.length === 0 && estado === 'conversando' && (
+            <div style={{ alignSelf: 'center', maxWidth: '85%', textAlign: 'center' }}>
+              <div style={{ background: `linear-gradient(135deg, ${C.cyan}22, ${C.blue}22)`, border: `1px solid ${C.borderHot}`, borderRadius: 14, padding: '14px 18px', fontSize: 14, color: C.ink }}>
+                <div style={{ fontSize: 18, marginBottom: 6 }}>🔔</div>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Nova solicitação de serviço!</div>
+                <div style={{ fontSize: 12, color: C.ink2 }}>Um cliente quer se conectar com você. Responda para iniciar a conversa.</div>
+              </div>
+            </div>
+          )}
+          {msgs.length === 0 && estado === 'conversando' && !souOPro && proRespondeu && (
+            <div style={{ color: C.ink3, fontSize: 13, textAlign: 'center', marginTop: 8 }}>
+              Combine o serviço direto com {outroNome}.<br />
               Quando acontecer e os dois confirmarem, a rede registra a experiência.
             </div>
           )}
           {msgs.map((m, i) => (
-            <div key={i} style={{ alignSelf: m.de === 'eu' ? 'flex-end' : 'flex-start', maxWidth: '75%',
-              background: m.de === 'eu' ? `linear-gradient(135deg, ${C.cyan}, ${C.blue})` : C.card,
-              color: m.de === 'eu' ? '#012' : C.ink, border: m.de === 'eu' ? 'none' : `1px solid ${C.border}`,
-              borderRadius: 14, padding: '9px 14px', fontSize: 14 }}>
-              {m.texto}
+            <div key={i} style={{ alignSelf: m.de === 'eu' ? 'flex-end' : m.de === 'sistema' ? 'center' : 'flex-start', maxWidth: m.de === 'sistema' ? '90%' : '75%' }}>
+              <div style={{
+                background: m.de === 'eu' ? `linear-gradient(135deg, ${C.cyan}, ${C.blue})` : m.de === 'sistema' ? `${C.blue}12` : C.card,
+                color: m.de === 'eu' ? '#012' : m.de === 'sistema' ? C.ink2 : C.ink,
+                border: m.de === 'eu' ? 'none' : `1px solid ${C.border}`,
+                borderRadius: 14, padding: '9px 14px', fontSize: m.de === 'sistema' ? 12 : 14,
+                textAlign: m.de === 'sistema' ? 'center' as const : undefined }}>
+                {m.texto}
+              </div>
+              {m.timestamp && m.de !== 'sistema' && (
+                <div style={{ fontSize: 10, color: C.ink3, marginTop: 2, textAlign: m.de === 'eu' ? 'right' : 'left', paddingInline: 4 }}>
+                  {new Date(m.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              )}
             </div>
           ))}
+          <div ref={msgsEndRef} />
         </div>
 
         {/* ação de ciclo */}
         {aviso && <div style={{ padding: '8px 18px', color: C.cyan, fontSize: 12, textAlign: 'center' }}>{aviso}</div>}
         <div style={{ padding: '0 18px 10px', display: 'flex', gap: 8, justifyContent: 'center' }}>
           {estado === 'conversando' && (
-            <button onClick={() => setEstado('combinado')} style={botao(C)}>Combinamos o serviço</button>
+            <button onClick={() => setEstado('combinado')} style={botao(C)}>
+              {souOPro ? 'Aceitar serviço' : 'Combinamos o serviço'}
+            </button>
           )}
           {estado === 'combinado' && (
-            <button onClick={() => setEstado('a_caminho')} style={botao(C)}>Aceitar — profissional a caminho</button>
+            <button onClick={() => setEstado('a_caminho')} style={botao(C)}>
+              {souOPro ? 'Estou a caminho' : 'Profissional a caminho'}
+            </button>
           )}
           {estado === 'a_caminho' && (
-            <button onClick={() => setEstado('chegou')} style={botao(C)}>Cheguei ao local</button>
+            <button onClick={() => setEstado('chegou')} style={botao(C)}>
+              {souOPro ? 'Cheguei ao local' : 'Profissional chegou'}
+            </button>
           )}
           {estado === 'chegou' && (
             <button onClick={() => setEstado('em_servico')} style={botao(C)}>Iniciar serviço</button>
           )}
           {estado === 'em_servico' && (
-            <button onClick={marcarConcluido} style={botao(C)}>Serviço concluído</button>
+            <button onClick={marcarConcluido} style={botao(C)}>
+              {souOPro ? 'Serviço realizado' : 'Serviço concluído'}
+            </button>
           )}
           {estado === 'concluido' && factId && (
             <button onClick={confirmar} style={botao(C)}>Confirmar experiência (os dois lados)</button>

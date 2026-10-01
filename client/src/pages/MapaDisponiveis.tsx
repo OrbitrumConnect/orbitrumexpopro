@@ -53,6 +53,7 @@ export default function MapaDisponiveis() {
   const [todosProfs, setTodosProfs] = useState<Prof[]>([]);
   const [carregou, setCarregou] = useState(false);
   const [userLocation, setUserLocation] = useState(false);
+  const userLatLng = useRef<[number, number] | null>(null);
   const [disponivel, setDisponivel] = useState(false);
   const [tab, setTab] = useState<TabMapa>('disponiveis');
   const [overlayFechado, setOverlayFechado] = useState(false);
@@ -112,6 +113,7 @@ export default function MapaDisponiveis() {
           const { latitude, longitude } = pos.coords;
           map.setView([latitude, longitude], 14);
           setUserLocation(true);
+          userLatLng.current = [latitude, longitude];
           const meIcon = L.divIcon({ className: '', html: `<div style="width:16px;height:16px;border-radius:50%;background:#00E5FF;border:3px solid #020914;box-shadow:0 0 12px #00E5FF99"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
           L.marker([latitude, longitude], { icon: meIcon, zIndexOffset: 1000 }).addTo(map).bindTooltip('Você está aqui', { direction: 'top', className: '' });
         },
@@ -218,6 +220,16 @@ export default function MapaDisponiveis() {
 
             <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: `1px solid ${C.borderHot}`, boxShadow: `0 0 40px ${C.blue}12` }}>
               <div ref={ref} style={{ height: 'clamp(340px, 52vh, 540px)', width: '100%' }} />
+              {userLocation && (
+                <button onClick={() => { if (mapRef.current && userLatLng.current) mapRef.current.setView(userLatLng.current, 15); }}
+                  title="Centralizar na minha localização"
+                  style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 999, width: 40, height: 40, borderRadius: '50%',
+                    background: '#020914', border: `2px solid ${C.cyan}`, color: C.cyan, fontSize: 18,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                    boxShadow: `0 0 12px ${C.cyan}44`, backdropFilter: 'blur(6px)' }}>
+                  ◎
+                </button>
+              )}
               {carregou && activeList.length === 0 && !overlayFechado && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
                   <div style={{ background: 'rgba(2,9,20,0.94)', border: `1px solid ${C.border}`, borderRadius: 16, padding: 24, maxWidth: 340, textAlign: 'center', pointerEvents: 'auto', position: 'relative' }}>
