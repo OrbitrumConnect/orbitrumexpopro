@@ -44,13 +44,32 @@ const CONF_LABEL: Record<string, string> = {
   validado: 'Experiência validada', verificado: 'Verificado',
 };
 
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar }: ProfessionalModalProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [perfil, setPerfil] = useState<any>(null);
   const [carregando, setCarregando] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const userId = user?.id_interno ?? 1;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {}
+      );
+    }
+  }, [isOpen]);
 
   const buildFallbackPerfil = (p: any) => ({
     profissional: p,
@@ -141,6 +160,39 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
               <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.ink2, fontSize: 22, cursor: 'pointer' }}>×</button>
             </div>
 
+            {/* info rápida: distância + disponibilidade */}
+            {(() => {
+              const dist = (userCoords && p.latitude && p.longitude)
+                ? haversineKm(userCoords.lat, userCoords.lng, p.latitude, p.longitude)
+                : null;
+              const horario = p.workHours || p.availability?.schedule || null;
+              const atende = p.serviceMode || (p.remoteAvailable ? 'Presencial e remoto' : null);
+              return (dist !== null || horario || atende || p.available) ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                  {dist !== null && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.cyan, background: `${C.cyan}12`, border: `1px solid ${C.border}`, borderRadius: 10, padding: '5px 12px' }}>
+                      📍 ~{dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`} de você
+                    </span>
+                  )}
+                  {p.available && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#5BF5A0', background: 'rgba(91,245,160,0.1)', border: '1px solid rgba(91,245,160,0.2)', borderRadius: 10, padding: '5px 12px' }}>
+                      Disponível agora
+                    </span>
+                  )}
+                  {horario && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.ink2, background: `${C.blue}10`, border: `1px solid ${C.border}`, borderRadius: 10, padding: '5px 12px' }}>
+                      {horario}
+                    </span>
+                  )}
+                  {atende && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.ink2, background: `${C.blue}10`, border: `1px solid ${C.border}`, borderRadius: 10, padding: '5px 12px' }}>
+                      {atende}
+                    </span>
+                  )}
+                </div>
+              ) : null;
+            })()}
+
             {/* chips de fato */}
             {(chips.length > 0 || conexoesEmComum > 0) && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
@@ -230,12 +282,18 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
             )}
 
             {/* CTA — conectar leva à conversa/experiência */}
-            <button onClick={() => { if (onConectar) { onConectar(p.id); } else { onClose(); setLocation(`/conversa/${p.id}`); } }}
-              style={{ width: '100%', border: 'none', cursor: 'pointer', borderRadius: 24, padding: '14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 15, boxShadow: `0 0 20px ${C.blue}44` }}>
-              Conectar
-            </button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => { if (onConectar) { onConectar(p.id); } else { onClose(); setLocation(`/conversa/${p.id}`); } }}
+                style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 24, padding: '14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 15, boxShadow: `0 0 20px ${C.blue}44` }}>
+                Chamar
+              </button>
+              <button onClick={() => { onClose(); setLocation(`/perfil/${p.id}`); }}
+                style={{ flex: 1, border: `1px solid ${C.borderHot}`, cursor: 'pointer', borderRadius: 24, padding: '14px', background: 'transparent', color: C.ink, fontWeight: 600, fontSize: 15 }}>
+                Ver perfil completo
+              </button>
+            </div>
             <p style={{ color: C.ink3, fontSize: 11, textAlign: 'center', marginTop: 12 }}>
-              Cliente e profissional combinam direto — a rede conecta e registra a experiência.
+              Chamar = iniciar conversa. Ver perfil = histórico, experiências e contexto completo.
             </p>
 
             {/* Camada de Continuidade: deep-links pro ecossistema (só o que o banco tem) */}
