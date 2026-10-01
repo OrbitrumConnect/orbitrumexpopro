@@ -551,15 +551,15 @@ export default function Cadastro() {
                       </div>
                       <div className="flex-1">
                         <h4 className="text-amber-400 font-semibold text-sm mb-2">
-                          💰 Documentos para Cashback Premium
+                          Verificacao de Identidade
                         </h4>
                         <p className="text-gray-300 text-xs mb-3">
-                          Para participar do sistema de cashback e saques dos seus ganhos com jogos e tokens, você precisará enviar documentos de verificação. 
-                          <span className="text-amber-400 font-medium"> Isso pode ser feito depois no seu dashboard.</span>
+                          Para validar experiencias e construir confianca na rede, voce pode enviar documentos de verificacao.
+                          <span className="text-amber-400 font-medium"> Isso pode ser feito depois no seu painel.</span>
                         </p>
-                        
+
                         <div className="bg-[#061A2D]/50 rounded-md p-3 mb-3">
-                          <p className="text-xs text-gray-400 mb-2 font-medium">Documentos necessários para cashback:</p>
+                          <p className="text-xs text-gray-400 mb-2 font-medium">Documentos para verificacao:</p>
                           <ul className="text-xs text-gray-300 space-y-1">
                             <li>• <span className="text-cyan-400">Selfie clara</span> para verificação de identidade</li>
                             <li>• <span className="text-cyan-400">RG ou CNH</span> (frente e verso)</li>
@@ -569,10 +569,9 @@ export default function Cadastro() {
                         </div>
 
                         <div className="bg-amber-500/5 border border-amber-500/20 rounded-md p-3">
-                          <p className="text-xs text-amber-400 font-medium mb-1">⚠️ Importante para Planos Pagos</p>
+                          <p className="text-xs text-amber-400 font-medium mb-1">Por que verificar?</p>
                           <p className="text-xs text-gray-400">
-                            Ao aderir aos planos Básico, Standard, Pro ou Max, será <span className="text-amber-400 font-medium">obrigatório</span> completar 
-                            a verificação de documentos no seu dashboard para ativar os benefícios de cashback e saques.
+                            Perfis verificados ganham mais confianca na rede. A verificacao e <span className="text-amber-400 font-medium">opcional</span> e pode ser feita a qualquer momento no seu painel.
                           </p>
                         </div>
                       </div>
@@ -700,15 +699,15 @@ export default function Cadastro() {
                         </div>
                         <div className="flex-1">
                           <h4 className="text-amber-400 font-semibold text-sm mb-2">
-                            💰 Documentos para Cashback Premium
+                            Verificacao de Identidade Profissional
                           </h4>
                           <p className="text-gray-300 text-xs mb-3">
-                            Para participar do sistema de cashback e saques, você precisará enviar documentos de verificação. 
-                            <span className="text-amber-400 font-medium"> Isso pode ser feito agora ou depois no seu dashboard.</span>
+                            Para validar experiencias e construir confianca na rede, voce pode enviar documentos de verificacao.
+                            <span className="text-amber-400 font-medium"> Isso pode ser feito agora ou depois no seu painel.</span>
                           </p>
-                          
+
                           <div className="bg-[#061A2D]/50 rounded-md p-3 mb-3">
-                            <p className="text-xs text-gray-400 mb-2 font-medium">Documentos necessários para cashback:</p>
+                            <p className="text-xs text-gray-400 mb-2 font-medium">Documentos para verificacao:</p>
                             <ul className="text-xs text-gray-300 space-y-1">
                               <li>• <span className="text-cyan-400">Selfie clara</span> para verificação de identidade</li>
                               <li>• <span className="text-cyan-400">RG ou CNH</span> (frente e verso)</li>
@@ -718,10 +717,9 @@ export default function Cadastro() {
                           </div>
 
                           <div className="bg-amber-500/5 border border-amber-500/20 rounded-md p-3">
-                            <p className="text-xs text-amber-400 font-medium mb-1">⚠️ Importante para Planos Pagos</p>
+                            <p className="text-xs text-amber-400 font-medium mb-1">Por que verificar?</p>
                             <p className="text-xs text-gray-400">
-                              Ao aderir aos planos Básico, Standard, Pro ou Max, será <span className="text-amber-400 font-medium">obrigatório</span> completar 
-                              a verificação de documentos no seu dashboard para ativar os benefícios de cashback.
+                              Perfis verificados ganham mais confianca na rede e aparecem com destaque nas buscas. A verificacao e <span className="text-amber-400 font-medium">opcional</span>.
                             </p>
                           </div>
                         </div>
@@ -733,7 +731,7 @@ export default function Cadastro() {
 
               <div className="flex justify-between items-center pt-4">
                 <div className="text-xs text-gray-400">
-                  💡 Documentos de cashback podem ser enviados depois no dashboard
+                  Verificacao de documentos pode ser feita depois no painel
                 </div>
                 
                 <Button

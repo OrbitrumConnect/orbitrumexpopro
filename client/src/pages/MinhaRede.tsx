@@ -25,9 +25,9 @@ const ESTADO_LABEL: Record<string, string> = {
 
 type Tab = 'conexoes' | 'conversas' | 'indicacoes';
 const TABS: Array<[Tab, string]> = [
-  ['conexoes', 'Conexoes'],
+  ['conexoes', 'Conexões'],
   ['conversas', 'Conversas'],
-  ['indicacoes', 'Indicacoes'],
+  ['indicacoes', 'Indicações'],
 ];
 
 export default function MinhaRede() {
@@ -66,8 +66,8 @@ export default function MinhaRede() {
     return (
       <div style={{ minHeight: '100vh', background: C.bg, color: C.ink, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 32, textAlign: 'center', maxWidth: 400 }}>
-          <p style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Faca login para ver sua rede</p>
-          <p style={{ color: C.ink3, fontSize: 13, marginBottom: 16 }}>Suas conexoes, conversas e indicacoes aparecem aqui.</p>
+          <p style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Faça login para ver sua rede</p>
+          <p style={{ color: C.ink3, fontSize: 13, marginBottom: 16 }}>Suas conexões, conversas e indicações aparecem aqui.</p>
           <button onClick={() => setShowLoginModal(true)}
             style={{ background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, border: 'none', borderRadius: 12, padding: '10px 24px', color: '#012', fontWeight: 600, cursor: 'pointer' }}>
             Entrar
@@ -79,10 +79,10 @@ export default function MinhaRede() {
 
   const listaAtual = tab === 'indicacoes' ? indicacoes : tab === 'conversas' ? conversasAtivas : conexoes;
   const emptyMsg = tab === 'conversas'
-    ? 'Quando voce conectar com um profissional, a conversa aparece aqui. Fluxo: conversa, combinado, concluido, validado.'
+    ? 'Quando você conectar com um profissional, a conversa aparece aqui. Fluxo: conversa, combinado, concluído, validado.'
     : tab === 'indicacoes'
-    ? 'Conforme voce indicar ou receber indicacoes, elas aparecem aqui. Cada indicacao e um fato registrado na rede.'
-    : 'Conforme voce interagir com profissionais e validar experiencias, suas conexoes crescem. Cada interacao gera um fato relacional.';
+    ? 'Conforme você indicar ou receber indicações, elas aparecem aqui. Cada indicação é um fato registrado na rede.'
+    : 'Conforme você interagir com profissionais e validar experiências, suas conexões crescem. Cada interação gera um fato relacional.';
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
@@ -91,12 +91,12 @@ export default function MinhaRede() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 8 }}>
           <div>
             <h1 style={{ fontSize: mobile ? 20 : 26, fontWeight: 700, margin: 0 }}>Minha Rede</h1>
-            <p style={{ color: C.ink3, fontSize: 13, margin: '4px 0 0' }}>Conexoes, conversas e indicacoes — tudo num lugar.</p>
+            <p style={{ color: C.ink3, fontSize: 13, margin: '4px 0 0' }}>Conexões, conversas e indicações — tudo num lugar.</p>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 16px', textAlign: 'center' }}>
               <p style={{ fontSize: 20, fontWeight: 700, color: C.cyan, margin: 0 }}>{conexoes.length}</p>
-              <p style={{ color: C.ink3, fontSize: 11, margin: 0 }}>Conexoes</p>
+              <p style={{ color: C.ink3, fontSize: 11, margin: 0 }}>Conexões</p>
             </div>
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 16px', textAlign: 'center' }}>
               <p style={{ fontSize: 20, fontWeight: 700, color: C.cyan, margin: 0 }}>{atividade.length}</p>
@@ -125,7 +125,7 @@ export default function MinhaRede() {
         ) : listaAtual.length === 0 ? (
           <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, textAlign: 'center' }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
-              {tab === 'conversas' ? 'Nenhuma conversa ativa' : tab === 'indicacoes' ? 'Nenhuma indicacao ainda' : 'Sua rede esta comecando'}
+              {tab === 'conversas' ? 'Nenhuma conversa ativa ainda' : tab === 'indicacoes' ? 'Nenhuma indicação ainda' : 'Sua rede está começando'}
             </p>
             <p style={{ color: C.ink3, fontSize: 13, marginBottom: 16 }}>{emptyMsg}</p>
             <button onClick={() => setLocation('/')}
