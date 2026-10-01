@@ -11,6 +11,14 @@ const C = {
 };
 const INK3 = '#5b7a90';
 
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 type Estado = 'conversando' | 'combinado' | 'a_caminho' | 'chegou' | 'em_servico' | 'concluido' | 'validado';
 const FLUXO: Array<[Estado, string, number]> = [
   ['conversando', 'Conexão realizada', 30],
@@ -41,6 +49,7 @@ export default function Conversa() {
   const contatoInicio = useRef<number>(Date.now());
   const [esperaSeg, setEsperaSeg] = useState(0);
   const [proRespondeu, setProRespondeu] = useState(false);
+  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
 
   const clienteUserId = user?.id_interno;
   const souOPro = prof && clienteUserId && prof.userId === clienteUserId;
@@ -105,6 +114,16 @@ export default function Conversa() {
       Notification.requestPermission();
     }
   }, []);
+
+  useEffect(() => {
+    if (estado !== 'a_caminho' && estado !== 'chegou') return;
+    if (!navigator.geolocation) return;
+    const wid = navigator.geolocation.watchPosition(
+      pos => setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {}, { enableHighAccuracy: true }
+    );
+    return () => navigator.geolocation.clearWatch(wid);
+  }, [estado]);
 
   const lastMsgCountRef = useRef(0);
   useEffect(() => {
@@ -270,6 +289,19 @@ export default function Conversa() {
           <MiniMapa origem={prof?.latitude && prof?.longitude ? { lat: prof.latitude, lng: prof.longitude } : null} nomeProf={prof?.name?.split(' ')[0]} avatarProf={prof?.avatar} avatarUser={user?.profilePhoto || user?.avatar} />
         </div>
       )}
+      {estado === 'a_caminho' && prof?.latitude != null && userPos && (() => {
+        const dist = haversineKm(userPos.lat, userPos.lng, prof.latitude, prof.longitude);
+        const minutos = Math.max(1, Math.round((dist / 30) * 60));
+        return (
+          <div style={{ margin: '0 18px 8px', display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', background: `${C.cyan}12`, border: `1px solid ${C.border}`, borderRadius: 12, padding: '10px 16px' }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: C.cyan }}>{minutos < 60 ? `${minutos} min` : `${Math.round(minutos / 60)}h${minutos % 60 > 0 ? minutos % 60 : ''}`}</div>
+            <div style={{ fontSize: 12, color: C.ink2, lineHeight: 1.4 }}>
+              <div>Tempo estimado de chegada</div>
+              <div style={{ color: INK3 }}>{dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)} km`} de distância</div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ação de ciclo — trilha bilateral completa §10 */}
       {aviso && <div style={{ padding: '8px 18px', color: C.cyan, fontSize: 12, textAlign: 'center' }}>{aviso}</div>}

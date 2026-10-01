@@ -198,7 +198,10 @@ export default function MapaDisponiveis() {
               const on = tab === t;
               return (
                 <button key={t} onClick={() => setTab(t)}
-                  style={{ padding: '8px 18px', borderRadius: '10px 10px 0 0', border: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
+                  style={{ padding: '8px 18px', borderRadius: '10px 10px 0 0',
+                    borderTop: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
+                    borderLeft: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
+                    borderRight: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderBottom: 'none', background: on ? `${C.blue}22` : 'transparent',
                     color: on ? C.cyan : C.ink2, fontSize: 13, fontWeight: on ? 600 : 400, cursor: 'pointer', letterSpacing: 0.3 }}>
                   {t === 'disponiveis' && '● '}{tabLabel[t]}

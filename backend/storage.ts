@@ -1,17 +1,19 @@
-import { 
+import {
   users, professionals, professionalServices, gameScores, teams, teamRequests, teamMessages, tokenOperations, adminActions, professionalValidations, professionalCategories, userDocuments, teamHiring,
-  type User, type InsertUser, 
-  type Professional, type InsertProfessional, 
+  chatSessions, chatMessages,
+  type User, type InsertUser,
+  type Professional, type InsertProfessional,
   type ProfessionalService, type InsertProfessionalService,
   type ProfessionalCategory, type InsertProfessionalCategory,
-  type GameScore, type InsertGameScore, 
+  type GameScore, type InsertGameScore,
   type Team, type InsertTeam,
   type TeamRequest, type InsertTeamRequest,
   type TeamMessage, type InsertTeamMessage,
   type TokenOperation, type InsertTokenOperation,
   type AdminAction, type InsertAdminAction,
   type ProfessionalValidation, type InsertProfessionalValidation,
-  type TeamHiring, type InsertTeamHiring
+  type TeamHiring, type InsertTeamHiring,
+  type ChatSession, type ChatMessage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, or, and, sql } from "drizzle-orm";
@@ -1447,6 +1449,89 @@ export class DatabaseStorage implements IStorage {
     console.log(`📊 DatabaseStorage: getTeamsForProfessional não implementado para PostgreSQL`);
     return [];
   }
+
+  // Chat sessions — persistência no PostgreSQL
+  async createChatSession(session: any): Promise<void> {
+    try {
+      await db.insert(chatSessions).values({
+        id: session.id,
+        clientId: session.clientId,
+        clientName: session.clientName,
+        professionalId: session.professionalId,
+        professionalName: session.professionalName,
+        serviceType: session.serviceType || null,
+        tokenCost: session.tokenCost || 0,
+        commission: session.commission || 0,
+        isActive: session.isActive !== false,
+        expiresAt: new Date(session.expiresAt),
+        createdAt: session.createdAt ? new Date(session.createdAt) : new Date(),
+      });
+    } catch (error) {
+      console.error("DatabaseStorage.createChatSession error:", error);
+    }
+  }
+
+  async getChatSession(chatId: string): Promise<any> {
+    try {
+      const [session] = await db.select().from(chatSessions).where(eq(chatSessions.id, chatId));
+      return session || undefined;
+    } catch (error) {
+      console.error("DatabaseStorage.getChatSession error:", error);
+      return undefined;
+    }
+  }
+
+  async getChatsByUser(userId: number): Promise<any[]> {
+    try {
+      const results = await db.select().from(chatSessions).where(
+        or(eq(chatSessions.clientId, userId), eq(chatSessions.professionalId, userId))
+      );
+      return results;
+    } catch (error) {
+      console.error("DatabaseStorage.getChatsByUser error:", error);
+      return [];
+    }
+  }
+
+  async getChatMessages(chatId: string): Promise<any[]> {
+    try {
+      const messages = await db.select().from(chatMessages).where(eq(chatMessages.chatId, chatId));
+      return messages.map(m => ({
+        id: m.id.toString(),
+        senderId: m.senderId,
+        senderName: m.senderName,
+        message: m.message,
+        timestamp: m.createdAt?.toISOString() || new Date().toISOString(),
+      }));
+    } catch (error) {
+      console.error("DatabaseStorage.getChatMessages error:", error);
+      return [];
+    }
+  }
+
+  async addChatMessage(chatId: string, message: any): Promise<void> {
+    try {
+      await db.insert(chatMessages).values({
+        chatId,
+        senderId: message.senderId,
+        senderName: message.senderName,
+        message: message.message,
+      });
+    } catch (error) {
+      console.error("DatabaseStorage.addChatMessage error:", error);
+    }
+  }
+
+  async closeChatSession(chatId: string): Promise<void> {
+    try {
+      await db.update(chatSessions).set({
+        isActive: false,
+        closedAt: new Date(),
+      }).where(eq(chatSessions.id, chatId));
+    } catch (error) {
+      console.error("DatabaseStorage.closeChatSession error:", error);
+    }
+  }
 }
 
 export interface IStorage {
@@ -1620,6 +1705,14 @@ export interface IStorage {
   updateProfile(userId: number, userType: 'client' | 'professional', profileData: any): Promise<any>;
   getCompletedProfiles(userType: 'client' | 'professional'): Promise<any[]>;
   updateProfessionalFromProfile(userId: number, profileData: any): Promise<void>;
+
+  // Chat sessions (conversas diretas)
+  createChatSession(session: any): Promise<void>;
+  getChatSession(chatId: string): Promise<any>;
+  getChatsByUser(userId: number): Promise<any[]>;
+  getChatMessages(chatId: string): Promise<any[]>;
+  addChatMessage(chatId: string, message: any): Promise<void>;
+  closeChatSession(chatId: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {

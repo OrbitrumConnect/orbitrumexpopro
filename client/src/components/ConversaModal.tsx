@@ -15,6 +15,14 @@ const C = {
   ink: '#EAF8FF', ink2: '#7FA9C2', ink3: '#5b7a90',
 };
 
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 // Estado OPERACIONAL da relação (Experience Layer §10). A barra 0–100% é o que ACONTECEU
 // na plataforma — o Orbitrum REGISTRA, não executa nem garante. Cada transição gera um fato.
 type Estado = 'conversando' | 'combinado' | 'a_caminho' | 'chegou' | 'em_servico' | 'concluido' | 'validado';
@@ -45,6 +53,7 @@ export default function ConversaModal({ profId, onClose }: Props) {
   const contatoInicio = useRef<number>(Date.now());
   const [esperaSeg, setEsperaSeg] = useState(0);
   const [proRespondeu, setProRespondeu] = useState(false);
+  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
 
   const clienteUserId = user?.id_interno;
   const souOPro = prof && clienteUserId && prof.userId === clienteUserId;
@@ -108,6 +117,16 @@ export default function ConversaModal({ profId, onClose }: Props) {
       Notification.requestPermission();
     }
   }, []);
+
+  useEffect(() => {
+    if (estado !== 'a_caminho' && estado !== 'chegou') return;
+    if (!navigator.geolocation) return;
+    const wid = navigator.geolocation.watchPosition(
+      pos => setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {}, { enableHighAccuracy: true }
+    );
+    return () => navigator.geolocation.clearWatch(wid);
+  }, [estado]);
 
   const lastMsgCountRef = useRef(0);
   useEffect(() => {
@@ -234,7 +253,19 @@ export default function ConversaModal({ profId, onClose }: Props) {
               origem={prof?.latitude != null && prof?.longitude != null ? { lat: prof.latitude, lng: prof.longitude } : null}
               avatarProf={prof?.avatar} avatarUser={user?.profilePhoto || (user as any)?.avatar} />
           )}
-          {/* "Como ir" aparece JUNTO com o mapa (deslocamento) — não no final (aí já rolou). */}
+          {estado === 'a_caminho' && prof?.latitude != null && userPos && (() => {
+            const dist = haversineKm(userPos.lat, userPos.lng, prof.latitude, prof.longitude);
+            const minutos = Math.max(1, Math.round((dist / 30) * 60));
+            return (
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', background: `${C.cyan}12`, border: `1px solid ${C.border}`, borderRadius: 12, padding: '10px 16px' }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: C.cyan }}>{minutos < 60 ? `${minutos} min` : `${Math.round(minutos / 60)}h${minutos % 60 > 0 ? minutos % 60 : ''}`}</div>
+                <div style={{ fontSize: 12, color: C.ink2, lineHeight: 1.4 }}>
+                  <div>Tempo estimado de chegada</div>
+                  <div style={{ color: C.ink3 }}>{dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)} km`} de distância</div>
+                </div>
+              </div>
+            );
+          })()}
           {(estado === 'a_caminho' || estado === 'chegou') && prof && <Continuar prof={prof} />}
           {/* Mensagem automática do sistema — primeiro contato */}
           {!souOPro && estado === 'conversando' && (

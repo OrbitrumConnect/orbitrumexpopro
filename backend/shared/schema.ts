@@ -696,6 +696,36 @@ export const factConfirmations = pgTable("fact_confirmations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Chat sessions (conversas diretas entre cliente e profissional)
+export const chatSessions = pgTable("chat_sessions", {
+  id: text("id").primaryKey(),
+  clientId: integer("client_id").notNull(),
+  clientName: text("client_name").notNull(),
+  professionalId: integer("professional_id").notNull(),
+  professionalName: text("professional_name").notNull(),
+  serviceType: text("service_type"),
+  tokenCost: integer("token_cost").default(0),
+  commission: integer("commission").default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  expiresAt: timestamp("expires_at").notNull(),
+  closedAt: timestamp("closed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  chatId: text("chat_id").notNull(),
+  senderId: integer("sender_id").notNull(),
+  senderName: text("sender_name").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = typeof chatSessions.$inferInsert;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = typeof chatMessages.$inferInsert;
+
 export type Connection = typeof connections.$inferSelect;
 export type InsertConnection = typeof connections.$inferInsert;
 

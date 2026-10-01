@@ -233,7 +233,7 @@ function RequestsTab({ pendingCount, acceptedCount }: { pendingCount: number; ac
 }
 
 function PortfolioTab({ user }: { user: any }) {
-  const [fotos, setFotos] = useState<Array<{ id: string; url: string; descricao: string; data: string; servico: string; nota?: number }>>([]);
+  const [fotos, setFotos] = useState<Array<{ id: string; url: string; descricao: string; data: string; servico: string }>>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = (files: FileList | null) => {
@@ -282,12 +282,6 @@ function PortfolioTab({ user }: { user: any }) {
                 <div style={{ padding: '8px 10px' }}>
                   <div style={{ fontSize: 12, fontWeight: 500 }}>{f.servico}</div>
                   <div style={{ fontSize: 11, color: C.ink3, marginTop: 2 }}>{f.data}</div>
-                  {f.nota && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                      <Star size={12} color="#F59E0B" fill="#F59E0B" />
-                      <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>{f.nota}</span>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
@@ -297,7 +291,7 @@ function PortfolioTab({ user }: { user: any }) {
             <Image size={40} color={C.ink3} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
             <div style={{ color: C.ink2, fontSize: 14, fontWeight: 500, marginBottom: 6 }}>Seu portfólio está vazio</div>
             <div style={{ color: C.ink3, fontSize: 12, lineHeight: 1.6, maxWidth: 360, margin: '0 auto' }}>
-              Adicione fotos dos seus trabalhos realizados. Clientes confiam mais quando veem resultados reais. Cada foto pode ter descrição, data e nota do cliente.
+              Adicione fotos dos seus trabalhos realizados. Clientes confiam mais quando veem resultados reais. Cada experiência concluída vira evidência no seu perfil.
             </div>
           </div>
         )}
@@ -309,17 +303,17 @@ function PortfolioTab({ user }: { user: any }) {
           <div style={{ fontSize: 12, color: C.ink3 }}>Fotos no portfólio</div>
         </div>
         <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, textAlign: 'center' }}>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#F59E0B' }}>—</div>
-          <div style={{ fontSize: 12, color: C.ink3 }}>Nota média dos clientes</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: C.cyan }}>—</div>
+          <div style={{ fontSize: 12, color: C.ink3 }}>Experiências validadas</div>
         </div>
       </div>
 
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18 }}>
         <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Star size={16} color="#F59E0B" /> Avaliações dos clientes
+          <Star size={16} color={C.cyan} /> Evidências da rede
         </div>
         <div style={{ color: C.ink3, fontSize: 13, lineHeight: 1.6 }}>
-          Conforme você conclui serviços e os clientes validam, as avaliações e notas aparecem aqui vinculadas às fotos do trabalho. Cada experiência validada fortalece seu perfil.
+          Conforme você conclui serviços e os clientes confirmam, as experiências aparecem aqui vinculadas às fotos do trabalho. Cada validação bilateral vira um fato na rede — evidência real, não estrelas.
         </div>
       </div>
     </div>
@@ -355,7 +349,7 @@ function TeamTab() {
           <div style={{ fontSize: 18, fontWeight: 700, color: C.ink }}>—</div>
         </div>
         <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16, textAlign: 'center' }}>
-          <Star size={20} color="#F59E0B" style={{ margin: '0 auto 8px' }} />
+          <Star size={20} color={C.cyan} style={{ margin: '0 auto 8px' }} />
           <div style={{ fontSize: 12, color: C.ink2 }}>Indicações no time</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: C.ink }}>—</div>
         </div>
