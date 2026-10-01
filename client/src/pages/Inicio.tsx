@@ -301,7 +301,7 @@ export default function Inicio() {
             )}
             {/* Categorias da rede — não só profissionais: Empresas e Oportunidades também.
                 Faixa ADITIVA acima do orbit (não altera o sistema orbit). Ativas buscam; futuras "em breve". */}
-            <div style={{ display: 'flex', gap: 8, justifyContent: mobile ? 'flex-start' : 'center', flexWrap: mobile ? 'nowrap' : 'wrap', marginBottom: 6, overflowX: mobile ? 'auto' : 'visible', paddingBottom: mobile ? 4 : 0, WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ display: 'flex', gap: mobile ? 5 : 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
               {([
                 ['profissionais' as const, 'Profissionais', true],
                 ['indicacoes' as const, 'Indicações', true],
@@ -312,11 +312,11 @@ export default function Inicio() {
                 const selected = view !== null && viewAtiva === view && buscou;
                 return (
                   <button key={label} onClick={() => view && buscar(view)} disabled={!ativo}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 16,
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: mobile ? '4px 8px' : '6px 12px', borderRadius: 14,
                       border: `1px solid ${selected ? C.borderHot : ativo ? C.border : 'rgba(120,150,170,0.15)'}`,
                       background: selected ? `${C.blue}22` : ativo ? `${C.blue}12` : 'transparent',
-                      color: selected ? C.cyan : ativo ? C.ink : C.ink3, fontSize: 12, fontWeight: selected ? 600 : 400,
-                      cursor: ativo ? 'pointer' : 'default' }}>
+                      color: selected ? C.cyan : ativo ? C.ink : C.ink3, fontSize: mobile ? 11 : 12, fontWeight: selected ? 600 : 400,
+                      cursor: ativo ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>
                     {label}{!ativo && <span style={{ fontSize: 9, color: C.ink3 }}>· em breve</span>}
                   </button>
                 );
@@ -329,12 +329,12 @@ export default function Inicio() {
                 <OrbitSystem onOpenProfessional={(id: number) => { if (!user) { setShowLoginModal(true); } else { setProfModalId(id); } }} onOpenLogin={() => setShowLoginModal(true)} />
               </div>
             </div>
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 8 }}>
-              <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: mobile ? 10 : 14, padding: mobile ? 12 : 18, marginTop: 8 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
                 <input value={necessidade} onChange={e => setNecessidade(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscar()}
                   placeholder="Ex.: Preciso de um eletricista amanhã..."
-                  style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: '12px 18px', color: C.ink, fontSize: 14, outline: 'none' }} />
-                <button onClick={buscar} style={{ width: 48, height: 48, borderRadius: '50%', border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontSize: 18, fontWeight: 700 }}>→</button>
+                  style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: mobile ? '10px 14px' : '12px 18px', color: C.ink, fontSize: mobile ? 13 : 14, outline: 'none' }} />
+                <button onClick={buscar} style={{ width: mobile ? 42 : 48, height: mobile ? 42 : 48, borderRadius: '50%', border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontSize: 18, fontWeight: 700 }}>→</button>
               </div>
             </div>
 
@@ -355,7 +355,7 @@ export default function Inicio() {
                 </div>
                 {resultados.map(r => (
                   <div key={r.profissional.id} onClick={() => setProfModalId(r.profissional.id)}
-                    style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 14, marginBottom: 10, cursor: 'pointer', display: 'flex', gap: 12 }}>
+                    style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: mobile ? 10 : 12, padding: mobile ? 10 : 14, marginBottom: mobile ? 8 : 10, cursor: 'pointer', display: 'flex', gap: mobile ? 8 : 12 }}>
                     <Avatar src={r.profissional.avatar} name={r.profissional.name} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
@@ -386,8 +386,8 @@ export default function Inicio() {
 
             {/* Estado que ENSINA quando a rede ainda está começando (não fabrica dado). */}
             {!buscou && recs.length === 0 && (
-              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 12 }}>
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>Sua rede está começando</div>
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: mobile ? 10 : 14, padding: mobile ? 12 : 18, marginTop: mobile ? 8 : 12 }}>
+                <div style={{ fontWeight: 600, fontSize: mobile ? 13 : 14, marginBottom: mobile ? 6 : 8 }}>Sua rede está começando</div>
                 <p style={{ color: C.ink2, fontSize: 13, margin: 0, lineHeight: 1.5 }}>
                   O Orbitrum aprende com o que acontece de verdade. Faça uma busca acima ou convide
                   alguém que você conhece. Cada experiência real — e confirmada pelos dois lados —
@@ -405,28 +405,28 @@ export default function Inicio() {
           {/* coluna lateral: recomendações com MOTIVO */}
           <aside style={{ flex: '0 1 320px', minWidth: mobile ? 0 : 260, width: mobile ? '100%' : undefined }}>
             {mobile && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14 }}>
-                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>Oportunidades</div>
-                  <p style={{ color: C.ink2, fontSize: 11, margin: 0, lineHeight: 1.4 }}>
-                    Necessidades da sua região aparecem aqui — responda ou indique.
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: 10 }}>
+                  <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4 }}>Oportunidades</div>
+                  <p style={{ color: C.ink2, fontSize: 10, margin: 0, lineHeight: 1.3 }}>
+                    Necessidades da sua região.
                   </p>
                 </div>
-                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14 }}>
-                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>Atividade</div>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: 10 }}>
+                  <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4 }}>Atividade</div>
                   {atividade.length > 0 ? (
-                    <div style={{ fontSize: 11, color: C.ink }}>{atividade[0]?.texto}</div>
+                    <div style={{ fontSize: 10, color: C.ink }}>{atividade[0]?.texto}</div>
                   ) : (
-                    <p style={{ color: C.ink2, fontSize: 11, margin: 0, lineHeight: 1.4 }}>
-                      Indicações e validações da rede aparecem aqui.
+                    <p style={{ color: C.ink2, fontSize: 10, margin: 0, lineHeight: 1.3 }}>
+                      Indicações e validações da rede.
                     </p>
                   )}
                 </div>
               </div>
             )}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-                <span style={{ fontWeight: 600, fontSize: 15 }}>Recomendações para você</span>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: mobile ? 10 : 14, padding: mobile ? 12 : 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: mobile ? 10 : 14 }}>
+                <span style={{ fontWeight: 600, fontSize: mobile ? 13 : 15 }}>Recomendações para você</span>
                 <button onClick={buscar} style={{ background: 'none', border: 'none', color: C.cyan, fontSize: 12, cursor: 'pointer' }}>Ver todas</button>
               </div>
               {recs.length === 0 && (
