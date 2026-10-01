@@ -262,7 +262,7 @@ export default function Inicio() {
       </aside>
 
       {/* CONTEÚDO */}
-      <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* header */}
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '10px 10px 10px 52px' : '16px 24px', borderBottom: `1px solid ${C.border}`, gap: 10, flexWrap: mobile ? 'nowrap' : 'nowrap' }}>
           {!mobile && (
@@ -490,7 +490,7 @@ export default function Inicio() {
         </div>
 
         {/* RODAPÉ — nada órfão: cadastro de profissional + páginas legais acessíveis da home */}
-        <footer style={{ borderTop: `1px solid ${C.border}`, padding: '16px 24px', display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <footer style={{ borderTop: `1px solid ${C.border}`, padding: '16px 24px', marginTop: 'auto', display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
           <button onClick={() => setLocation('/cadastro-profissional')} style={{ background: 'transparent', border: `1px solid ${C.borderHot}`, borderRadius: 16, padding: '7px 16px', color: C.ink, fontSize: 12, cursor: 'pointer' }}>Seja profissional na rede</button>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             {([['Termos', '/termos'], ['Privacidade', '/privacidade'], ['Regras', '/regras'], ['Certificações', '/certificacoes']] as Array<[string, string]>).map(([label, rota]) => (

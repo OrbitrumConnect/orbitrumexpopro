@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Users, X, UserPlus, Briefcase, Eye, UserMinus, Lock, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/Sidebar";
+import NetworkAside from "@/components/NetworkAside";
 import { ProfessionalModal } from "@/components/professional-modal";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +26,13 @@ export default function Teams() {
   const [nomeTime, setNomeTime] = useState('');
   const [profsSelecionados, setProfsSelecionados] = useState<string[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
+
+  useEffect(() => {
+    const onR = () => setMobile(window.innerWidth < 900);
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -126,6 +134,7 @@ export default function Teams() {
   return (
     <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
       <Sidebar />
+      <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Header */}
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', flexWrap: 'wrap', gap: 8 }}>
@@ -321,6 +330,8 @@ export default function Teams() {
           professionalId={selectedProfessionalId}
         />
       )}
+    {!mobile && <NetworkAside />}
+    </div>
     </div>
   );
 }

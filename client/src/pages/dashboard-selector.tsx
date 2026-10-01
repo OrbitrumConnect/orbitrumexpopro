@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminUser } from '@/lib/isAdmin';
 import { User, Briefcase, Shield, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 import Sidebar from "@/components/Sidebar";
+import NetworkAside from "@/components/NetworkAside";
 
 const C = {
   bg: '#020914', card: 'rgba(3,18,32,0.9)',
@@ -14,6 +16,13 @@ const C = {
 export default function DashboardSelector() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
+
+  useEffect(() => {
+    const onR = () => setMobile(window.innerWidth < 900);
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
 
   const isAdmin = isAdminUser(user);
   const userType = user?.userType || "client";
@@ -24,6 +33,7 @@ export default function DashboardSelector() {
   return (
     <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)', color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
       <Sidebar />
+      <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)' }}>
           <div>
@@ -73,6 +83,8 @@ export default function DashboardSelector() {
             </div>
           )}
         </div>
+      </div>
+      {!mobile && <NetworkAside />}
       </div>
     </div>
   );
