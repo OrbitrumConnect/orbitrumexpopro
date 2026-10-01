@@ -39,8 +39,8 @@ export default function Continuar({ prof, onIndicar, onNovaBusca, onSolicitar }:
 
   const acoes: Array<{ label: string; icon: string; href?: string; onClick?: () => void }> = [];
   if (whats) acoes.push({ label: 'Conversar no WhatsApp', icon: '💬', href: `https://wa.me/55${whats}` });
-  if (temGeo) acoes.push({ label: 'Ir de Uber', icon: '🚗', href: `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${prof.latitude}&dropoff[longitude]=${prof.longitude}&dropoff[nickname]=${encodeURIComponent(prof.name)}` });
-  if (temGeo) acoes.push({ label: 'Ir de 99', icon: '🚕', href: `https://99app.com/` });
+  if (temGeo) acoes.push({ label: 'Chamar via Uber', icon: '🚗', href: `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${prof.latitude}&dropoff[longitude]=${prof.longitude}&dropoff[nickname]=${encodeURIComponent(prof.name)}` });
+  if (temGeo) acoes.push({ label: 'Chamar via 99', icon: '🚕', href: `https://99app.com/` });
   if (destino) acoes.push({ label: 'Ver rota no mapa', icon: '📍', href: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}` });
   if (prof.linkedinUrl) acoes.push({ label: 'Ver LinkedIn', icon: '💼', href: prof.linkedinUrl });
   if (onIndicar) acoes.push({ label: 'Indicar para alguém', icon: '🔗', onClick: onIndicar });
@@ -51,12 +51,12 @@ export default function Continuar({ prof, onIndicar, onNovaBusca, onSolicitar }:
 
   return (
     <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 16, paddingTop: 16 }}>
-      <div style={{ fontSize: 12, color: C.ink3, letterSpacing: 1, marginBottom: 10 }}>COMO DESEJA CONTINUAR?</div>
+      <div style={{ fontSize: 12, color: C.ink3, letterSpacing: 1, marginBottom: 10 }}>COMO O PROFISSIONAL CHEGA ATÉ VOCÊ?</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {acoes.map((a, i) => <Acao key={i} {...a} />)}
       </div>
       <div style={{ fontSize: 10, color: C.ink3, marginTop: 10 }}>
-        O Orbitrum conecta e registra a experiência; a ação acontece no app que você já usa.
+        O Orbitrum conecta e registra a experiência. O transporte é combinado entre vocês — pedir, ir por conta ou combinar o ponto.
       </div>
     </div>
   );
