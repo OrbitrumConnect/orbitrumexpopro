@@ -26,7 +26,9 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     email: "",
     password: "",
     username: "",
-    rememberMe: false
+    rememberMe: false,
+    userType: "" as "" | "client" | "professional",
+    profession: "",
   });
   const [emailConfirmationError, setEmailConfirmationError] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
@@ -217,13 +219,38 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-cyan-400">Nome de Usuário</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input id="username" type="text" placeholder="Seu nome de usuário" value={formData.username} onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))} className="pl-10 border-gray-700 focus:border-cyan-400 text-white placeholder-gray-400" required={!isLogin} />
+            <>
+              <div className="space-y-2">
+                <Label className="text-cyan-400">Eu sou</Label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {([['client', 'Cliente'], ['professional', 'Profissional']] as const).map(([type, label]) => (
+                    <button key={type} type="button" onClick={() => setFormData(prev => ({ ...prev, userType: type }))}
+                      style={{
+                        flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                        background: formData.userType === type ? 'linear-gradient(135deg, #00E5FF, #00AEEF)' : 'transparent',
+                        color: formData.userType === type ? '#012' : '#91A9BD',
+                        border: formData.userType === type ? 'none' : '1px solid rgba(0,174,255,0.25)',
+                      }}>{label}</button>
+                  ))}
+                </div>
               </div>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-cyan-400">Nome completo</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input id="username" type="text" placeholder="Seu nome" value={formData.username} onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))} className="pl-10 border-gray-700 focus:border-cyan-400 text-white placeholder-gray-400" required={!isLogin} />
+                </div>
+              </div>
+              {formData.userType === 'professional' && (
+                <div className="space-y-2">
+                  <Label htmlFor="profession" className="text-cyan-400">Sua profissão</Label>
+                  <div className="relative">
+                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input id="profession" type="text" placeholder="Ex: Eletricista, Pintor, Diarista..." value={formData.profession} onChange={(e) => setFormData(prev => ({ ...prev, profession: e.target.value }))} className="pl-10 border-gray-700 focus:border-cyan-400 text-white placeholder-gray-400" />
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="space-y-2">
