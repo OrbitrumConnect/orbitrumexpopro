@@ -9,7 +9,7 @@ export default function AccessDenied() {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-gray-900" style={{ position: 'relative', zIndex: 1 }}>
+    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: '#020914', position: 'relative', zIndex: 1 }}>
       
       <main className="min-h-screen flex items-center justify-center relative">
         <div className="text-center space-y-8 max-w-2xl mx-auto px-4">
@@ -36,7 +36,7 @@ export default function AccessDenied() {
               <Shield className="h-8 w-8 text-red-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2 text-red-400">Apenas Usuários Verificados</h3>
               <p className="text-gray-400 text-sm">
-                Para acessar o Orbtrum Connect, você precisa estar cadastrado e ter seu email confirmado.
+                Para acessar o Orbitrum, você precisa estar cadastrado e ter seu email confirmado.
               </p>
             </div>
           </motion.div>

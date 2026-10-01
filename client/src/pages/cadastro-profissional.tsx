@@ -88,21 +88,21 @@ export default function CadastroProfissional() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#020914' }}>
         <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
+    <div className="min-h-screen text-white p-6" style={{ background: '#020914' }}>
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4">
             Cadastro Profissional
           </h1>
           <p className="text-gray-400 text-lg">
-            Junte-se ao Orbtrum Connect e faça parte da nossa rede de profissionais
+            Junte-se ao Orbitrum e faça parte da rede de profissionais
           </p>
         </div>
 

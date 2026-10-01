@@ -340,7 +340,7 @@ export default function Cadastro() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-3 sm:p-6">
+    <div className="min-h-screen text-white p-3 sm:p-6" style={{ background: '#020914' }}>
       <div className="max-w-3xl mx-auto scale-[0.83]">
         {/* Header com botão voltar */}
         <div className="flex items-center mb-4 sm:mb-8">
@@ -877,7 +877,7 @@ export default function Cadastro() {
                   {formData.tipo === 'professional' && (
                     <li>4. Aguarde a validação dos documentos (até 48h)</li>
                   )}
-                  <li>{formData.tipo === 'professional' ? '5' : '4'}. Comece a usar o Orbtrum Connect!</li>
+                  <li>{formData.tipo === 'professional' ? '5' : '4'}. Comece a usar o Orbitrum!</li>
                 </ol>
               </div>
             </div>

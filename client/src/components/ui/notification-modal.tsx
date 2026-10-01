@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Bell, CheckCircle, AlertCircle, Info, Mail } from "lucide-react"
 
@@ -51,6 +51,7 @@ export function NotificationModal({
             {getIcon()}
             {title}
           </DialogTitle>
+          <DialogDescription className="sr-only">Notificação do sistema</DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <p className="text-sm text-white">{message}</p>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -118,11 +118,12 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-black/95 border border-[var(--neon-cyan)]/50 backdrop-blur-xl">
+      <DialogContent className="sm:max-w-md" style={{ background: '#020914', border: '1px solid rgba(0,174,255,0.25)' }}>
         <DialogHeader>
-          <DialogTitle className="text-center text-xl font-bold text-white">
+          <DialogTitle className="text-center text-xl font-bold" style={{ color: '#00E5FF' }}>
             Criar Conta
           </DialogTitle>
+          <DialogDescription className="text-center text-sm" style={{ color: '#91A9BD' }}>Preencha seus dados para entrar na rede</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -165,9 +165,12 @@ export function HowItWorksModal({ isOpen, onClose }: HowItWorksModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`w-[90vw] max-w-3xl sm:max-w-5xl h-[90vh] sm:max-h-[93vh] overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-cyan-500/20 shadow-2xl shadow-cyan-500/10 transition-all duration-800 scale-[1.10] ${
+      <DialogContent className={`w-[90vw] max-w-3xl sm:max-w-5xl h-[90vh] sm:max-h-[93vh] overflow-hidden shadow-2xl transition-all duration-800 scale-[1.10] ${
         isClosing ? 'scale-y-0 opacity-0 transform-gpu' : ''
-      }`}>
+      }`} style={{ background: '#020914', border: '1px solid rgba(0,174,255,0.25)' }}>
+        <button onClick={handleClose} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', color: '#91A9BD', cursor: 'pointer', zIndex: 10, padding: 6 }}>
+          <X size={22} />
+        </button>
         <DialogHeader className="relative border-b border-slate-800/50 pb-4">
           
           <AnimatePresence mode="wait">

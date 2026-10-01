@@ -12,19 +12,16 @@ export function SearchLimitModal({ isOpen, onClose, onLogin }: SearchLimitModalP
   const [, setLocation] = useLocation();
 
   const handleHomeClick = () => {
-    console.log('🏠 Home button clicked');
     onClose();
     setLocation('/');
   };
 
   const handleLoginClick = () => {
-    console.log('🔑 Login button clicked');
     onClose();
     onLogin();
   };
 
   const handleEntendidoClick = () => {
-    console.log('✅ Entendi button clicked');
     onClose();
     setLocation('/');
   };
@@ -50,8 +47,9 @@ export function SearchLimitModal({ isOpen, onClose, onLogin }: SearchLimitModalP
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none"
           >
-            <div 
-              className="glassmorphism rounded-2xl p-6 max-w-sm w-full mx-4 border border-red-500/30 shadow-2xl pointer-events-auto"
+            <div
+              className="rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl pointer-events-auto"
+              style={{ background: '#020914', border: '1px solid rgba(0,174,255,0.25)' }}
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-4">

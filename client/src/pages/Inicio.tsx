@@ -326,7 +326,7 @@ export default function Inicio() {
                 NÃO remover. Clicar num profissional abre o perfil-tese. */}
             <div style={{ position: 'relative', overflow: 'hidden', ...(mobile ? { height: 'clamp(280px, 55vh, 420px)', margin: '0 -8px', width: 'calc(100% + 16px)' } : { height: 'clamp(340px, 48vh, 480px)' }) }}>
               <div style={{ transform: mobile ? 'scale(0.95)' : 'scale(0.85)', transformOrigin: 'center top', width: '100%', position: 'absolute', top: mobile ? '-8vh' : '-16vh', left: 0 }}>
-                <OrbitSystem onOpenProfessional={(id: number) => setProfModalId(id)} onOpenLogin={() => {}} />
+                <OrbitSystem onOpenProfessional={(id: number) => { if (!user) { setShowLoginModal(true); } else { setProfModalId(id); } }} onOpenLogin={() => setShowLoginModal(true)} />
               </div>
             </div>
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginTop: 8 }}>

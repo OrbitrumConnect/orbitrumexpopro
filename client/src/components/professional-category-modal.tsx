@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProfessionalCategoryModalProps {
@@ -75,11 +75,12 @@ export function ProfessionalCategoryModal({ isOpen, onComplete, onCancel, userEm
 
   return (
     <Dialog open={isOpen} onOpenChange={() => !loading && onCancel()}>
-      <DialogContent className="sm:max-w-md bg-black/90 backdrop-blur-md border border-cyan-500/30">
+      <DialogContent className="sm:max-w-md" style={{ background: '#020914', border: '1px solid rgba(0,174,255,0.25)' }}>
         <DialogHeader>
-          <DialogTitle className="text-cyan-400 text-xl font-bold text-center">
+          <DialogTitle className="text-xl font-bold text-center" style={{ color: '#00E5FF' }}>
             Complete seu Perfil Profissional
           </DialogTitle>
+          <DialogDescription className="text-center text-sm" style={{ color: '#91A9BD' }}>Escolha sua categoria para ser encontrado na rede</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">

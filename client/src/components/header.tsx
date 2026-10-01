@@ -67,7 +67,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
         <nav className="flex justify-between items-center glassmorphism rounded-full px-3 sm:px-6 py-2 sm:py-3 max-w-6xl mx-auto backdrop-blur-sm bg-black/90 sm:bg-black/95">
           <div className="flex items-center space-x-1.5 sm:space-x-2">
             <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--electric-blue)]" />
-            <span className="font-bold text-sm sm:text-xl neon-text">Orbtrum Connect</span>
+            <span className="font-bold text-sm sm:text-xl neon-text">Orbitrum</span>
             <span className="text-[9.5px] sm:text-[10.2px] bg-blue-500 bg-opacity-30 border border-blue-400 px-1 sm:px-1.5 py-0.5 sm:py-0.5 rounded text-blue-200 font-semibold">
               BETA
             </span>

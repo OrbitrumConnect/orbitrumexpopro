@@ -227,7 +227,7 @@ export function PlansModal({ isOpen, onClose, onOpenLogin }: PlansModalProps) {
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-2xl font-bold neon-text">Orbtrum Connect</h2>
+                <h2 className="text-2xl font-bold neon-text">Orbitrum</h2>
                 <p className="text-gray-300 text-sm mt-1">Plataforma de intermediação profissional</p>
               </div>
               <Button
@@ -482,7 +482,7 @@ export function PlansModal({ isOpen, onClose, onOpenLogin }: PlansModalProps) {
                     <div>
                       <h4 className="text-lg font-semibold text-[var(--neon-cyan)] mb-2">1. Introdução</h4>
                       <p className="text-sm leading-relaxed">
-                        A Orbtrum Connect Services ("plataforma") é uma ferramenta digital que conecta usuários a profissionais 
+                        A Orbitrum Services ("plataforma") é uma ferramenta digital que conecta usuários a profissionais 
                         autônomos que oferecem diversos serviços especializados. Nosso papel é oferecer infraestrutura, sistema 
                         de créditos (tokens) e ferramentas para facilitar essa conexão, sem prestar os serviços profissionais 
                         diretamente.
@@ -594,7 +594,7 @@ export function PlansModal({ isOpen, onClose, onOpenLogin }: PlansModalProps) {
                     {/* Aceitação */}
                     <div className="bg-red-500 bg-opacity-20 border border-red-400 rounded-lg p-4 mt-6">
                       <p className="text-red-300 text-sm font-semibold text-center">
-                        Ao usar a plataforma Orbtrum Connect Services, você reconhece e aceita integralmente estes termos e regras.
+                        Ao usar a plataforma Orbitrum Services, você reconhece e aceita integralmente estes termos e regras.
                       </p>
                     </div>
                   </div>

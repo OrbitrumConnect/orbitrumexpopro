@@ -196,56 +196,57 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm sm:max-w-md mx-auto bg-black/95 border border-[var(--neon-cyan)]/30 text-white overflow-y-auto max-h-[90vh] sm:max-h-none">
+      <DialogContent className="max-w-sm sm:max-w-md mx-auto text-white overflow-y-auto max-h-[90vh] sm:max-h-none" style={{ background: '#020914', border: '1px solid rgba(0,174,255,0.25)' }}>
         <DialogHeader className="text-center">
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="mx-auto mb-3 sm:mb-4 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[var(--neon-cyan)] to-purple-500 flex items-center justify-center"
+            className="mx-auto mb-3 sm:mb-4 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #00E5FF, #00AEEF)' }}
           >
             <Rocket className="h-6 w-6 sm:h-8 sm:w-8 text-black" />
           </motion.div>
-          <DialogTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[var(--neon-cyan)] to-purple-400 bg-clip-text text-transparent">
-            {isLogin ? "Bem-vindo de volta" : "Junte-se à Órbita"}
+          <DialogTitle className="text-xl sm:text-2xl font-bold" style={{ color: '#00E5FF' }}>
+            {isLogin ? "Bem-vindo de volta" : "Cadastre-se grátis"}
           </DialogTitle>
-          <DialogDescription className="text-gray-300 text-sm sm:text-base">
-            {isLogin ? "Acesse sua conta Orbtrum Connect" : "Crie sua conta e explore o universo profissional"}
+          <DialogDescription className="text-sm sm:text-base" style={{ color: '#91A9BD' }}>
+            {isLogin ? "Acesse sua conta Orbitrum" : "Entre na rede e conecte-se com profissionais reais"}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-[var(--neon-cyan)]">Nome de Usuário</Label>
+              <Label htmlFor="username" className="text-cyan-400">Nome de Usuário</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input id="username" type="text" placeholder="Seu nome de usuário" value={formData.username} onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))} className="pl-10 bg-black/50 border-gray-600 focus:border-[var(--neon-cyan)] text-white placeholder-gray-400" required={!isLogin} />
+                <Input id="username" type="text" placeholder="Seu nome de usuário" value={formData.username} onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))} className="pl-10 border-gray-700 focus:border-cyan-400 text-white placeholder-gray-400" required={!isLogin} />
               </div>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-[var(--neon-cyan)]">E-mail</Label>
+            <Label htmlFor="email" className="text-cyan-400">E-mail</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input id="email" type="email" placeholder="seu@email.com" value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))} className="pl-10 bg-black/50 border-gray-600 focus:border-[var(--neon-cyan)] text-white placeholder-gray-400" required />
+              <Input id="email" type="email" placeholder="seu@email.com" value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))} className="pl-10 border-gray-700 focus:border-cyan-400 text-white placeholder-gray-400" required />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-[var(--neon-cyan)]">Senha</Label>
+            <Label htmlFor="password" className="text-cyan-400">Senha</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={formData.password} onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))} className="pl-10 pr-10 bg-black/50 border-gray-600 focus:border-[var(--neon-cyan)] text-white placeholder-gray-400" required />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[var(--neon-cyan)] transition-colors">
+              <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={formData.password} onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))} className="pl-10 pr-10 border-gray-700 focus:border-cyan-400 text-white placeholder-gray-400" required />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-cyan-400 transition-colors">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
           <div className="space-y-2 sm:space-y-3">
-            <Button type="submit" disabled={loading} className="w-full neon-button font-semibold py-2 sm:py-3 text-sm">
+            <Button type="submit" disabled={loading} className="w-full font-semibold py-2 sm:py-3 text-sm" style={{ background: 'linear-gradient(135deg, #00E5FF, #00AEEF)', color: '#012', border: 'none' }}>
               {loading ? (
                 <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-5 h-5 border-2 border-black border-t-transparent rounded-full" />
               ) : (
@@ -258,7 +259,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
             {isLogin && (
               <div className="flex items-center justify-center space-x-2 pt-2">
-                <input id="rememberMe" type="checkbox" checked={formData.rememberMe} onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))} className="w-4 h-4 text-[var(--neon-cyan)] bg-black/50 border-gray-600 rounded focus:ring-[var(--neon-cyan)] focus:ring-2" />
+                <input id="rememberMe" type="checkbox" checked={formData.rememberMe} onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))} className="w-4 h-4 text-cyan-400 border-gray-700 rounded focus:ring-cyan-400 focus:ring-2" />
                 <Label htmlFor="rememberMe" className="text-sm text-gray-300 cursor-pointer">Permanecer conectado (30 dias)</Label>
               </div>
             )}
@@ -271,17 +272,27 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
           <div className="space-y-3">
             <div className="text-center"><span className="text-sm text-gray-400 font-medium">Escolha seu perfil:</span></div>
-            <Button type="button" onClick={() => handleGoogleLogin('client')} disabled={loading} className="w-full bg-white hover:bg-gray-100 text-gray-900 font-medium py-3 px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--neon-cyan)] transition-all duration-200 relative overflow-hidden">
+            <Button type="button" onClick={() => handleGoogleLogin('client')} disabled={loading} className="w-full bg-white hover:bg-gray-100 text-gray-900 font-medium py-3 px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 relative overflow-hidden">
               <div className="flex items-center justify-center"><FaGoogle className="mr-3 h-4 w-4 text-red-500" /><div className="text-left"><div className="font-semibold">{isLogin ? "Cliente" : "Sou Cliente"}</div><div className="text-xs text-gray-600">Busco profissionais e serviços</div></div></div>
             </Button>
-            <Button type="button" onClick={() => handleGoogleLogin('professional')} disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium py-3 px-4 border border-purple-300 focus:outline-none focus:ring-2 focus:ring-[var(--neon-cyan)] transition-all duration-200 relative overflow-hidden">
-              <div className="flex items-center justify-center"><FaGoogle className="mr-3 h-4 w-4" /><div className="text-left"><div className="font-semibold">{isLogin ? "Profissional" : "Sou Profissional"}</div><div className="text-xs text-purple-200">Ofereço serviços e habilidades</div></div></div>
+            <Button type="button" onClick={() => handleGoogleLogin('professional')} disabled={loading} className="w-full text-white font-medium py-3 px-4 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #00AEEF, #0077B6)', border: '1px solid rgba(0,174,255,0.3)' }}>
+              <div className="flex items-center justify-center"><FaGoogle className="mr-3 h-4 w-4" /><div className="text-left"><div className="font-semibold">{isLogin ? "Profissional" : "Sou Profissional"}</div><div className="text-xs text-blue-200">Ofereço serviços e habilidades</div></div></div>
             </Button>
           </div>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-gray-700">
-          <p className="text-xs text-gray-400 text-center">Ao continuar, você concorda com nossos <span className="text-[var(--neon-cyan)] cursor-pointer">Termos de Uso</span> e <span className="text-[var(--neon-cyan)] cursor-pointer">Política de Privacidade</span></p>
+        <div className="mt-4 text-center">
+          <button type="button" onClick={toggleMode} style={{ background: 'none', border: 'none', color: '#91A9BD', fontSize: 13, cursor: 'pointer' }}>
+            {isLogin ? (
+              <>Não tem conta? <span style={{ color: '#00E5FF', fontWeight: 600 }}>Cadastre-se grátis</span></>
+            ) : (
+              <>Já tem conta? <span style={{ color: '#00E5FF', fontWeight: 600 }}>Entrar</span></>
+            )}
+          </button>
+        </div>
+
+        <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(0,174,255,0.15)' }}>
+          <p className="text-xs text-center" style={{ color: '#607A91' }}>Ao continuar, você concorda com nossos <span style={{ color: '#00E5FF', cursor: 'pointer' }}>Termos de Uso</span> e <span style={{ color: '#00E5FF', cursor: 'pointer' }}>Política de Privacidade</span></p>
         </div>
       </DialogContent>
 

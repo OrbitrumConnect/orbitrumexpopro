@@ -3,20 +3,13 @@ import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import Continuar from '@/components/Continuar';
-
-// PERFIL PROFISSIONAL — versão TESE (substitui o antigo modal de tokens).
-// Sem tokens, sem estrelas. Mostra: por que apareceu, placar de experiências/
-// indicações/validações, "como você chegou até ele" e especialidades — tudo do
-// banco via /api/orbitmatch/profile. Nada é fabricado (contrato visual).
-// Mantém as MESMAS props do modal antigo para não quebrar home.tsx e teams.tsx.
+import { DEMO_PROS, CONF_LABEL } from '@/data/demo-professionals';
 
 interface ProfessionalModalProps {
   isOpen: boolean;
   onClose: () => void;
   professionalId: number;
   onAddToTeam?: (professional: any) => void;
-  // Quando fornecido, "Conectar" abre a conversa INLINE (mesma tela) em vez de
-  // navegar para /conversa — honra "tudo acontece aqui, sem mudar de aba".
   onConectar?: (profId: number) => void;
 }
 
@@ -25,23 +18,6 @@ const C = {
   cyan: '#00D9FF', blue: '#00AEEF',
   border: 'rgba(0,190,255,0.22)', borderHot: 'rgba(0,220,255,0.5)',
   ink: '#EAF8FF', ink2: '#7FA9C2', ink3: '#5b7a90',
-};
-const DEMO_PROS: Record<number, { name: string; title: string; avatar: string; skills: string[]; city?: string; available?: boolean }> = {
-  1: { name: 'Carlos Silva', title: 'Pintor Residencial', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Pintura residencial', 'Pintura comercial', 'Textura'], city: 'Rio de Janeiro', available: true },
-  2: { name: 'Joao Pereira', title: 'Encanador', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b2e5c5b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Encanamento geral', 'Vazamentos', 'Esgoto'], city: 'Rio de Janeiro', available: true },
-  3: { name: 'Rafael Costa', title: 'Eletricista', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Instalacao eletrica', 'Manutencao', 'Quadro de disjuntores'], city: 'Rio de Janeiro', available: true },
-  4: { name: 'Ana Oliveira', title: 'Chaveiro', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Abertura de portas', 'Fechaduras digitais', 'Cofres'], city: 'Rio de Janeiro', available: true },
-  5: { name: 'Fernanda Santos', title: 'Baba', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Cuidar de criancas', 'Baba noturna', 'Recreacao'], city: 'Rio de Janeiro', available: true },
-  6: { name: 'Pedro Almeida', title: 'Passeador de Cachorro', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Passeio com cachorros', 'Dog walker', 'Pet sitting'], city: 'Niteroi', available: true },
-  7: { name: 'Maria Limpeza', title: 'Diarista', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Faxina residencial', 'Limpeza pos-obra', 'Organizacao'], city: 'Rio de Janeiro', available: true },
-  8: { name: 'Roberto Silva', title: 'Jardineiro', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Jardinagem', 'Poda de arvores', 'Paisagismo'], city: 'Rio de Janeiro', available: true },
-  9: { name: 'Jose Mecanico', title: 'Mecanico', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Mecanica geral', 'Troca de oleo', 'Freios'], city: 'Sao Goncalo', available: true },
-  10: { name: 'Lucas Ferreira', title: 'Desenvolvedor Mobile', avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['React Native', 'Flutter', 'Apps iOS'], city: 'Rio de Janeiro', available: true },
-};
-
-const CONF_LABEL: Record<string, string> = {
-  declarado: 'Declarado', indicado: 'Indicado',
-  validado: 'Experiência validada', verificado: 'Verificado',
 };
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
