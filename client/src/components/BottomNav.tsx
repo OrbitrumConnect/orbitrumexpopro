@@ -5,14 +5,14 @@ import { useLocation } from 'wouter';
 // Clean/elite: fundo navy, cyan só no item ativo e no botão central.
 
 const C = {
-  bg: '#00080F', border: 'rgba(0,190,255,0.16)',
+  bg: '#020914', border: 'rgba(0,190,255,0.16)',
   cyan: '#00D9FF', blue: '#00AEEF', ink2: '#7FA9C2', ink3: '#5b7a90',
 };
 
 const ITEMS: Array<[string, string, string]> = [
   ['/', '⌂', 'Início'],
+  ['/rede', '◎', 'Rede'],
   ['/mapa', '📍', 'Mapa'],
-  ['/teams', '◎', 'Equipes'],
   ['/dashboard-selector', '☰', 'Painel'],
 ];
 

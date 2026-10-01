@@ -209,36 +209,20 @@ export default function Inicio() {
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflowY: 'auto' }}>
           {([
-            ['Início', 'inicio' as const, irParaInicio],
-            ['Minha Rede', 'rede' as const, () => buscar('rede')],
-            ['Profissionais', 'profissionais' as const, () => buscar('profissionais')],
-            ['Indicações', 'indicacoes' as const, () => buscar('indicacoes')],
-          ] as Array<[string, typeof viewAtiva, () => void]>).map(([label, view, onClick]) => {
-            const active = viewAtiva === view;
+            ['Início', irParaInicio, true],
+            ['Minha Rede', () => setLocation('/rede'), false],
+          ] as Array<[string, () => void, boolean]>).map(([label, onClick, isInicio]) => {
+            const active = isInicio ? viewAtiva === 'inicio' : false;
             return (
-              <button key={label} onClick={onClick}
+              <button key={label as string} onClick={onClick as () => void}
                 style={{ textAlign: 'left', padding: '11px 14px', borderRadius: 9, border: active ? `1px solid ${C.borderHot}` : '1px solid transparent',
                   background: active ? `${C.blue}22` : 'transparent', color: active ? C.ink : '#A9C6DC', fontSize: 15, fontWeight: active ? 600 : 400, letterSpacing: 0.2, cursor: 'pointer' }}>
-                {label}
-              </button>
-            );
-          })}
-          {/* Oportunidades e Conversas — abas ativas na sidebar inline */}
-          {([
-            ['Oportunidades', 'oportunidades' as const],
-            ['Conversas', 'conversas' as const],
-          ] as Array<[string, string]>).map(([label, view]) => {
-            const active = viewAtiva === view && buscou;
-            return (
-              <button key={label} onClick={() => { setViewAtiva(view as any); setBuscou(true); setResultados([]); }}
-                style={{ textAlign: 'left', padding: '11px 14px', borderRadius: 9, border: active ? `1px solid ${C.borderHot}` : '1px solid transparent',
-                  background: active ? `${C.blue}22` : 'transparent', color: active ? C.ink : '#A9C6DC', fontSize: 15, fontWeight: active ? 600 : 400, letterSpacing: 0.2, cursor: 'pointer', width: '100%', display: 'block' }}>
-                {label}
+                {label as string}
               </button>
             );
           })}
 
-          {/* FERRAMENTAS — páginas utilitárias reais (sem regressão: nada some do app). */}
+          {/* FERRAMENTAS — páginas reais. */}
           <div style={{ fontSize: 10, color: C.ink3, letterSpacing: 1.5, margin: '14px 14px 6px' }}>FERRAMENTAS</div>
           {([
             ['Meu Painel', '/dashboard-selector'],

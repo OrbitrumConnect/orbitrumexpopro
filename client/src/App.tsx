@@ -30,6 +30,7 @@ import DocumentVerification from "@/pages/DocumentVerification";
 import ChatWindow from "@/pages/ChatWindow";
 import Inicio from "@/pages/Inicio";
 import Conversa from "@/pages/Conversa";
+import MinhaRede from "@/pages/MinhaRede";
 import MapaDisponiveis from "@/pages/MapaDisponiveis";
 import PerfilProfissional from "@/pages/PerfilProfissional";
 // import TrackingDemo from "@/pages/tracking-demo";
@@ -81,6 +82,7 @@ function AppContent() {
         <Route path="/painel" component={Inicio} />
         <Route path="/orbitmatch"><Redirect to="/" /></Route>
         <Route path="/inicio" component={Inicio} />
+        <Route path="/rede" component={MinhaRede} />
         <Route path="/conversa/:profId" component={Conversa} />
         <Route path="/perfil/:id" component={PerfilProfissional} />
         <Route path="/mapa" component={MapaDisponiveis} />
