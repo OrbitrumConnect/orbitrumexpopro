@@ -68,7 +68,7 @@ export default function AdminDashboard() {
   // Proteção para renderização apenas quando autenticado E admin (por papel).
   if (!isAuthenticated || !authUser || !ehAdmin) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#020914' }}>
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4" />
           <div className="text-white">Verificando permissões...</div>
@@ -90,9 +90,9 @@ export default function AdminDashboard() {
   if (statsError) {
     console.error('❌ AdminDashboard: Erro ao carregar dados:', statsError);
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#020914' }}>
         <div className="text-center">
-          <div className="text-red-400 mb-4">❌ Erro ao carregar dashboard</div>
+          <div className="text-red-400 mb-4">Erro ao carregar dashboard</div>
           <div className="text-white">Tente recarregar a página</div>
           <Button onClick={() => window.location.reload()} className="mt-4">
             Recarregar
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   if (statsLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#020914' }}>
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4" />
           <div className="text-white">Carregando dashboard...</div>
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
+    <div className="min-h-screen text-white flex" style={{ background: '#020914' }}>
       <Sidebar />
       <div className="flex-1 min-w-0 p-4">
       {/* Header Simplificado */}

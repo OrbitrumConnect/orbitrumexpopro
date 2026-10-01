@@ -18,11 +18,11 @@ export function GamePage() {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-black" style={{overflow: 'hidden'}}>
+    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: '#020914', overflow: 'hidden' }}>
       <StarfieldBackground />
       
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-sm border-b border-white/10">
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-white/10" style={{ background: 'rgba(2,9,20,0.8)' }}>
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <Link href="/dashboard">
             <Button variant="ghost" size="sm" className="text-cyan-400 hover:text-cyan-300">
@@ -31,7 +31,7 @@ export function GamePage() {
             </Button>
           </Link>
           
-          <h1 className="text-xl sm:text-2xl font-bold neon-text">Orbit Shooter</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-cyan-400">Orbit Shooter</h1>
           
           <div className="w-20"></div> {/* Spacer */}
         </div>
@@ -57,7 +57,7 @@ export function GamePage() {
             >
               <div className="mb-6">
                 <div className="text-6xl sm:text-8xl mb-4">🚀</div>
-                <h2 className="text-2xl sm:text-3xl font-bold neon-text mb-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-cyan-400 mb-4">
                   Orbit Shooter
                 </h2>
                 <p className="text-gray-300 text-sm sm:text-base">

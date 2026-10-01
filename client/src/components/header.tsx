@@ -64,10 +64,10 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-40 p-2 sm:p-4 transition-all duration-300" style={{ transform: 'scale(1.06)' }}>
-        <nav className="flex justify-between items-center glassmorphism rounded-full px-3 sm:px-6 py-2 sm:py-3 max-w-6xl mx-auto backdrop-blur-sm bg-black/90 sm:bg-black/95">
+        <nav className="flex justify-between items-center glassmorphism rounded-full px-3 sm:px-6 py-2 sm:py-3 max-w-6xl mx-auto backdrop-blur-sm">
           <div className="flex items-center space-x-1.5 sm:space-x-2">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--electric-blue)]" />
-            <span className="font-bold text-sm sm:text-xl neon-text">Orbitrum</span>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full" style={{ background: 'linear-gradient(to right, #00E5FF, #00AEEF)' }} />
+            <span className="font-bold text-sm sm:text-xl text-cyan-400">Orbitrum</span>
             <span className="text-[9.5px] sm:text-[10.2px] bg-blue-500 bg-opacity-30 border border-blue-400 px-1 sm:px-1.5 py-0.5 sm:py-0.5 rounded text-blue-200 font-semibold">
               BETA
             </span>
@@ -75,18 +75,18 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
           
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center space-x-3 md:space-x-6">
-            <Link href="/" className={`text-white hover:text-[var(--neon-cyan)] transition-colors flex items-center space-x-1 text-sm ${location === '/' ? 'text-[var(--neon-cyan)]' : ''}`}>
+            <Link href="/" className={`text-white hover:text-[#00E5FF] transition-colors flex items-center space-x-1 text-sm ${location === '/' ? 'text-[#00E5FF]' : ''}`}>
               <Home className="h-4 w-4" />
               <span>Orbit</span>
             </Link>
-            <Link href="/teams" className={`text-white hover:text-[var(--neon-cyan)] transition-colors flex items-center space-x-1 text-sm ${location === '/teams' ? 'text-[var(--neon-cyan)]' : ''}`}>
+            <Link href="/teams" className={`text-white hover:text-[#00E5FF] transition-colors flex items-center space-x-1 text-sm ${location === '/teams' ? 'text-[#00E5FF]' : ''}`}>
               <Users className="h-4 w-4" />
               <span>Teams</span>
             </Link>
             {isAuthenticated && (
               <Link 
                 href={`/dashboard-${authUser?.userType === 'professional' ? 'professional' : 'client'}?tab=tokens`}
-                className="text-white hover:text-[var(--neon-cyan)] transition-colors flex items-center space-x-1 text-sm"
+                className="text-white hover:text-[#00E5FF] transition-colors flex items-center space-x-1 text-sm"
               >
                 <Coins className="h-4 w-4" />
                 <span>+Tokens</span>
@@ -96,20 +96,20 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
               <Link 
                 href="/dashboard-selector" 
                 onClick={() => {}}
-                className={`text-white hover:text-[var(--neon-cyan)] transition-colors flex items-center space-x-1 text-sm ${location.startsWith('/dashboard') ? 'text-[var(--neon-cyan)]' : ''}`}
+                className={`text-white hover:text-[#00E5FF] transition-colors flex items-center space-x-1 text-sm ${location.startsWith('/dashboard') ? 'text-[#00E5FF]' : ''}`}
               >
                 <UserIcon className="h-4 w-4" />
                 <span>Dashboard</span>
               </Link>
             )}
-            <Link href="/admin" className={`text-white hover:text-[var(--neon-cyan)] transition-colors flex items-center space-x-1 text-sm ${location === '/admin' ? 'text-[var(--neon-cyan)]' : ''}`}>
+            <Link href="/admin" className={`text-white hover:text-[#00E5FF] transition-colors flex items-center space-x-1 text-sm ${location === '/admin' ? 'text-[#00E5FF]' : ''}`}>
               <Shield className="h-4 w-4" />
               <span>Admin</span>
             </Link>
             
             <button 
               onClick={() => setHowItWorksOpen(true)}
-              className="text-white hover:text-[var(--neon-cyan)] transition-colors flex items-center space-x-1 text-sm"
+              className="text-white hover:text-[#00E5FF] transition-colors flex items-center space-x-1 text-sm"
             >
               <HelpCircle className="h-4 w-4" />
               <span>Como Funciona</span>
@@ -176,7 +176,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
                   onClick={() => setWalletModalOpen(true)}
                   className="glassmorphism px-1.5 py-1 sm:px-2 md:px-3 rounded-full text-[11px] sm:text-xs hover:bg-white/10 transition-colors border border-cyan-500/30 shadow-lg"
                 >
-                  <Wallet className="h-3 w-3 sm:h-4 sm:w-4 inline mr-0.5 text-[var(--neon-cyan)]" />
+                  <Wallet className="h-3 w-3 sm:h-4 sm:w-4 inline mr-0.5 text-[#00E5FF]" />
                   <span className="hidden xs:inline text-[11px] sm:text-xs font-medium">
                     {isAdminUser(authUser) 
                       ? '10.000' // Admin com carteira administrativa
@@ -246,14 +246,14 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "-100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}
-              className="fixed top-16 right-2 left-2 max-w-xs mx-auto glassmorphism rounded-xl border border-[var(--neon-cyan)]/30 overflow-hidden scale-[0.85]"
+              className="fixed top-16 right-2 left-2 max-w-xs mx-auto glassmorphism rounded-xl border border-[#00E5FF]/30 overflow-hidden scale-[0.85]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-2 space-y-1">
                 {/* Home */}
                 <Link 
                   href="/" 
-                  className={`text-white flex items-center space-x-2 p-2 rounded-lg hover:bg-[var(--neon-cyan)]/10 transition-all duration-300 ${location === '/' ? 'bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)]' : 'hover:text-[var(--neon-cyan)]'}`}
+                  className={`text-white flex items-center space-x-2 p-2 rounded-lg hover:bg-[#00E5FF]/10 transition-all duration-300 ${location === '/' ? 'bg-[#00E5FF]/20 text-[#00E5FF]' : 'hover:text-[#00E5FF]'}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Home className="h-4 w-4" />
@@ -263,7 +263,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
                 {/* Teams */}
                 <Link 
                   href="/teams" 
-                  className={`text-white flex items-center space-x-2 p-2 rounded-lg hover:bg-[var(--neon-cyan)]/10 transition-all duration-300 ${location === '/teams' ? 'bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)]' : 'hover:text-[var(--neon-cyan)]'}`}
+                  className={`text-white flex items-center space-x-2 p-2 rounded-lg hover:bg-[#00E5FF]/10 transition-all duration-300 ${location === '/teams' ? 'bg-[#00E5FF]/20 text-[#00E5FF]' : 'hover:text-[#00E5FF]'}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Users className="h-4 w-4" />
@@ -274,7 +274,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
                 {isAuthenticated && (
                   <Link 
                     href={`/dashboard-${authUser?.userType === 'professional' ? 'professional' : 'client'}`}
-                    className={`text-white flex items-center space-x-2 p-2 rounded-lg hover:bg-[var(--neon-cyan)]/10 transition-all duration-300 ${location.includes('/dashboard') ? 'bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)]' : 'hover:text-[var(--neon-cyan)]'}`}
+                    className={`text-white flex items-center space-x-2 p-2 rounded-lg hover:bg-[#00E5FF]/10 transition-all duration-300 ${location.includes('/dashboard') ? 'bg-[#00E5FF]/20 text-[#00E5FF]' : 'hover:text-[#00E5FF]'}`}
                     onClick={() => {
                       setMobileMenuOpen(false);
                     }}
@@ -450,7 +450,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
                       setLoginModalOpen(true);
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[var(--neon-cyan)]/10 text-[var(--neon-cyan)] hover:text-white transition-all duration-300 w-full text-left"
+                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#00E5FF]/10 text-[#00E5FF] hover:text-white transition-all duration-300 w-full text-left"
                   >
                     <LogOut className="h-4 w-4" />
                     <span className="font-medium text-sm">Entrar</span>

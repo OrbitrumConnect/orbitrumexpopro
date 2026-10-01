@@ -96,7 +96,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#020914' }}>
         <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full" />
       </div>
     );
@@ -104,7 +104,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   if (error || !chatData) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#020914' }}>
         <Card className="glassmorphism border-red-500/30 max-w-md">
           <CardContent className="text-center p-6">
             <X className="w-16 h-16 text-red-500 mx-auto mb-4" />
@@ -127,9 +127,9 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const isExpired = timeRemaining === "EXPIRADO";
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: '#020914' }}>
       {/* Header */}
-      <div className="bg-gray-800/50 border-b border-gray-700 p-4">
+      <div className="border-b border-gray-700 p-4" style={{ background: 'rgba(3,18,32,0.85)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <MessageCircle className="w-6 h-6 text-cyan-400" />

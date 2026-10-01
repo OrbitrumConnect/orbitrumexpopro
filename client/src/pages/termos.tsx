@@ -4,31 +4,31 @@ import { Link } from "wouter";
 
 export default function Termos() {
   return (
-    <div className="min-h-screen bg-[var(--space-black)] text-white">
+    <div className="min-h-screen text-white" style={{ background: '#020914' }}>
       <div className="max-w-4xl mx-auto p-6 py-20">
         {/* Navigation */}
         <div className="flex items-center justify-between mb-8">
           <Link href="/">
-            <Button variant="ghost" className="glassmorphism hover:bg-opacity-30 transition-all">
+            <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 transition-all">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
           </Link>
           <Link href="/">
-            <Button variant="ghost" className="glassmorphism hover:bg-opacity-30 transition-all">
+            <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 transition-all">
               <Home className="h-4 w-4 mr-2" />
               Home
             </Button>
           </Link>
         </div>
         
-        <h1 className="text-4xl font-bold mb-8 neon-text-legal text-center">
+        <h1 className="text-4xl font-bold mb-8 text-cyan-400 text-center">
           Termos de Uso - Orbitrum Connect
         </h1>
         
         <div className="glassmorphism rounded-xl p-8 space-y-8">
           <section>
-            <h2 className="text-2xl font-semibold neon-text-legal mb-4">1. Definições Gerais</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">1. Definições Gerais</h2>
             <p className="text-gray-300 leading-relaxed">
               A <strong>Orbitrum Connect</strong> é uma plataforma digital 
               futurista que conecta clientes e profissionais através de uma interface interativa com elementos 
@@ -37,11 +37,11 @@ export default function Termos() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text-legal mb-4">2. Tipos de Usuários</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">2. Tipos de Usuários</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-cyan-500/30">
-                <h3 className="text-lg font-semibold text-[var(--neon-cyan)] mb-2">2.1 Modo Free (Visitante/Não Logado)</h3>
+                <h3 className="text-lg font-semibold text-cyan-400 mb-2">2.1 Modo Free (Visitante/Não Logado)</h3>
                 <ul className="text-gray-300 space-y-1 list-disc list-inside">
                   <li>Pode visualizar perfis profissionais em modo somente leitura</li>
                   <li>Pode clicar no cérebro neural e interagir com orbs</li>
@@ -86,7 +86,7 @@ export default function Termos() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text-legal mb-4">3. Regras de Uso</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">3. Regras de Uso</h2>
             
             <div className="space-y-4">
               <div>
@@ -112,7 +112,7 @@ export default function Termos() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text-legal mb-4">4. Sistema de Créditos Internos ("Tokens")</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">4. Sistema de Créditos Internos ("Tokens")</h2>
             
             <div className="glassmorphism rounded-lg p-4 border border-yellow-500/30 mb-4">
               <h3 className="text-lg font-semibold text-yellow-400 mb-2">⚠️ ESCLARECIMENTO IMPORTANTE</h3>
@@ -144,7 +144,7 @@ export default function Termos() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text-legal mb-4">5. Suspensão de Contas</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">5. Suspensão de Contas</h2>
             <p className="text-gray-300 leading-relaxed">
               A Orbitrum Connect reserva-se o direito de suspender, temporária ou permanentemente, 
               contas que violem estes termos de uso. Isso inclui, mas não se limita a: uso de bots, 
@@ -154,7 +154,7 @@ export default function Termos() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text-legal mb-4">6. Responsabilidades e Garantias da Plataforma</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">6. Responsabilidades e Garantias da Plataforma</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-cyan-500/30">

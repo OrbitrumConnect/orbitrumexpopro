@@ -60,11 +60,11 @@ export default function ProfessionalTracking() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex" style={{ position: 'relative', zIndex: 1 }}>
+    <div className="min-h-screen flex" style={{ background: '#020914', position: 'relative', zIndex: 1 }}>
       <Sidebar />
       <div className="flex-1 min-w-0">
       {/* Header */}
-      <div className="border-b border-gray-700/50 bg-black/20 backdrop-blur-sm">
+      <div className="border-b border-gray-700/50 backdrop-blur-sm" style={{ background: 'rgba(2,9,20,0.8)' }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">

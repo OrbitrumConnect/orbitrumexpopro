@@ -57,7 +57,7 @@ export function SearchBar({ isExpanded, onSearch, onClose, onConfirm }: SearchBa
                 </button>
               )}
               {!query && (
-                <Search className="w-4 h-4 text-[var(--neon-cyan)]" />
+                <Search className="w-4 h-4 text-[#00E5FF]" />
               )}
               {query && (
                 <button

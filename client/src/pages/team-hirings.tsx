@@ -80,7 +80,7 @@ export default function TeamHirings() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#020914' }}>
         <div className="text-center">
           <div className="animate-spin w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-cyan-400">Carregando contratações...</p>
@@ -90,7 +90,7 @@ export default function TeamHirings() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-900 p-4">
+    <div className="min-h-screen p-4" style={{ background: '#020914' }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
@@ -112,7 +112,7 @@ export default function TeamHirings() {
         </div>
 
         {teamHirings.length === 0 ? (
-          <Card className="bg-gray-800/50 border-cyan-500/30">
+          <Card className="border-cyan-500/30">
             <CardContent className="text-center py-12">
               <Users className="w-16 h-16 text-gray-500 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-300 mb-2">Nenhuma equipe contratada ainda</h3>
@@ -140,7 +140,7 @@ export default function TeamHirings() {
                 return (
                   <Card 
                     key={hiring.id}
-                    className={`bg-gray-800/50 border-cyan-500/30 cursor-pointer transition-all hover:bg-gray-800/70 ${
+                    className={`border-cyan-500/30 cursor-pointer transition-all hover:bg-gray-800/70 ${
                       selectedHiring?.id === hiring.id ? 'ring-2 ring-cyan-400' : ''
                     }`}
                     onClick={() => setSelectedHiring(hiring)}
@@ -191,7 +191,7 @@ export default function TeamHirings() {
             {/* Detalhes da Contratação Selecionada */}
             <div className="lg:sticky lg:top-4">
               {selectedHiring ? (
-                <Card className="bg-gray-800/50 border-cyan-500/30">
+                <Card className="border-cyan-500/30">
                   <CardHeader>
                     <CardTitle className="text-xl text-cyan-400 flex items-center gap-2">
                       <FileText className="w-5 h-5" />
@@ -288,7 +288,7 @@ export default function TeamHirings() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card className="bg-gray-800/50 border-cyan-500/30">
+                <Card className="border-cyan-500/30">
                   <CardContent className="text-center py-12">
                     <AlertCircle className="w-12 h-12 text-gray-500 mx-auto mb-3" />
                     <p className="text-gray-400">

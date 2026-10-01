@@ -108,7 +108,7 @@ export default function CadastroProfissional() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Seleção de Categoria */}
-          <Card className="bg-gray-900/50 border-gray-700">
+          <Card className="border-gray-700">
             <CardHeader>
               <CardTitle className="text-cyan-400">Escolha sua Categoria Profissional</CardTitle>
               <CardDescription>
@@ -147,7 +147,7 @@ export default function CadastroProfissional() {
 
           {/* Seleção de Especialidades */}
           {selectedCategory && (
-            <Card className="bg-gray-900/50 border-gray-700">
+            <Card className="border-gray-700">
               <CardHeader>
                 <CardTitle className="text-cyan-400">Suas Especialidades</CardTitle>
                 <CardDescription>
@@ -179,7 +179,7 @@ export default function CadastroProfissional() {
           )}
 
           {/* Dados Pessoais */}
-          <Card className="bg-gray-900/50 border-gray-700">
+          <Card className="border-gray-700">
             <CardHeader>
               <CardTitle className="text-cyan-400">Dados Pessoais</CardTitle>
               <CardDescription>

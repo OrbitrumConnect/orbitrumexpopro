@@ -4,31 +4,31 @@ import { Link } from "wouter";
 
 export default function Regras() {
   return (
-    <div className="min-h-screen bg-[var(--space-black)] text-white">
+    <div className="min-h-screen text-white" style={{ background: '#020914' }}>
       <div className="max-w-4xl mx-auto p-6 py-20">
         {/* Navigation */}
         <div className="flex items-center justify-between mb-8">
           <Link href="/">
-            <Button variant="ghost" className="glassmorphism hover:bg-opacity-30 transition-all">
+            <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 transition-all">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
           </Link>
           <Link href="/">
-            <Button variant="ghost" className="glassmorphism hover:bg-opacity-30 transition-all">
+            <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 transition-all">
               <Home className="h-4 w-4 mr-2" />
               Home
             </Button>
           </Link>
         </div>
 
-        <h1 className="text-4xl font-bold mb-8 neon-text text-center">
+        <h1 className="text-4xl font-bold mb-8 text-cyan-400 text-center">
           Regras da Plataforma - Orbitrum Connect
         </h1>
         
         <div className="glassmorphism rounded-xl p-8 space-y-8">
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">1. Sistema de Gamificação e Tokens</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">1. Sistema de Gamificação e Tokens</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-red-500/30 bg-red-900/20">
@@ -42,7 +42,7 @@ export default function Regras() {
               </div>
 
               <div className="glassmorphism rounded-lg p-4 border border-cyan-500/30">
-                <h3 className="text-lg font-semibold text-[var(--neon-cyan)] mb-2">1.1 Como Funcionam os Tokens</h3>
+                <h3 className="text-lg font-semibold text-cyan-400 mb-2">1.1 Como Funcionam os Tokens</h3>
                 <ul className="text-gray-300 space-y-1 list-disc list-inside">
                   <li>Tokens são moeda virtual para uso exclusivo na plataforma</li>
                   <li>Obtidos através de atividades gamificadas e planos de assinatura</li>
@@ -90,7 +90,7 @@ export default function Regras() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">2. Regras de Saque e Monetização</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">2. Regras de Saque e Monetização</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-purple-500/30">
@@ -121,7 +121,7 @@ export default function Regras() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">3. Proibições e Penalidades</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">3. Proibições e Penalidades</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-red-600/50">
@@ -150,7 +150,7 @@ export default function Regras() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">4. Direitos e Deveres dos Profissionais</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">4. Direitos e Deveres dos Profissionais</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-blue-500/30">
@@ -190,7 +190,7 @@ export default function Regras() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">5. Comunicação e Comportamento</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">5. Comunicação e Comportamento</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-green-500/30">
@@ -218,11 +218,11 @@ export default function Regras() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">6. Mecânicas de Jogo</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">6. Mecânicas de Jogo</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-cyan-500/30">
-                <h3 className="text-lg font-semibold text-[var(--neon-cyan)] mb-2">6.1 Regras do Orbit Shooter</h3>
+                <h3 className="text-lg font-semibold text-cyan-400 mb-2">6.1 Regras do Orbit Shooter</h3>
                 <ul className="text-gray-300 space-y-1 list-disc list-inside">
                   <li><strong>Restrição de acesso:</strong> Sistema de tokens válido apenas para planos pagos</li>
                   <li>Custo: 250 tokens consumidos ao entrar no jogo</li>
@@ -268,7 +268,7 @@ export default function Regras() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">7. Responsabilidades da Plataforma</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">7. Responsabilidades da Plataforma</h2>
             
             <div className="space-y-4">
               <div className="glassmorphism rounded-lg p-4 border border-blue-500/30">
@@ -296,7 +296,7 @@ export default function Regras() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">8. Atualizações das Regras</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">8. Atualizações das Regras</h2>
             <div className="glassmorphism rounded-lg p-4 border border-cyan-500/30">
               <p className="text-gray-300 mb-4">
                 Estas regras podem ser atualizadas para melhorar a experiência da plataforma 
@@ -312,7 +312,7 @@ export default function Regras() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold neon-text mb-4">9. Suporte e Dúvidas</h2>
+            <h2 className="text-2xl font-semibold text-cyan-400 mb-4">9. Suporte e Dúvidas</h2>
             <div className="glassmorphism rounded-lg p-4 border border-green-500/30">
               <p className="text-gray-300 mb-4">
                 Para dúvidas sobre estas regras ou questões relacionadas ao uso da plataforma:

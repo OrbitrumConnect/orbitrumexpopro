@@ -390,7 +390,7 @@ export default function Cadastro() {
         {step === 'type' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 max-w-2xl mx-auto">
             <Card
-              className="cursor-pointer transition-all duration-300 hover:scale-105 bg-gray-900/50 border-gray-700 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/20"
+              className="cursor-pointer transition-all duration-300 hover:scale-105 border-gray-700 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/20"
               onClick={() => handleUserTypeSelect('user')}
             >
               <CardContent className="p-4 sm:p-8 text-center">
@@ -409,7 +409,7 @@ export default function Cadastro() {
             </Card>
 
             <Card
-              className="cursor-pointer transition-all duration-300 hover:scale-105 bg-gray-900/50 border-gray-700 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/20"
+              className="cursor-pointer transition-all duration-300 hover:scale-105 border-gray-700 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/20"
               onClick={() => handleUserTypeSelect('professional')}
             >
               <CardContent className="p-4 sm:p-8 text-center">
@@ -431,7 +431,7 @@ export default function Cadastro() {
 
         {/* Etapa 2: Formulário de dados */}
         {step === 'form' && (
-          <Card className="bg-gray-900/50 border-gray-700 max-w-2xl mx-auto">
+          <Card className="border-gray-700 max-w-2xl mx-auto">
             <CardHeader className="pb-3 sm:pb-6">
               <CardTitle className="text-cyan-400 text-lg sm:text-xl">
                 {formData.tipo === 'user' ? 'Dados Pessoais' : 'Dados Profissionais'}
@@ -597,7 +597,7 @@ export default function Cadastro() {
                         <SelectTrigger className="bg-gray-800 border-gray-600 border-2 hover:border-cyan-400 transition-all">
                           <SelectValue placeholder="🎯 Selecione sua área principal" />
                         </SelectTrigger>
-                        <SelectContent className="bg-gray-900/95 border-gray-600 backdrop-blur-sm">
+                        <SelectContent className="bg-[#020914]/95 border-gray-600 backdrop-blur-sm">
                           {Object.entries(categorySpecialties).map(([key, category]) => (
                             <SelectItem 
                               key={key} 
@@ -618,7 +618,7 @@ export default function Cadastro() {
                           <SelectTrigger className="bg-gray-800 border-gray-600 border-2 hover:border-cyan-400 transition-all">
                             <SelectValue placeholder="⭐ Escolha sua especialidade" />
                           </SelectTrigger>
-                          <SelectContent className="bg-gray-900/95 border-gray-600 backdrop-blur-sm max-h-60">
+                          <SelectContent className="bg-[#020914]/95 border-gray-600 backdrop-blur-sm max-h-60">
                             {categorySpecialties[selectedCategory as keyof typeof categorySpecialties]?.specialties.map((specialty) => (
                               <SelectItem 
                                 key={specialty} 
@@ -749,7 +749,7 @@ export default function Cadastro() {
 
         {/* Etapa 3: Upload de documentos */}
         {step === 'documents' && (
-          <Card className="bg-gray-900/50 border-gray-700 max-w-2xl mx-auto">
+          <Card className="border-gray-700 max-w-2xl mx-auto">
             <CardHeader className="pb-3 sm:pb-6">
               <CardTitle className="text-cyan-400 flex items-center text-lg sm:text-xl">
                 <Shield className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />

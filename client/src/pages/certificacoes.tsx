@@ -4,18 +4,18 @@ import { Link } from "wouter";
 
 export default function Certificacoes() {
   return (
-    <div className="min-h-screen bg-[var(--space-black)] text-white">
+    <div className="min-h-screen text-white" style={{ background: '#020914' }}>
       <div className="max-w-4xl mx-auto p-6 py-20">
         {/* Navigation */}
         <div className="flex items-center justify-between mb-8">
           <Link href="/">
-            <Button variant="ghost" className="glassmorphism hover:bg-opacity-30 transition-all">
+            <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 transition-all">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
           </Link>
           <Link href="/">
-            <Button variant="ghost" className="glassmorphism hover:bg-opacity-30 transition-all">
+            <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 transition-all">
               <Home className="h-4 w-4 mr-2" />
               Home
             </Button>
@@ -32,11 +32,11 @@ export default function Certificacoes() {
           {/* Conformidade Legal */}
           <section>
             <div className="flex items-center mb-4">
-              <Scale className="h-6 w-6 mr-3 text-[var(--neon-cyan)]" />
-              <h2 className="text-2xl font-semibold neon-text-legal">1. Conformidade com a Legislação Brasileira</h2>
+              <Scale className="h-6 w-6 mr-3 text-cyan-400" />
+              <h2 className="text-2xl font-semibold text-cyan-400">1. Conformidade com a Legislação Brasileira</h2>
             </div>
             <div className="glassmorphism rounded-lg p-6 border border-cyan-500/30">
-              <h3 className="text-lg font-semibold text-[var(--neon-cyan)] mb-3">Lei Geral de Proteção de Dados (LGPD)</h3>
+              <h3 className="text-lg font-semibold text-cyan-400 mb-3">Lei Geral de Proteção de Dados (LGPD)</h3>
               <ul className="text-gray-300 space-y-2 list-disc list-inside">
                 <li><strong>Lei nº 13.709/2018:</strong> Cumprimento integral das diretrizes de proteção de dados pessoais</li>
                 <li><strong>Consentimento Expresso:</strong> Coleta de dados apenas com autorização prévia do usuário</li>
@@ -50,7 +50,7 @@ export default function Certificacoes() {
           <section>
             <div className="flex items-center mb-4">
               <Award className="h-6 w-6 mr-3 text-yellow-400" />
-              <h2 className="text-2xl font-semibold neon-text-legal">2. Certificações Profissionais Obrigatórias</h2>
+              <h2 className="text-2xl font-semibold text-cyan-400">2. Certificações Profissionais Obrigatórias</h2>
             </div>
             
             <div className="space-y-4">
@@ -90,7 +90,7 @@ export default function Certificacoes() {
           <section>
             <div className="flex items-center mb-4">
               <FileCheck className="h-6 w-6 mr-3 text-blue-400" />
-              <h2 className="text-2xl font-semibold neon-text-legal">3. Documentação Obrigatória para Profissionais</h2>
+              <h2 className="text-2xl font-semibold text-cyan-400">3. Documentação Obrigatória para Profissionais</h2>
             </div>
             
             <div className="glassmorphism rounded-lg p-6 border border-blue-500/30">
@@ -122,7 +122,7 @@ export default function Certificacoes() {
           <section>
             <div className="flex items-center mb-4">
               <Shield className="h-6 w-6 mr-3 text-red-400" />
-              <h2 className="text-2xl font-semibold neon-text-legal">4. Responsabilidades da Orbitrum Connect</h2>
+              <h2 className="text-2xl font-semibold text-cyan-400">4. Responsabilidades da Orbitrum Connect</h2>
             </div>
             
             <div className="glassmorphism rounded-lg p-6 border border-red-500/30">
@@ -148,7 +148,7 @@ export default function Certificacoes() {
           {/* Contato para Dúvidas */}
           <section>
             <div className="glassmorphism rounded-lg p-6 border border-cyan-500/30 text-center">
-              <h3 className="text-lg font-semibold text-[var(--neon-cyan)] mb-3">Dúvidas sobre Certificações?</h3>
+              <h3 className="text-lg font-semibold text-cyan-400 mb-3">Dúvidas sobre Certificações?</h3>
               <p className="text-gray-300 mb-4">
                 Entre em contato conosco para esclarecimentos sobre documentação e certificações necessárias.
               </p>
