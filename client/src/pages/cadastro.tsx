@@ -45,7 +45,6 @@ export default function Cadastro() {
     const source = urlParams.get('source');
     
     if (refCode) {
-      console.log(`🔗 Link de referral detectado: ${refCode} (bonus: ${bonusType}, source: ${source})`);
       
       // Validar o código de referral
       fetch(`/api/referral/validate/${refCode}`)
@@ -248,8 +247,6 @@ export default function Cadastro() {
         return;
       }
 
-      console.log('Dados para cadastro:', formData, 'Referral:', referralInfo);
-
       // Se tem referral, usar sistema de referral
       if (referralInfo && referralInfo.code) {
         const response = await fetch('/api/referral/signup', {
@@ -276,7 +273,6 @@ export default function Cadastro() {
           
           // Se criou código próprio, mostrar
           if (result.referralCode) {
-            console.log(`✅ Novo código de referral criado: ${result.referralCode}`);
           }
         } else {
           toast({

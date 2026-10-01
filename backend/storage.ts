@@ -821,23 +821,18 @@ export class DatabaseStorage implements IStorage {
 
   // Payment operations
   async createPayment(paymentData: any): Promise<any> {
-    console.log("DatabaseStorage.createPayment:", paymentData);
-    // Store in memory for now since we don't have payments table in schema yet
     return paymentData;
   }
 
   async getPaymentByTransaction(transactionId: string): Promise<any> {
-    console.log("DatabaseStorage.getPaymentByTransaction:", transactionId);
     return null;
   }
 
   async updatePaymentStatus(transactionId: string, status: string): Promise<any> {
-    console.log("DatabaseStorage.updatePaymentStatus:", transactionId, status);
     return null;
   }
 
   async getUserPayments(userId: string): Promise<any[]> {
-    console.log("DatabaseStorage.getUserPayments:", userId);
     return [];
   }
 

@@ -262,7 +262,7 @@ export default function Inicio() {
       </aside>
 
       {/* CONTEÚDO */}
-      <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: mobile ? 60 : 0 }}>
         {/* header */}
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '10px 10px 10px 52px' : '16px 24px', borderBottom: `1px solid ${C.border}`, gap: 10, flexWrap: mobile ? 'nowrap' : 'nowrap' }}>
           {!mobile && (
@@ -290,7 +290,7 @@ export default function Inicio() {
           </div>
         </header>
 
-        <div style={{ display: 'flex', gap: 20, padding: 24, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 20, padding: mobile ? '12px 8px' : 24, flexWrap: 'wrap' }}>
           {/* coluna principal */}
           <main style={{ flex: '1 1 440px', minWidth: 0 }}>
             {!mobile && (
@@ -324,8 +324,8 @@ export default function Inicio() {
             </div>
             {/* MIOLO ORBITAL — o sistema orbit ORIGINAL (profissionais orbitando + busca).
                 NÃO remover. Clicar num profissional abre o perfil-tese. */}
-            <div style={{ position: 'relative', overflow: 'hidden', ...(mobile ? { height: 'clamp(280px, 55vh, 420px)' } : { height: 'clamp(340px, 48vh, 480px)' }) }}>
-              <div style={{ transform: 'scale(0.85)', transformOrigin: 'center top', width: '100%', position: 'absolute', top: mobile ? '-12vh' : '-16vh', left: 0 }}>
+            <div style={{ position: 'relative', overflow: 'hidden', ...(mobile ? { height: 'clamp(280px, 55vh, 420px)', margin: '0 -8px', width: 'calc(100% + 16px)' } : { height: 'clamp(340px, 48vh, 480px)' }) }}>
+              <div style={{ transform: mobile ? 'scale(0.95)' : 'scale(0.85)', transformOrigin: 'center top', width: '100%', position: 'absolute', top: mobile ? '-8vh' : '-16vh', left: 0 }}>
                 <OrbitSystem onOpenProfessional={(id: number) => setProfModalId(id)} onOpenLogin={() => {}} />
               </div>
             </div>

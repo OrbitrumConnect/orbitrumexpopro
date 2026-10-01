@@ -40,12 +40,14 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { LoginModal } from "@/components/login-modal";
 import { TelegramThemeProvider } from "@/components/telegram-integration";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
+import BottomNav from "@/components/BottomNav";
 // import EmergencyFix from "@/pages/emergency-fix";
 import { useState, useEffect } from "react";
 
 function AppContent() {
   const [showWelcome, setShowWelcome] = useState(false);
   const { isAuthenticated } = useAuth();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   useEffect(() => {
     // Modal aparece sempre que usuário NÃO estiver logado (toda visita)
@@ -110,6 +112,7 @@ function AppContent() {
           <Inicio />
         </Route>
       </Switch>
+      {isMobile && <BottomNav />}
       </TooltipProvider>
     </TelegramThemeProvider>
   );

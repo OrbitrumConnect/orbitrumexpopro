@@ -19,7 +19,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false, // Desabilitar sourcemap para produção
-    minify: 'terser', // Usar terser para melhor minificação
+    minify: 'terser',
+    terserOptions: {
+      compress: { drop_console: true, drop_debugger: true },
+    },
     rollupOptions: {
       external: ['@rollup/rollup-linux-x64-gnu'],
       output: {

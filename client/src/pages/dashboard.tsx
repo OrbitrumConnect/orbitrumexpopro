@@ -11,13 +11,9 @@ export default function Dashboard() {
     if (user) {
       // Admin master vai diretamente para dashboard admin
       if (isAdminUser(user)) {
-        console.log('🚀 ADMIN MASTER - Redirecionando diretamente para /admin');
         setLocation('/admin');
         return;
       }
-      
-      // Outros usuários vão para seletor
-      console.log('🚀 REDIRECIONANDO para seletor de dashboard');
       setLocation('/dashboard-selector');
     }
   }, [setLocation, user]);

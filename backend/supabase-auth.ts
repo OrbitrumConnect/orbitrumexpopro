@@ -233,9 +233,6 @@ export async function loginWithGoogle(): Promise<{ success: boolean; url?: strin
       return { success: false, message: "Supabase não configurado" };
     }
 
-    console.log('🚀 Iniciando OAuth Google com Supabase...');
-    console.log('🎯 Redirect URL:', getBaseUrl() + '/auth/callback');
-
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

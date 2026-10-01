@@ -20,16 +20,6 @@ export const VERCEL_ENV = {
   }
 };
 
-// Log para debug no Vercel
-if (VERCEL_ENV.IS_VERCEL) {
-  console.log('🚀 Vercel Environment:', {
-    isVercel: VERCEL_ENV.IS_VERCEL,
-    isProduction: VERCEL_ENV.IS_PRODUCTION,
-    supabaseUrl: VERCEL_ENV.SUPABASE_URL,
-    useRealData: VERCEL_ENV.DATA_CONFIG.USE_REAL_DATA,
-    totalRevenue: VERCEL_ENV.DATA_CONFIG.TOTAL_REVENUE
-  });
-}
 
 // Função para verificar se deve usar dados reais
 export const shouldUseRealData = (): boolean => {

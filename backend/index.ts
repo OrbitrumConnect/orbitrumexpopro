@@ -185,10 +185,6 @@ export const ready = (async () => {
       reusePort: true,
     }, async () => {
       log(`serving on port ${port}`);
-      console.log(`🌐 Servidor ativo em: http://0.0.0.0:${port}`);
-      console.log(`🌐 Domínio customizado: www.orbitrum.com.br`);
-      console.log(`🌐 Replit URL: ${process.env.REPLIT_DOMAINS}`);
-      console.log('✅ SERVIDOR INICIALIZADO - OAuth Google pronto para teste!');
       startHealthMonitoring();
     });
   }

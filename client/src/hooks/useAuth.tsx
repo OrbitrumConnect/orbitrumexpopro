@@ -63,7 +63,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser(authData.user);
             setIsAuthenticated(true);
             setShowLoginModal(false);
-            console.log(`🔐 Sessão restaurada: ${authData.rememberMe ? '30 dias' : '24 horas'}`);
             // Re-enriquece a sessão salva com o perfil do banco (papel/admin/id real).
             enriquecerComPerfil(authData.user).then(u => {
               if (u !== authData.user) {
@@ -75,12 +74,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             });
             return;
           } else {
-            console.log('🕒 Sessão expirada, removendo...');
             localStorage.removeItem("orbtrum_auth");
           }
         }
       } catch (error) {
-        console.log('Erro ao recuperar sessão:', error);
       }
     }
     

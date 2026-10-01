@@ -79,12 +79,6 @@ export default function CadastroProfissional() {
       return;
     }
 
-    // Aqui você implementaria o envio para o backend
-    console.log('Dados do profissional:', {
-      ...formData,
-      categoryId: selectedCategory.id,
-      services: selectedSkills,
-    });
 
     toast({
       title: "Cadastro enviado!",

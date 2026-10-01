@@ -4,8 +4,6 @@ import { ClientDashboard } from "@/components/dashboard/client-dashboard";
 export default function ClientDashboardPage() {
   const { user, isAuthenticated } = useAuth();
   
-  console.log('🚀 DASHBOARD CLIENT PAGE - Auth:', isAuthenticated, 'User:', user?.username);
-
   // Use dados diretos do auth do Supabase se autenticado
   const displayUser = isAuthenticated && user ? {
     id: user.id,
@@ -22,8 +20,6 @@ export default function ClientDashboardPage() {
     tokens: 3000,
     plan: "pro"
   };
-
-  console.log('🚀 CLIENT DASHBOARD - User:', displayUser.username);
 
   return <ClientDashboard user={displayUser} />;
 }

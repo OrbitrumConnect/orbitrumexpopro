@@ -307,10 +307,6 @@ export function setupAuthRoutes(app: Express) {
     try {
       const { userType = 'client' } = req.body;
       
-      console.log('🔍 Iniciando Google OAuth para tipo:', userType);
-      console.log('🔑 GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Configurado' : 'NÃO CONFIGURADO');
-      console.log('🔑 GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'Configurado' : 'NÃO CONFIGURADO');
-      console.log('🌐 Base URL:', getBaseUrl());
       
       // Salvar o tipo de usuário na sessão para usar no callback
       if (req.session) {

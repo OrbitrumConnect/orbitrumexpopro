@@ -33,7 +33,5 @@ export default function ProfessionalDashboardPage() {
     plan: "pro"
   };
 
-  console.log('🚀 PROFESSIONAL DASHBOARD - User:', displayUser.username);
-
   return <ProfessionalDashboard user={displayUser} />;
 }

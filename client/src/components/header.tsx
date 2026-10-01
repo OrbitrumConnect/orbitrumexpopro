@@ -95,7 +95,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
             {isAuthenticated && (
               <Link 
                 href="/dashboard-selector" 
-                onClick={() => console.log('🚀 CLIQUE DASHBOARD - Navegando para /dashboard-selector')}
+                onClick={() => {}}
                 className={`text-white hover:text-[var(--neon-cyan)] transition-colors flex items-center space-x-1 text-sm ${location.startsWith('/dashboard') ? 'text-[var(--neon-cyan)]' : ''}`}
               >
                 <UserIcon className="h-4 w-4" />
@@ -276,7 +276,6 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
                     href={`/dashboard-${authUser?.userType === 'professional' ? 'professional' : 'client'}`}
                     className={`text-white flex items-center space-x-2 p-2 rounded-lg hover:bg-[var(--neon-cyan)]/10 transition-all duration-300 ${location.includes('/dashboard') ? 'bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)]' : 'hover:text-[var(--neon-cyan)]'}`}
                     onClick={() => {
-                      console.log('🚀 CLIQUE DASHBOARD MOBILE - Navegando para dashboard');
                       setMobileMenuOpen(false);
                     }}
                   >
@@ -474,8 +473,7 @@ export function Header({ onOpenGame, onOpenPlans }: HeaderProps) {
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
         onSuccess={(userData, rememberMe = false) => {
-          console.log('✅ Login success, user data:', userData);
-          login(userData, rememberMe); // Usar login do AuthContext com opção "lembrar"
+          login(userData, rememberMe);
           setLoginModalOpen(false);
         }}
       />

@@ -1642,8 +1642,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Endpoint para carteira do usuário logado (identificação automática por email) - Com criação automática
   app.get("/api/wallet/user", async (req, res) => {
-    console.log(`🔥 ENDPOINT WALLET CHAMADO: ${req.url}`);
-    console.log(`🔥 HEADERS:`, req.headers);
     try {
       // Usar email do usuário da sessão atual via header
       const userEmail = req.headers['user-email'] as string;

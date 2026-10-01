@@ -51,9 +51,9 @@ async function queryKeyToData(keyString: string): Promise<any> {
     return { dailyMessages: 10, remaining: 10, canUse: true };
   }
 
-  // Endpoints ainda não mapeados: retornar vazio para não quebrar UI
+  // Endpoints ainda não mapeados: retornar lista vazia para não quebrar .map() na UI
   if (keyString.startsWith("/api/")) {
-    return null;
+    return [];
   }
 
   // Fallback para a estratégia antiga (fetch direto da URL da key)
