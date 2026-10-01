@@ -33,7 +33,6 @@ export class DashboardWebSocket {
         for (const [serviceId, tracking] of this.activeTracking.entries()) {
           if (tracking.ws === ws) {
             this.activeTracking.delete(serviceId);
-            console.log(`🛑 Rastreamento auto-finalizado para serviço ${serviceId}`);
           }
         }
         // console.log('🔌 Conexão WebSocket fechada'); // Silenciado
@@ -71,8 +70,6 @@ export class DashboardWebSocket {
           lastUpdate: Date.now(),
           ws: ws
         });
-        console.log(`🚗 Rastreamento iniciado para serviço ${message.serviceId}`);
-        
         // Confirmar início do rastreamento
         ws.send(JSON.stringify({
           type: 'tracking_started',
@@ -84,7 +81,6 @@ export class DashboardWebSocket {
       case 'tracking_stop':
         // Parar rastreamento
         this.activeTracking.delete(message.serviceId);
-        console.log(`🛑 Rastreamento finalizado para serviço ${message.serviceId}`);
         break;
         
       case 'position_update':

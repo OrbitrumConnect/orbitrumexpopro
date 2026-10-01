@@ -59,14 +59,10 @@ class AutoSyncPayments {
    * Garante que TODOS os pagamentos detectados estejam refletidos no sistema
    */
   async performAutoSync(): Promise<void> {
-    console.log('🔄 INICIANDO SINCRONIZAÇÃO AUTOMÁTICA DE PAGAMENTOS...');
-    
     for (const payment of this.detectedPayments) {
       await this.ensurePaymentProcessed(payment);
     }
     
-    console.log('✅ SINCRONIZAÇÃO AUTOMÁTICA COMPLETA');
-    console.log(`💰 Total processado: R$ ${this.getTotalRevenue().toFixed(2)}`);
   }
 
   /**
@@ -78,16 +74,12 @@ class AutoSyncPayments {
       const user = await storage.getUserByEmail(payment.email);
       
       if (!user) {
-        console.log(`⚠️ Usuário não encontrado: ${payment.email} - criando...`);
         // Usuário será criado automaticamente pelo sistema de detecção
         return;
       }
 
       // Verificar se os tokens estão corretos
       if (user.tokensComprados !== payment.tokens) {
-        console.log(`🔧 CORRIGINDO tokens para ${payment.email}:`);
-        console.log(`   Atual: ${user.tokensComprados} → Correto: ${payment.tokens}`);
-        
         // Atualizar tokens do usuário
         user.tokens = payment.tokens;
         user.tokensComprados = payment.tokens;
@@ -99,9 +91,6 @@ class AutoSyncPayments {
           canMakePurchases: true
         });
         
-        console.log(`✅ Tokens sincronizados para ${payment.email}: ${payment.tokens}`);
-      } else {
-        console.log(`✅ ${payment.email} já sincronizado: ${payment.tokens} tokens`);
       }
       
     } catch (error) {
@@ -130,8 +119,6 @@ class AutoSyncPayments {
     
     if (!exists) {
       this.detectedPayments.push(newPayment);
-      console.log(`🆕 NOVO PAGAMENTO DETECTADO: ${email} - R$ ${(amount/100).toFixed(2)} (${tokens} tokens)`);
-      
       // Processar imediatamente
       await this.ensurePaymentProcessed(newPayment);
       newPayment.processed = true;
@@ -178,8 +165,6 @@ export const autoSyncPayments = AutoSyncPayments.getInstance();
  * Chama automaticamente na inicialização do servidor
  */
 export async function initializeAutoSync(): Promise<void> {
-  console.log('🚀 INICIALIZANDO SISTEMA DE SINCRONIZAÇÃO AUTOMÁTICA...');
-  
   // Sincronizar imediatamente
   await autoSyncPayments.performAutoSync();
   
@@ -188,5 +173,4 @@ export async function initializeAutoSync(): Promise<void> {
     await autoSyncPayments.performAutoSync();
   }, 5 * 60 * 1000); // 5 minutos
   
-  console.log('✅ SISTEMA DE SINCRONIZAÇÃO AUTOMÁTICA ATIVO');
 }

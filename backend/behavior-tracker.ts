@@ -33,7 +33,6 @@ class BehaviorTracker {
     // Analisar padrões em tempo real
     this.analyzePatterns(userId, event, data);
     
-    console.log(`📊 [BEHAVIOR] User ${userId} - ${event}:`, data);
   }
 
   // Análise inteligente de padrões

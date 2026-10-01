@@ -33,7 +33,6 @@ export function setupMissingEndpoints(app: Express) {
   // Analytics behavior advanced endpoint
   app.post("/api/analytics/behavior-advanced", async (req, res) => {
     const { event, category, properties } = req.body;
-    console.log(`📊 Analytics: ${event} - ${category}`, properties);
     res.json({ success: true, tracked: true });
   });
 
@@ -46,5 +45,4 @@ export function setupMissingEndpoints(app: Express) {
     res.json([]);
   });
 
-  console.log('✅ Missing endpoints configurados com sucesso');
 }

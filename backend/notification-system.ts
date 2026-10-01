@@ -49,7 +49,6 @@ class NotificationSystem extends EventEmitter {
     // Emitir evento para WebSocket
     this.emit('userNotification', { userId, notification });
     
-    console.log(`📧 Notificação criada para usuário ${userId}: ${title}`);
     return notification;
   }
 
@@ -81,7 +80,6 @@ class NotificationSystem extends EventEmitter {
     // Emitir evento para WebSocket
     this.emit('globalNotification', { notification });
     
-    console.log(`📢 Notificação global criada: ${title}`);
     return notification;
   }
 
@@ -217,7 +215,6 @@ class NotificationSystem extends EventEmitter {
     cleaned += beforeGlobal - this.globalNotifications.length;
 
     if (cleaned > 0) {
-      console.log(`🧹 Limpeza automática: ${cleaned} notificações antigas removidas`);
     }
 
     return cleaned;

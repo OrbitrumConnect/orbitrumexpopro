@@ -22,8 +22,6 @@ class PlanExpirySystem {
   }
 
   initialize() {
-    console.log('🚀 Inicializando sistema de expiração de planos... (Horário de Brasília)');
-    
     // Cron job para verificar expirações todos os dias ao meio-dia (12:00)
     cron.schedule('0 12 * * *', () => {
       this.checkPlanExpiries();
@@ -38,8 +36,6 @@ class PlanExpirySystem {
   private async checkPlanExpiries() {
     try {
       const now = moment().tz('America/Sao_Paulo');
-      console.log(`🔍 Verificando expirações de planos - ${now.format('DD/MM/YYYY HH:mm:ss')}`);
-
       // Buscar todos os usuários com planos ativos
       const users = await storage.getAllUsers();
       
@@ -96,13 +92,10 @@ class PlanExpirySystem {
       expiresAt: moment().add(10, 'seconds').toDate() // Expira em 10 segundos
     });
 
-    console.log(`⚠️ Notificação enviada para ${user.username}: Plano ${user.plan} expira em ${daysRemaining} dias`);
   }
 
   private async expirePlan(user: any) {
     try {
-      console.log(`⏰ Expirando plano ${user.plan} do usuário ${user.username}`);
-      
       // Atualizar usuário para plano free
       await storage.updateUserPlan(user.id, {
         plan: 'free',
@@ -120,7 +113,6 @@ class PlanExpirySystem {
         expiresAt: moment().add(1, 'day').toDate() // Expira em 1 dia
       });
 
-      console.log(`✅ Plano ${user.plan} expirado para ${user.username} - movido para FREE`);
     } catch (error) {
       console.error('❌ Erro ao expirar plano:', error);
     }
@@ -137,8 +129,6 @@ class PlanExpirySystem {
       planExpiryDate: expiryDate.toDate()
     });
 
-    console.log(`✅ Plano ${planId} ativado para usuário ${userId} - expira em ${expiryDate.format('DD/MM/YYYY HH:mm:ss')}`);
-    
     return {
       plan: planId,
       activatedAt: now.toDate(),

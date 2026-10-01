@@ -33,49 +33,45 @@ export function setupAuthRoutes(app: Express) {
   // Inicializar Supabase se as keys estiverem disponíveis
   if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
   supabase = initializeSupabase(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-    console.log('🔐 Supabase Auth inicializado');
   } else {
-    console.log('⚠️ Supabase Auth não configurado - usando autenticação local');
   }
 
   // Registro via Supabase Auth
   app.post('/api/auth/register', async (req, res) => {
     try {
       // Mapear campos do frontend corretamente
-      const { 
-        email, 
-        password, 
-        username, 
-        fullName, 
+      const {
+        email,
+        password,
+        username,
+        fullName,
         phone,
         // Campos alternativos para compatibilidade
-        nomeCompleto, 
-        senha, 
-        telefone, 
-        cpf, 
-        tipo 
+        nomeCompleto,
+        senha,
+        telefone,
+        cpf,
+        tipo
       } = req.body;
-      
+
       // Usar campos corretos com fallback
       const finalEmail = email;
       const finalPassword = password || senha;
       const finalFullName = fullName || nomeCompleto || username;
       const finalPhone = phone || telefone;
-      
-      console.log('📝 Tentativa de cadastro via Supabase:', { finalFullName, finalEmail, finalPassword: '***' });
-      
+
       if (!finalEmail || !finalPassword || !finalFullName) {
         return res.status(400).json({
           success: false,
           message: "Email, senha e nome são obrigatórios"
         });
       }
-      
+
       // Gerar username único baseado no nome
       const baseUsername = (username || finalFullName).toLowerCase().replace(/\s+/g, '_').substring(0, 20);
       let finalUsername = baseUsername;
       let counter = 1;
-      
+
       while (await storage.getUserByUsername(finalUsername)) {
         finalUsername = `${baseUsername}_${counter}`;
         counter++;
@@ -91,11 +87,9 @@ export function setupAuthRoutes(app: Express) {
       );
 
       if (result.success) {
-        console.log('✅ Usuário registrado no Supabase:', { email, requiresVerification: result.requiresVerification });
-        
         res.status(201).json({
           success: true,
-          message: result.requiresVerification 
+          message: result.requiresVerification
             ? "Cadastro realizado! Verifique seu email para confirmar a conta."
             : "Conta criada com sucesso!",
           requiresVerification: result.requiresVerification,
@@ -107,7 +101,6 @@ export function setupAuthRoutes(app: Express) {
           } : undefined
         });
       } else {
-        console.log('❌ Erro no registro Supabase:', result.message);
         res.status(400).json({
           success: false,
           message: result.message
@@ -127,25 +120,21 @@ export function setupAuthRoutes(app: Express) {
   app.get('/api/auth/verify', async (req, res) => {
     try {
       const { token, type } = req.query;
-      
-      console.log('🔐 Tentativa de verificação de email:', { token: token?.toString().substring(0, 20), type });
-      
+
       if (!token) {
         return res.redirect('/?error=token_missing');
       }
 
       // Usar a função verifyEmail do Supabase
       const result = await verifyEmail(token.toString());
-      
+
       if (result.success) {
-        console.log('✅ Email verificado com sucesso:', { email: result.user?.email });
         // Redirecionar para página de sucesso ou login
         res.redirect('/?verified=true');
       } else {
-        console.log('❌ Falha na verificação:', result.message);
         res.redirect('/?error=verification_failed');
       }
-      
+
     } catch (error) {
       console.error('❌ Erro na verificação:', error);
       res.redirect('/?error=verification_error');
@@ -155,8 +144,6 @@ export function setupAuthRoutes(app: Express) {
   // Callback do Google OAuth
   app.get('/auth/callback', async (req, res) => {
     try {
-      console.log('🔄 Callback Google OAuth recebido');
-      
       if (!supabase) {
         console.error('❌ Supabase não configurado');
         return res.redirect('/?error=supabase_not_configured');
@@ -164,7 +151,7 @@ export function setupAuthRoutes(app: Express) {
 
       // Processar o callback do OAuth
       const { data, error } = await supabase.auth.getSessionFromUrl(req.url);
-      
+
       if (error) {
         console.error('❌ Erro no callback Google:', error.message);
         return res.redirect('/?error=oauth_callback_failed');
@@ -172,26 +159,23 @@ export function setupAuthRoutes(app: Express) {
 
       if (data.session && data.session.user) {
         const user = data.session.user;
-        console.log('✅ Login Google bem-sucedido:', { email: user.email, name: user.user_metadata?.full_name });
 
         // Criar ou atualizar usuário no nosso sistema
         try {
           let localUser = await storage.getUserByEmail(user.email!);
           const userType = req.session?.pendingUserType || 'client';
-          
+
           if (!localUser) {
             // Para profissionais, não criar ainda - precisa de categoria
             if (userType === 'professional') {
-              console.log('👔 Profissional precisa completar categoria primeiro');
-              
               // Limpar o tipo pendente da sessão
               if (req.session?.pendingUserType) {
                 delete req.session.pendingUserType;
               }
-              
+
               return res.redirect(`/?google_login=success&type=professional&needs_category=true&email=${encodeURIComponent(user.email!)}`);
             }
-            
+
             // Para clientes, criar normalmente
             localUser = await storage.createUser({
               username: user.user_metadata?.full_name?.toLowerCase().replace(/\s+/g, '_') || user.email!.split('@')[0],
@@ -201,8 +185,6 @@ export function setupAuthRoutes(app: Express) {
               supabaseId: user.id,
               userType: 'client'
             });
-            
-            console.log(`👤 Novo usuário cliente criado via Google:`, localUser.email);
           } else {
             // Atualizar usuário existente
             await storage.updateUser(localUser.id, {
@@ -210,8 +192,6 @@ export function setupAuthRoutes(app: Express) {
               supabaseId: user.id,
               userType: userType as 'client' | 'professional'
             });
-            
-            console.log(`🔄 Usuário existente atualizado via Google como ${userType}:`, localUser.email);
           }
 
           // Limpar o tipo pendente da sessão
@@ -220,10 +200,10 @@ export function setupAuthRoutes(app: Express) {
           }
 
           // Redirecionar baseado no tipo de usuário
-          const redirectPath = userType === 'professional' 
-            ? '/?google_login=success&type=professional' 
+          const redirectPath = userType === 'professional'
+            ? '/?google_login=success&type=professional'
             : '/?google_login=success&type=client';
-          
+
           return res.redirect(redirectPath);
         } catch (dbError) {
           console.error('❌ Erro ao processar usuário Google:', dbError);
@@ -242,38 +222,28 @@ export function setupAuthRoutes(app: Express) {
   app.get('/auth/confirm', async (req, res) => {
     try {
       const { token_hash, type, access_token, refresh_token } = req.query;
-      
-      console.log('🔐 Confirmação via /auth/confirm:', { 
-        token_hash: token_hash?.toString().substring(0, 20), 
-        access_token: access_token?.toString().substring(0, 20),
-        type 
-      });
-      
+
       // Se temos access_token, significa que a confirmação foi bem-sucedida
       if (access_token) {
-        console.log('✅ Confirmação bem-sucedida via access_token');
-        
         // Decodificar o token para obter informações do usuário
         try {
           const tokenParts = access_token.toString().split('.');
           if (tokenParts.length === 3) {
             const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
-            console.log('📧 Email do token:', payload.email);
-            
+
             // Marcar usuário como verificado no nosso banco
             const user = await storage.getUserByEmail(payload.email);
             if (user) {
               await storage.updateUser(user.id, { emailVerified: true });
-              console.log('✅ Usuário marcado como verificado:', { id: user.id, email: user.email });
             }
           }
         } catch (error) {
-          console.log('⚠️ Erro ao processar token, mas continuando:', error);
+          // Erro ao processar token, mas continuando
         }
-        
+
         return res.redirect('/?verified=true&logged_in=true');
       }
-      
+
       if (!token_hash) {
         return res.redirect('/?error=token_missing');
       }
@@ -286,16 +256,14 @@ export function setupAuthRoutes(app: Express) {
         });
 
         if (error) {
-          console.log('❌ Erro na confirmação Supabase:', error.message);
           return res.redirect('/?error=confirmation_failed');
         }
 
-        console.log('✅ Confirmação Supabase bem-sucedida:', { email: data.user?.email });
         return res.redirect('/?verified=true');
       }
 
       res.redirect('/?error=supabase_not_configured');
-      
+
     } catch (error) {
       console.error('❌ Erro na confirmação:', error);
       res.redirect('/?error=confirmation_error');
@@ -306,15 +274,15 @@ export function setupAuthRoutes(app: Express) {
   app.post('/api/auth/google', async (req, res) => {
     try {
       const { userType = 'client' } = req.body;
-      
-      
+
+
       // Salvar o tipo de usuário na sessão para usar no callback
       if (req.session) {
         req.session.pendingUserType = userType;
       }
-      
+
       const result = await loginWithGoogle();
-      
+
       if (result.success && result.url) {
         res.json({
           success: true,
@@ -340,7 +308,7 @@ export function setupAuthRoutes(app: Express) {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const validatedData = loginSchema.parse(req.body);
-      
+
       const result = await loginUser(validatedData.email, validatedData.password);
 
       if (result.success) {
@@ -385,7 +353,7 @@ export function setupAuthRoutes(app: Express) {
   app.get('/api/auth/verify/:token', async (req, res) => {
     try {
       const { token } = req.params;
-      
+
       const result = await verifyEmail(token);
 
       if (result.success) {
@@ -412,15 +380,13 @@ export function setupAuthRoutes(app: Express) {
   app.post('/api/auth/resend-confirmation', async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       if (!email) {
         return res.status(400).json({
           success: false,
           message: "Email é obrigatório"
         });
       }
-
-      console.log('📧 Tentativa de reenvio de confirmação para:', email);
 
       if (supabase) {
         // Verificar se o usuário existe no nosso banco primeiro
@@ -439,7 +405,6 @@ export function setupAuthRoutes(app: Express) {
 
         while (attempts < maxAttempts) {
           attempts++;
-          console.log(`📧 Tentativa ${attempts}/${maxAttempts} de reenvio para ${email}...`);
 
           const { error } = await supabase.auth.resend({
             type: 'signup',
@@ -450,7 +415,6 @@ export function setupAuthRoutes(app: Express) {
           });
 
           if (!error) {
-            console.log(`✅ Email de confirmação reenviado com sucesso na tentativa ${attempts} para:`, email);
             return res.json({
               success: true,
               message: `✅ Email de confirmação reenviado! Verifique sua caixa de entrada e pasta de spam. (Tentativa ${attempts}/${maxAttempts})`
@@ -458,7 +422,6 @@ export function setupAuthRoutes(app: Express) {
           }
 
           lastError = error;
-          console.log(`❌ Erro na tentativa ${attempts}:`, error.message);
 
           // Se não é a última tentativa, aguardar antes de tentar novamente
           if (attempts < maxAttempts) {
@@ -467,7 +430,6 @@ export function setupAuthRoutes(app: Express) {
         }
 
         // Se chegou aqui, todas as tentativas falharam
-        console.log('❌ Falha após todas as tentativas de reenvio:', lastError?.message);
         return res.status(400).json({
           success: false,
           message: `Falha no envio após ${maxAttempts} tentativas. ${lastError?.message || 'Erro desconhecido'}. Tente novamente em alguns minutos ou entre em contato com o suporte.`
@@ -492,7 +454,7 @@ export function setupAuthRoutes(app: Express) {
   app.post('/api/auth/manual-verify', async (req, res) => {
     try {
       const { email, adminKey } = req.body;
-      
+
       // Verificação básica de admin (você pode melhorar isso)
       if (adminKey !== 'orbitrum2025admin') {
         return res.status(403).json({
@@ -511,8 +473,7 @@ export function setupAuthRoutes(app: Express) {
 
       // Marcar email como verificado manualmente
       await storage.updateUser(user.id, { emailVerified: true });
-      
-      console.log('✅ Email verificado manualmente pelo admin:', email);
+
       res.json({
         success: true,
         message: "Email verificado manualmente com sucesso"
@@ -530,9 +491,7 @@ export function setupAuthRoutes(app: Express) {
   app.post('/api/auth/complete-professional', async (req, res) => {
     try {
       const { email, category, specialty } = req.body;
-      
-      console.log('📝 Completando cadastro profissional:', { email, category, specialty });
-      
+
       if (!email || !category || !specialty) {
         return res.status(400).json({
           success: false,
@@ -558,8 +517,6 @@ export function setupAuthRoutes(app: Express) {
         userType: 'professional'
       });
 
-      console.log('✅ Profissional criado com categoria:', { email, category, specialty });
-      
       res.json({
         success: true,
         message: 'Cadastro profissional completado com sucesso',

@@ -10,7 +10,6 @@ class SupabaseSync {
   start() {
     if (this.isRunning) return;
     
-    console.log('🔄 INICIANDO sincronização automática com Supabase...');
     this.isRunning = true;
     
     // Sincronizar imediatamente
@@ -29,7 +28,6 @@ class SupabaseSync {
       this.syncInterval = null;
     }
     this.isRunning = false;
-    console.log('⏹️ Sincronização automática parada');
   }
 
   // Sincronizar usuários do Supabase
@@ -37,7 +35,6 @@ class SupabaseSync {
     try {
       const supabase = getSupabase();
       if (!supabase) {
-        console.log('⚠️ Supabase não inicializado - pulando sincronização');
         return { success: false, synced: 0, total: 0 };
       }
 
@@ -46,8 +43,6 @@ class SupabaseSync {
       
       if (error) {
         console.error('❌ Erro ao buscar usuários do Supabase:', error.message);
-        console.log('🔍 Tentando método alternativo de busca...');
-        
         // Método alternativo: buscar via RPC ou public query
         try {
           const { data: altUsers, error: altError } = await supabase
@@ -55,7 +50,6 @@ class SupabaseSync {
             .select('*');
           
           if (!altError && altUsers?.length) {
-            console.log(`✅ Método alternativo funcionou: ${altUsers.length} usuários`);
             // Converter formato alternativo para formato esperado
             const convertedUsers = altUsers.map(u => ({
               id: u.id,
@@ -74,12 +68,9 @@ class SupabaseSync {
       }
 
       if (!supabaseUsers?.users?.length) {
-        console.log('📋 Nenhum usuário encontrado no Supabase');
         return { success: true, synced: 0, total: 0 };
       }
 
-      console.log(`🔍 SINCRONIZAÇÃO: ${supabaseUsers.users.length} usuários no Supabase`);
-      
       let syncedCount = 0;
       
       for (const supaUser of supabaseUsers.users) {
@@ -125,7 +116,6 @@ class SupabaseSync {
 
             await storage.createUser(userData);
             syncedCount++;
-            console.log(`✅ SINCRONIZADO: ${supaUser.email} (${userType})`);
           } else {
             // Atualizar dados se necessário
             const needsUpdate = this.checkIfUserNeedsUpdate(existingUser, supaUser);
@@ -134,16 +124,11 @@ class SupabaseSync {
                 emailVerified: supaUser.email_confirmed_at ? true : false,
                 isActive: true
               });
-              console.log(`🔄 ATUALIZADO: ${supaUser.email}`);
             }
           }
         } catch (error) {
           console.error(`❌ Erro ao sincronizar ${supaUser.email}:`, error);
         }
-      }
-
-      if (syncedCount > 0) {
-        console.log(`🎯 SINCRONIZAÇÃO CONCLUÍDA: ${syncedCount} novos usuários adicionados`);
       }
 
       return { success: true, synced: syncedCount, total: supabaseUsers.users.length };

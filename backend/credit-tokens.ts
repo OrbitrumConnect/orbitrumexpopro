@@ -37,13 +37,6 @@ export function setupCreditRoutes(app: Express) {
         purchaseTokens: newBalance
       });
       
-      console.log(`💰 TOKENS CREDITADOS MANUALMENTE:`);
-      console.log(`👤 Usuário: ${user.email} (ID: ${userId})`);
-      console.log(`💵 Valor: R$ ${amount.toFixed(2)}`);
-      console.log(`🪙 Tokens: ${tokens.toLocaleString()}`);
-      console.log(`💼 Saldo atual: ${newBalance.toLocaleString()}`);
-      console.log(`📝 Motivo: ${reason || 'Crédito manual'}`);
-      
       res.json({
         success: true,
         message: `${tokens.toLocaleString()} tokens creditados com sucesso`,

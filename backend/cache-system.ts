@@ -18,7 +18,6 @@ class IntelligentCache {
     };
     
     this.cache.set(key, entry);
-    console.log(`📦 Cache SET: ${key} (TTL: ${ttlMinutes}min)`);
   }
 
   // Buscar do cache
@@ -27,7 +26,6 @@ class IntelligentCache {
     
     if (!entry) {
       this.missCount++;
-      console.log(`❌ Cache MISS: ${key}`);
       return null;
     }
 
@@ -35,12 +33,10 @@ class IntelligentCache {
     if (Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key);
       this.missCount++;
-      console.log(`⏰ Cache EXPIRED: ${key}`);
       return null;
     }
 
     this.hitCount++;
-    console.log(`✅ Cache HIT: ${key}`);
     return entry.data as T;
   }
 
@@ -54,11 +50,9 @@ class IntelligentCache {
     
     if (existingStr !== newStr) {
       this.set(key, newData, ttlMinutes);
-      console.log(`🔄 Cache UPDATED: ${key} (dados alterados)`);
       return true;
     }
     
-    console.log(`➡️ Cache UNCHANGED: ${key}`);
     return false;
   }
 
@@ -72,10 +66,6 @@ class IntelligentCache {
         this.cache.delete(key);
         count++;
       }
-    }
-    
-    if (count > 0) {
-      console.log(`🗑️ Cache INVALIDATED: ${count} entradas (padrão: ${pattern})`);
     }
     
     return count;
@@ -124,10 +114,6 @@ class IntelligentCache {
       }
     }
     
-    if (cleaned > 0) {
-      console.log(`🧹 Cache CLEANUP: ${cleaned} entradas expiradas removidas`);
-    }
-    
     return cleaned;
   }
 
@@ -172,8 +158,7 @@ setInterval(() => {
   cache.cleanup();
 }, 30 * 60 * 1000);
 
-// Log de estatísticas a cada hora
+// Periodic stats check
 setInterval(() => {
-  const stats = cache.getStats();
-  console.log(`📊 Cache Stats: ${stats.totalEntries} entries, ${stats.hitRate}% hit rate, ${stats.memoryUsage} memory`);
+  cache.getStats();
 }, 60 * 60 * 1000);

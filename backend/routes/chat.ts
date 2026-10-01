@@ -31,8 +31,6 @@ router.get('/history/:userId/:targetId?', async (req: Request, res: Response) =>
   try {
     const { userId, targetId } = req.params;
     
-    console.log('📞 CARREGANDO HISTÓRICO DE CHAT:', { userId, targetId });
-
     // Filtrar mensagens do usuário
     let userMessages = chatHistory.filter(msg => 
       (msg.senderId === parseInt(userId) || msg.receiverId === parseInt(userId)) &&
@@ -63,14 +61,6 @@ router.post('/send', async (req: Request, res: Response) => {
         message: 'senderId/userEmail e content são obrigatórios' 
       });
     }
-
-    console.log('💬 NOVA MENSAGEM DE CHAT:', {
-      senderId,
-      userEmail,
-      receiverId: receiverId || 'IA',
-      messageType,
-      contentLength: content.length
-    });
 
     // Buscar dados do usuário - primeiro por email, depois por ID
     let user = null;
@@ -145,8 +135,6 @@ router.post('/send', async (req: Request, res: Response) => {
 
     chatHistory.push(message);
 
-    console.log(`✅ MENSAGEM SALVA - Usuário: ${user.email} - Tokens debitados: ${tokenCost}`);
-
     // Gerar resposta da IA se não há receiverId específico
     if (!receiverId && limits.aiResponses) {
       setTimeout(() => {
@@ -196,10 +184,8 @@ const generateAIResponse = async (userId: number, userMessage: string, userPlan:
       await storage.debitUserTokens(userId, TOKEN_COSTS.ai_response, 'IA Response');
     }
 
-    console.log('🤖 IA RESPONDEU AUTOMATICAMENTE - Tokens debitados:', TOKEN_COSTS.ai_response);
-
   } catch (error) {
-    console.log('Erro na resposta automática da IA:', error);
+    console.error('Erro na resposta automática da IA:', error);
   }
 };
 

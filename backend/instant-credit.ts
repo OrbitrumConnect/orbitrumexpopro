@@ -13,8 +13,6 @@ export class InstantCreditSystem {
   // Creditar tokens instantaneamente para um usuário
   static async creditInstantly(request: InstantCreditRequest) {
     try {
-      console.log(`🚀 CRÉDITO INSTANTÂNEO - ${request.userEmail}: ${request.tokens} tokens`);
-      
       // Buscar usuário por email
       const user = await storage.getUserByEmail(request.userEmail);
       if (!user) {
@@ -26,14 +24,6 @@ export class InstantCreditSystem {
       const novosTokens = tokensAnteriores + request.tokens;
       
       await storage.updateUserTokensComprados(user.id, novosTokens);
-      
-      console.log(`✅ TOKENS CREDITADOS INSTANTANEAMENTE!`);
-      console.log(`👤 Usuário: ${user.email} (ID: ${user.id})`);
-      console.log(`💰 Tokens anteriores: ${tokensAnteriores}`);
-      console.log(`💰 Tokens adicionados: ${request.tokens}`);
-      console.log(`💰 Total tokens: ${novosTokens}`);
-      console.log(`📝 PIX: R$ ${request.pixAmount.toFixed(2)}`);
-      console.log(`📋 Descrição: ${request.description}`);
       
       // Notificar via WebSocket se disponível
       this.notifyUserInstantly(user.id, request.tokens);
@@ -58,9 +48,9 @@ export class InstantCreditSystem {
   private static notifyUserInstantly(userId: number, tokens: number) {
     try {
       // Implementar notificação WebSocket aqui se necessário
-      console.log(`📡 NOTIFICAÇÃO INSTANTÂNEA - User ${userId}: ${tokens} tokens creditados`);
+      // Notification sent
     } catch (error) {
-      console.log('⚠️ WebSocket não disponível para notificação instantânea');
+      // WebSocket not available
     }
   }
   

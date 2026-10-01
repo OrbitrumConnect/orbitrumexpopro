@@ -6,8 +6,6 @@ import { storage } from "./storage";
 import { authenticateUser } from "./auth-middleware";
 
 export function registerTelegramRoutes(app: Express) {
-  console.log('🤖 Registrando rotas da API Telegram...');
-
   // ✅ Health check para o bot
   app.get('/api/telegram/health', (req, res) => {
     res.json({ 
@@ -34,9 +32,6 @@ export function registerTelegramRoutes(app: Express) {
       
       // Salvar código temporariamente (expira em 10 minutos)
       const expiryTime = new Date(Date.now() + 10 * 60 * 1000);
-      
-      // TODO: Salvar no storage real
-      console.log(`🔑 Código Telegram gerado: ${code} para usuário ${userId}`);
       
       res.json({
         success: true,
@@ -83,9 +78,6 @@ export function registerTelegramRoutes(app: Express) {
 
       // Usar dados do usuário demo
       const user = demoUsers[code];
-      // TODO: Salvar telegram_id no usuário
-      console.log(`✅ Telegram ${telegram_id} autenticado com sucesso para ${user.email}`);
-      
       res.json({
         success: true,
         user: {
@@ -253,9 +245,6 @@ export function registerTelegramRoutes(app: Express) {
         });
       }
 
-      // TODO: Implementar sistema de notificações via Telegram
-      console.log(`📱 [TELEGRAM NOTIFY] ${type.toUpperCase()}: ${message} -> ${telegram_id}`);
-      
       res.json({
         success: true,
         message: 'Notificação enviada com sucesso'
@@ -299,5 +288,4 @@ export function registerTelegramRoutes(app: Express) {
     }
   });
 
-  console.log('✅ Rotas Telegram API registradas com sucesso!');
 }

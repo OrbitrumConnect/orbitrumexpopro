@@ -11,12 +11,10 @@ let isStarting = false;
 export function startTelegramBot(): void {
   // Evitar múltiplas inicializações
   if (isStarting || telegramProcess) {
-    console.log('🤖 [TELEGRAM] Bot já está sendo executado ou inicializando...');
     return;
   }
 
   isStarting = true;
-  console.log('🚀 [TELEGRAM] Iniciando integração Telegram Bot...');
 
   try {
     // Caminho para o bot Python
@@ -44,7 +42,7 @@ export function startTelegramBot(): void {
     telegramProcess.stdout?.on('data', (data) => {
       const output = data.toString().trim();
       if (output) {
-        console.log(`🤖 [TELEGRAM] ${output}`);
+        // Bot output received
       }
     });
 
@@ -57,13 +55,11 @@ export function startTelegramBot(): void {
 
     // Lidar com encerramento do processo
     telegramProcess.on('close', (code) => {
-      console.log(`🔄 [TELEGRAM] Bot encerrado com código: ${code}`);
       telegramProcess = null;
       isStarting = false;
       
       // Reiniciar automaticamente se não foi encerramento intencional
       if (code !== 0 && code !== null) {
-        console.log('🔄 [TELEGRAM] Reiniciando bot em 10 segundos...');
         setTimeout(() => {
           startTelegramBot();
         }, 10000);
@@ -76,7 +72,6 @@ export function startTelegramBot(): void {
       isStarting = false;
     });
 
-    console.log('✅ [TELEGRAM] Bot iniciado com sucesso! PID:', telegramProcess.pid);
     isStarting = false;
 
   } catch (error) {
@@ -88,7 +83,6 @@ export function startTelegramBot(): void {
 
 export function stopTelegramBot(): void {
   if (telegramProcess) {
-    console.log('🛑 [TELEGRAM] Encerrando bot...');
     telegramProcess.kill('SIGTERM');
     telegramProcess = null;
   }

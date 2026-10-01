@@ -26,7 +26,6 @@ export class TelegramNotificationService {
       timestamp: new Date().toISOString()
     });
     
-    console.log(`📨 Notificação adicionada para Telegram ${telegram_id}:`, notification.message);
   }
 
   // 📨 Buscar notificações pendentes
@@ -49,8 +48,6 @@ export class TelegramNotificationService {
   async sendPushNotification(telegram_id: string, message: string, type: string = 'info') {
     try {
       // TODO: Integrar com Bot API para envio direto
-      console.log(`🔔 Push notification para ${telegram_id}: ${message}`);
-      
       // Por enquanto, armazenar para consulta
       this.addNotification(telegram_id, {
         type,
@@ -207,5 +204,4 @@ export function setupTelegramNotificationRoutes(app: Express, storage: IStorage)
     }
   });
 
-  console.log('📨 Sistema de notificações Telegram configurado');
 }

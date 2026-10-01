@@ -36,5 +36,4 @@ export function setupTelegramStatusRoutes(app: Express) {
     });
   });
 
-  console.log('📊 Telegram status routes configured');
 }

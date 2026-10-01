@@ -19,8 +19,6 @@ export class SimplePixGenerator {
     description: string,
     transactionId: string
   ): Promise<SimplePixData> {
-    console.log('🏦 Gerando PIX direto para PEDRO GALLUF - Nubank');
-    
     // Dados fixos para sua conta
     const PIX_KEY = '03669282106'; // Sua chave PIX CPF
     const MERCHANT_NAME = 'PEDRO GALLUF';
@@ -49,10 +47,6 @@ export class SimplePixGenerator {
     // Calcular CRC16 (obrigatório para PIX)
     const crc = this.calculateCRC16(payload + '6304');
     payload += '63' + '04' + crc;
-    
-    console.log('✅ PIX Payload gerado:', payload.length, 'caracteres');
-    console.log('💰 Valor: R$', amount.toFixed(2));
-    console.log('🏦 Destino: 03669282106 (PEDRO GALLUF - Nubank)');
     
     // Gerar QR Code
     const qrCodeBase64 = await QRCode.toDataURL(payload, {

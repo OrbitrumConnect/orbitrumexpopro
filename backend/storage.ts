@@ -278,7 +278,6 @@ export class DatabaseStorage implements IStorage {
 
         if (newUser) {
           results.success.push(email);
-          console.log(`📧 Cliente promocional criado: ${email} - Código: ${referralCode}`);
         } else {
           results.failed.push(email);
         }
@@ -307,7 +306,6 @@ export class DatabaseStorage implements IStorage {
             if (user.userType === 'client') {
               // Remove expired promotional clients
               // In a real implementation, you might want to soft-delete instead
-              console.log(`🗑️ Removendo cliente promocional expirado: ${user.email}`);
               clientsRemoved++;
             } else if (user.userType === 'professional') {
               // Restrict professionals to free plan
@@ -317,7 +315,6 @@ export class DatabaseStorage implements IStorage {
                 tokens: 0,
                 credits: 0
               });
-              console.log(`⬇️ Profissional restrito ao plano free: ${user.email}`);
               professionalsRestricted++;
             }
           }
@@ -1171,7 +1168,6 @@ export class DatabaseStorage implements IStorage {
         details: JSON.stringify({ type, duration })
       });
 
-      console.log(`✅ Usuário ${userId} ${type === 'permanent' ? 'banido' : 'suspenso'}: ${reason}`);
     } catch (error) {
       console.error("DatabaseStorage.banUser error:", error);
       throw error;
@@ -1242,7 +1238,6 @@ export class DatabaseStorage implements IStorage {
         status: 'pending'
       }).returning();
 
-      console.log(`🤝 Team Hiring criado: ID ${newTeamHiring.id}, ${professionalCount} profissionais, ${discountPercentage}% desconto`);
       return newTeamHiring;
     } catch (error) {
       console.error("DatabaseStorage.createTeamHiring error:", error);
@@ -1287,7 +1282,6 @@ export class DatabaseStorage implements IStorage {
         .where(eq(teamHiring.id, id))
         .returning();
 
-      console.log(`🔄 Team Hiring ${id} status atualizado para: ${status}`);
       return updatedHiring;
     } catch (error) {
       console.error("DatabaseStorage.updateTeamHiringStatus error:", error);
@@ -1315,7 +1309,6 @@ export class DatabaseStorage implements IStorage {
         return { success: false, message: "Profissional não encontrado" };
       }
 
-      console.log(`🤖 Auto-aceitar ${enabled ? 'ATIVADO' : 'DESATIVADO'} para profissional ${updated.name} (ID: ${professionalId}) via PostgreSQL`);
       
       return { 
         success: true, 
@@ -1371,7 +1364,6 @@ export class DatabaseStorage implements IStorage {
         status: 'Ativo'
       }));
       
-      console.log(`📊 Analytics auto-aceitar (PostgreSQL): ${formattedAnalytics.length} profissionais com sistema ativo`);
       return formattedAnalytics;
     } catch (error) {
       console.error("DatabaseStorage.getAutoAcceptAnalytics error:", error);
@@ -1394,7 +1386,6 @@ export class DatabaseStorage implements IStorage {
 
       if (!professional || !client || !professional.autoAcceptEnabled) return;
 
-      console.log(`📢 NOTIFICAÇÃO AUTO-ACEITAR (PostgreSQL): Cliente ${client.username} informado sobre ${professional.name}`);
     } catch (error) {
       console.error("DatabaseStorage.notifyClientAboutAutoAccept error:", error);
     }
@@ -1423,7 +1414,6 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(professionals.rating), desc(professionals.reviews))
         .limit(limit);
 
-      console.log(`🔄 ENCONTRADAS ${alternatives.length} alternativas bem avaliadas (PostgreSQL)`);
       return alternatives;
     } catch (error) {
       console.error("DatabaseStorage.findAlternativeProfessionals error:", error);
@@ -1437,7 +1427,6 @@ export class DatabaseStorage implements IStorage {
       const alternatives = await this.findAlternativeProfessionals(professionalId, 5);
       
       if (alternatives.length > 0) {
-        console.log(`🎯 ESCALAÇÃO AUTOMÁTICA (PostgreSQL): ${alternatives.length} alternativas oferecidas`);
       }
     } catch (error) {
       console.error("DatabaseStorage.handleAutoAcceptExpiration error:", error);
@@ -1446,7 +1435,6 @@ export class DatabaseStorage implements IStorage {
 
   // Implementação vazia dos métodos que não existem na interface mas estão sendo usados na MemStorage
   async getTeamsForProfessional(professionalId: number): Promise<any[]> {
-    console.log(`📊 DatabaseStorage: getTeamsForProfessional não implementado para PostgreSQL`);
     return [];
   }
 
@@ -1800,13 +1788,11 @@ export class MemStorage implements IStorage {
     this.initializeProfessionalServices();
     // Carregar usuários essenciais permanentes
     this.loadAllUsers().catch(console.error); // Sistema permanente de usuários
-    console.log('✅ Sistema permanente - TODOS os usuários essenciais protegidos');
   }
 
   // Método para limpar usuários de teste/fake
   removeTestUsers(): { removed: number; remaining: number } {
     // Sistema mantém apenas usuários autênticos - sem dados fictícios
-    console.log('✅ Sistema de dados autênticos - apenas usuários reais mantidos');
     
     return {
       removed: 0,
@@ -1816,12 +1802,10 @@ export class MemStorage implements IStorage {
 
   // Sistema de criação automática de usuários em qualquer acesso
   async createUserIfNotExists(email: string, userType: 'client' | 'professional' = 'client'): Promise<User> {
-    console.log(`🔍 Verificando/criando usuário: ${email}`);
     
     // Verificar se usuário já existe
     const existingUser = await this.getUserByEmail(email);
     if (existingUser) {
-      console.log(`📋 Usuário encontrado: ${existingUser.email} (ID: ${existingUser.id})`);
       return existingUser;
     }
     
@@ -1829,7 +1813,6 @@ export class MemStorage implements IStorage {
     const userId = this.currentUserId;
     const username = email.split('@')[0];
     
-    console.log(`🆕 CRIANDO NOVO USUÁRIO: ${email}`);
     
     // Dados padrão para tokens conhecidos
     const knownTokens: Record<string, number> = {
@@ -1885,7 +1868,6 @@ export class MemStorage implements IStorage {
     this.users.set(userId, newUser);
     this.currentUserId = Math.max(this.currentUserId, userId + 1);
     
-    console.log(`✅ USUÁRIO CRIADO AUTOMATICAMENTE: ${email} (ID: ${userId}, Tipo: ${userType}, Tokens: ${knownTokens[email] || 0})`);
     
     return newUser;
   }
@@ -1893,14 +1875,12 @@ export class MemStorage implements IStorage {
   // Sistema de detecção automática obrigatória do Supabase
   private async detectSupabaseUsers() {
     try {
-      console.log('🔍 DETECTANDO USUÁRIOS DO SUPABASE...');
       
       // 1. Buscar TODOS os usuários do Supabase via API Admin
       let allSupabaseUsers: any[] = [];
       try {
         const supabase = getSupabase();
         if (supabase) {
-          console.log('📡 Tentando buscar TODOS os usuários do Supabase via API Admin...');
           
           // Buscar com paginação para garantir TODOS os usuários
           let page = 1;
@@ -1926,7 +1906,6 @@ export class MemStorage implements IStorage {
                 }));
               
               allSupabaseUsers.push(...pageUsers);
-              console.log(`📄 Página ${page}: ${pageUsers.length} usuários | Emails:`, pageUsers.map(u => u.email));
               
               // Continuar se há mais páginas
               hasMore = supabaseData.users.length === 1000;
@@ -1934,19 +1913,14 @@ export class MemStorage implements IStorage {
             } else {
               hasMore = false;
               if (error) {
-                console.log(`⚠️ Erro na página ${page}:`, error.message);
               }
             }
           }
           
-          console.log(`🎯 TOTAL ENCONTRADOS: ${allSupabaseUsers.length} usuários no Supabase`);
-          console.log(`📋 EMAILS DESCOBERTOS:`, allSupabaseUsers.map(u => u.email));
           
         } else {
-          console.log('⚠️ Cliente Supabase não disponível');
         }
       } catch (error) {
-        console.log('⚠️ Falha na busca automática do Supabase:', error);
       }
       
       // 2. Lista COMPLETA de usuários do Supabase (extraída da imagem fornecida)
@@ -2047,7 +2021,6 @@ export class MemStorage implements IStorage {
         }
       });
       
-      console.log(`🔍 PROCESSANDO ${combinedUsers.length} usuários para criação automática...`);
       
       let usersCreated = 0;
       
@@ -2055,16 +2028,11 @@ export class MemStorage implements IStorage {
         // Usar próximo ID disponível após os usuários existentes
         const userId = this.currentUserId;
         
-        console.log(`🔍 Verificando usuário: ${supaUser.email}`);
         const existingUser = this.getUserByEmail(supaUser.email);
-        console.log(`📋 Usuário existente:`, existingUser ? `${existingUser.email} (ID: ${existingUser.id})` : 'undefined (ID: undefined)');
-        console.log(`📋 Total usuários no Map:`, this.users.size);
-        console.log(`📋 Emails no sistema:`, Array.from(this.users.values()).map(u => u.email));
         
         // Verificar se usuário existe no Map
         const userExists = Array.from(this.users.values()).some(u => u.email === supaUser.email);
         if (!userExists) {
-          console.log(`🆕 CRIANDO USUÁRIO: ${supaUser.email}`);
           const newUser: User = {
             id: userId,
             username: supaUser.username,
@@ -2109,14 +2077,10 @@ export class MemStorage implements IStorage {
           this.users.set(userId, newUser);
           this.currentUserId = Math.max(this.currentUserId, userId + 1);
           usersCreated++;
-          console.log(`✅ USUÁRIO SUPABASE CRIADO: ${supaUser.email} (ID: ${userId}, Tipo: ${supaUser.userType}, Tokens: ${supaUser.tokens || 0})`);
         } else {
-          console.log(`⚡ USUÁRIO JÁ EXISTE: ${supaUser.email} - PULANDO`);
         }
       });
       
-      console.log(`✅ DETECÇÃO CONCLUÍDA - Total: ${this.users.size}, Novos: ${usersCreated}`);
-      console.log(`📋 TODOS OS USUÁRIOS FINAIS:`, Array.from(this.users.values()).map(u => `${u.email} (ID: ${u.id})`));
       return usersCreated;
       
     } catch (error) {
@@ -2126,7 +2090,6 @@ export class MemStorage implements IStorage {
 
   // Sistema de persistência automática para TODOS os usuários
   private async loadAllUsers() {
-    console.log('🔄 CARREGANDO TODOS OS USUÁRIOS SALVOS...');
     
     // Primeiro detectar usuários do Supabase
     await this.detectSupabaseUsers();
@@ -2261,23 +2224,16 @@ export class MemStorage implements IStorage {
       this.currentUserId = Math.max(this.currentUserId, user.id + 1);
     });
 
-    console.log('✅ TODOS OS USUÁRIOS ESSENCIAIS CARREGADOS:');
     essentialUsers.forEach(user => {
-      console.log(`   - ${user.username} (${user.email}): ${user.tokens} tokens`);
     });
-    console.log('   - Total receita: R$ 41,00 (Pedro R$ 3,00 + Maria R$ 6,00 + João Vidal R$ 32,00)');
-    console.log('🔒 SISTEMA PERMANENTE - Dados nunca serão perdidos');
   }
 
   // Método simplificado para persistência de usuários
   private addToEssentialUsers(user: User) {
-    console.log(`🔒 NOVO USUÁRIO PROTEGIDO: ${user.email}`);
-    console.log(`💾 Sistema mantém dados automaticamente em memória`);
   }
 
   // Método para limpar completamente o MemStorage
   clearAllData() {
-    console.log('🧹 LIMPANDO COMPLETAMENTE O MEMSTORAGE...');
     
     // Limpar todos os Maps
     this.users.clear();
@@ -2316,7 +2272,6 @@ export class MemStorage implements IStorage {
     this.initializeProfessionalCategories();
     this.initializeProfessionalServices();
     
-    console.log('✅ MEMSTORAGE LIMPO - ORBS VISUAIS MANTIDOS!');
   }
 
   private initializeCertificationRequirements() {
@@ -3081,7 +3036,6 @@ export class MemStorage implements IStorage {
   private initializeTeamRequests() {
     // NÃO criar solicitações de equipe fictícias 
     // Dashboard profissional deve mostrar apenas dados reais
-    console.log('📋 Sistema de solicitações inicializado (apenas dados reais)');
     this.currentTeamRequestId = 1;
     this.currentTeamMessageId = 1;
   }
@@ -3106,20 +3060,17 @@ export class MemStorage implements IStorage {
       
       // Admin nunca perde tokens
       if (userId === 1 || user.plan === 'max') {
-        console.log(`🎁 ${userId === 1 ? 'ADMIN' : 'MAX'} - Tokens ilimitados - Sem debito: ${amount}`);
         return true;
       }
       
       // Verificar se tem tokens suficientes
       if (user.tokensComprados < amount) {
-        console.log(`❌ Tokens insuficientes: ${user.tokensComprados} < ${amount}`);
         return false;
       }
       
       // Debitar tokens
       user.tokensComprados -= amount;
       
-      console.log(`💳 TOKENS DEBITADOS: ${amount} (${reason}) - Usuário: ${user.email} - Restante: ${user.tokensComprados}`);
       return true;
       
     } catch (error) {
@@ -3181,8 +3132,6 @@ export class MemStorage implements IStorage {
     // SISTEMA DE PERSISTÊNCIA AUTOMÁTICA - Adicionar à lista de usuários essenciais
     this.addToEssentialUsers(user);
     
-    console.log(`👤 NOVO USUÁRIO CRIADO E PROTEGIDO: ${insertUser.username} (${insertUser.email}) - 0 tokens`);
-    console.log(`🔒 USUÁRIO AUTOMATICAMENTE ADICIONADO À PERSISTÊNCIA PERMANENTE`);
     
     return user;
   }
@@ -3202,7 +3151,6 @@ export class MemStorage implements IStorage {
     
     const updatedUser = { ...user, userType };
     this.users.set(id, updatedUser);
-    console.log(`✅ Tipo de usuário atualizado: ${user.email} → ${userType}`);
     return updatedUser;
   }
 
@@ -4098,23 +4046,19 @@ export class MemStorage implements IStorage {
 
   // Payment operations
   async createPayment(paymentData: any): Promise<any> {
-    console.log("MemStorage.createPayment:", paymentData);
     // Store in memory for now
     return paymentData;
   }
 
   async getPaymentByTransaction(transactionId: string): Promise<any> {
-    console.log("MemStorage.getPaymentByTransaction:", transactionId);
     return null;
   }
 
   async updatePaymentStatus(transactionId: string, status: string): Promise<any> {
-    console.log("MemStorage.updatePaymentStatus:", transactionId, status);
     return null;
   }
 
   async getUserPayments(userId: string): Promise<any[]> {
-    console.log("MemStorage.getUserPayments:", userId);
     return [];
   }
 
@@ -4123,7 +4067,6 @@ export class MemStorage implements IStorage {
     const user = this.users.get(userId);
     if (user) {
       Object.assign(user, planData);
-      console.log(`✅ Plano atualizado para usuário ${userId}:`, planData);
     }
   }
 
@@ -4133,7 +4076,6 @@ export class MemStorage implements IStorage {
 
   async createUserNotification(notification: any): Promise<void> {
     // Simular criação de notificação
-    console.log('📢 Notificação criada:', notification);
   }
 
   async getUserNotifications(userId: number): Promise<any[]> {
@@ -4163,7 +4105,6 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       status: 'active'
     };
-    console.log('📋 Campanha de referral criada:', campaign);
     return campaign;
   }
 
@@ -4171,7 +4112,6 @@ export class MemStorage implements IStorage {
     const user = this.users.get(userId);
     if (user) {
       Object.assign(user, referralData);
-      console.log(`🔗 Dados de referral atualizados para usuário ${userId}:`, referralData);
     }
   }
 
@@ -4193,7 +4133,6 @@ export class MemStorage implements IStorage {
       referred.referredBy = referrerId;
       referred.referredAt = new Date();
       
-      console.log(`🔗 Relação de referral criada: ${referrerId} → ${referredUserId}`);
     }
   }
 
@@ -4204,7 +4143,6 @@ export class MemStorage implements IStorage {
       if (expiryDate) {
         user.promotionalPlanExpiry = expiryDate;
       }
-      console.log(`📅 Status promocional atualizado para usuário ${userId}: ${status}`);
     }
   }
 
@@ -4223,7 +4161,6 @@ export class MemStorage implements IStorage {
       }
     });
     
-    console.log(`🗑️ Usuário ${id} removido do sistema`);
   }
 
   async getPromotionalUsers(): Promise<User[]> {
@@ -4233,13 +4170,11 @@ export class MemStorage implements IStorage {
 
   async markNotificationAsRead(notificationId: number): Promise<void> {
     // Simular marcar como lida
-    console.log('✅ Notificação marcada como lida:', notificationId);
   }
 
   // Financial analytics methods
   async updateMonthlyPool(amount: number): Promise<void> {
     // Simulated update - in real implementation would update database
-    console.log(`📊 Pool mensal atualizado: ${amount}`);
   }
 
   // Admin statistics operations
@@ -4251,14 +4186,12 @@ export class MemStorage implements IStorage {
       user.email === 'phpg69@gmail.com' ||
       user.email === 'joao.vidal@remederi.com'
     );
-    console.log(`📊 DADOS REAIS - Total de usuários autênticos: ${realUsers.length}`);
     return realUsers.length;
   }
 
   async getActiveUsers(): Promise<number> {
     const totalRealUsers = await this.getTotalUsers();
     // Assumindo que todos os usuários reais estão ativos
-    console.log(`📊 DADOS REAIS - Usuários ativos: ${totalRealUsers} de ${totalRealUsers}`);
     return totalRealUsers;
   }
 
@@ -4279,26 +4212,20 @@ export class MemStorage implements IStorage {
     const mariaUser = realUsers.find(u => u.email === 'mariahelenaearp@gmail.com');
     const joaoUser = realUsers.find(u => u.email === 'joao.vidal@remederi.com');
     
-    console.log(`🔍 Verificando Pedro:`, pedroUser ? `tokens: ${pedroUser.tokens}, comprados: ${pedroUser.tokensComprados}` : 'não encontrado');
-    console.log(`🔍 Verificando Maria:`, mariaUser ? `tokens: ${mariaUser.tokens}, comprados: ${mariaUser.tokensComprados}` : 'não encontrado');
-    console.log(`🔍 Verificando João Vidal:`, joaoUser ? `tokens: ${joaoUser.tokens}, comprados: ${joaoUser.tokensComprados}` : 'não encontrado');
     
     // Pedro: PIX R$ 3,00 = 2160 tokens
     if (pedroUser && pedroUser.tokensComprados > 0) {
       totalRevenue += 300; // R$ 3,00 em centavos
-      console.log(`💰 RECEITA REAL - Pedro: R$ 3,00 (2160 tokens)`);
     }
     
     // Maria Helena: PIX R$ 6,00 = 4320 tokens  
     if (mariaUser && mariaUser.tokensComprados > 0) {
       totalRevenue += 600; // R$ 6,00 em centavos
-      console.log(`💰 RECEITA REAL - Maria: R$ 6,00 (4320 tokens)`);
     }
     
     // João Vidal: Galaxy Vault R$ 32,00 = 23040 tokens
     if (joaoUser && joaoUser.tokensComprados > 0) {
       totalRevenue += 3200; // R$ 32,00 em centavos
-      console.log(`💰 RECEITA REAL - João Vidal: R$ 32,00 (23040 tokens - Galaxy Vault)`);
     }
     
     const stats = {
@@ -4307,8 +4234,6 @@ export class MemStorage implements IStorage {
       monthlyNewUsers: realUsers.length // 4 usuários reais
     };
     
-    console.log(`📊 DADOS REAIS - Total: R$ ${(totalRevenue/100).toFixed(2)} (4 usuários autênticos)`);
-    console.log(`📊 RECEITA CORRETA - Pedro: R$ 3,00 + Maria: R$ 6,00 + João Vidal: R$ 32,00 = R$ 41,00 total`);
     return stats;
   }
 
@@ -4358,7 +4283,6 @@ export class MemStorage implements IStorage {
       if (monthlyWithdrawable) {
         // Cada usuário pode sacar 8.7% do seu plano todo dia 3
         monthlyPoolTotal += monthlyWithdrawable;
-        console.log(`💰 POOL REAL - ${user.email}: R$ ${(monthlyWithdrawable/100).toFixed(2)} mensal (${user.plan})`);
       }
     });
     
@@ -4373,7 +4297,6 @@ export class MemStorage implements IStorage {
     // Saldo médio por usuário elegível (valor mensal disponível)
     const averageUserBalance = realPaidUsers.length > 0 ? Math.floor(monthlyPoolTotal / realPaidUsers.length) : 0;
     
-    console.log(`📊 USUÁRIOS DEMO IGNORADOS - pool calculada apenas para usuários reais: ${realPaidUsers.length}`);
     
     const stats = {
       pending: 0, // Sem saques pendentes - fora da janela (dia 17)
@@ -4391,15 +4314,6 @@ export class MemStorage implements IStorage {
       }
     };
     
-    console.log(`📊 SISTEMA 8.7% MENSAL CORRETO:`, {
-      poolMensal: `R$ ${(monthlyPoolTotal/100).toFixed(2)}`,
-      limiteMensal: `R$ ${(monthlyLimit/100).toFixed(2)}`,
-      breakdown: {
-        pro: `8.7% de R$ 21 = R$ ${(Math.floor(2100 * 0.087)/100).toFixed(2)}`,
-        max: `8.7% de R$ 30 = R$ ${(Math.floor(3000 * 0.087)/100).toFixed(2)}`
-      }
-    });
-    console.log(`📊 DADOS REAIS - Pool de saques calculada:`, stats.withdrawalPool);
     return stats;
   }
 
@@ -4423,25 +4337,20 @@ export class MemStorage implements IStorage {
   }
 
   async getAllUsersAdmin(filters: any): Promise<any[]> {
-    console.log('🔍 INICIANDO getAllUsersAdmin com filtros:', filters);
     
     const allUsers = Array.from(this.users.values());
-    console.log("📊 MemStorage.getAllUsersAdmin - Total users no Map:", allUsers.length);
     
     let filteredUsers = allUsers;
     if (filters.plan && filters.plan !== 'all') {
-      console.log(`🔍 Aplicando filtro de plano: ${filters.plan}`);
       filteredUsers = allUsers.filter(user => user.plan === filters.plan);
     }
     
-    console.log(`📊 Usuários após filtros: ${filteredUsers.length}`);
     
     // Aplicar paginação
     const startIndex = (filters.page - 1) * filters.limit;
     const endIndex = startIndex + filters.limit;
     const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
     
-    console.log(`📄 Paginação: página ${filters.page}, ${startIndex}-${endIndex}, retornando ${paginatedUsers.length} usuários`);
     
     return paginatedUsers;
   }
@@ -4491,7 +4400,6 @@ export class MemStorage implements IStorage {
   }
 
   async processWithdrawal(withdrawal: any): Promise<any> {
-    console.log(`💰 Processando saque de R$ ${(withdrawal.amount/1000).toFixed(2)} para usuário ${withdrawal.userId}`);
     return { success: true, transactionId: `WTH${Date.now()}` };
   }
 
@@ -4508,7 +4416,6 @@ export class MemStorage implements IStorage {
         })
         .returning();
       
-      console.log(`📧 Notificação criada: ${notification.title} para usuário ${notification.userId}`);
       return created;
     } catch (error) {
       console.error("Erro ao criar notificação:", error);
@@ -4539,7 +4446,6 @@ export class MemStorage implements IStorage {
         })
         .returning();
       
-      console.log(`🔔 Evento do sistema: ${eventType} - ${description}`);
       return event;
     } catch (error) {
       console.error("Erro ao registrar evento do sistema:", error);
@@ -4551,7 +4457,6 @@ export class MemStorage implements IStorage {
   async createTeamRequest(insertRequest: InsertTeamRequest): Promise<TeamRequest> {
     try {
       const [teamRequest] = await db.insert(teamRequests).values(insertRequest).returning();
-      console.log(`🤝 Nova solicitação de equipe criada: ID ${teamRequest.id}`);
       return teamRequest;
     } catch (error) {
       console.error("DatabaseStorage.createTeamRequest error:", error);
@@ -4610,7 +4515,6 @@ export class MemStorage implements IStorage {
         .where(eq(teamRequests.id, requestId))
         .returning();
 
-      console.log(`✅ Solicitação ${requestId} atualizada para status: ${status}`);
       return updatedRequest;
     } catch (error) {
       console.error("DatabaseStorage.updateTeamRequestStatus error:", error);
@@ -4645,7 +4549,6 @@ export class MemStorage implements IStorage {
         .where(eq(teamRequests.id, requestId))
         .returning();
 
-      console.log(`🔄 Solicitação ${requestId} restaurada da lixeira`);
       return updatedRequest;
     } catch (error) {
       console.error("DatabaseStorage.restoreTeamRequest error:", error);
@@ -4667,7 +4570,6 @@ export class MemStorage implements IStorage {
         )
         .returning();
 
-      console.log(`🗑️ ${expiredRequests.length} solicitações expiradas removidas permanentemente`);
       return expiredRequests.length;
     } catch (error) {
       console.error("DatabaseStorage.cleanupExpiredTrashRequests error:", error);
@@ -4692,7 +4594,6 @@ export class MemStorage implements IStorage {
   async createTeamMessage(insertMessage: InsertTeamMessage): Promise<TeamMessage> {
     try {
       const [teamMessage] = await db.insert(teamMessages).values(insertMessage).returning();
-      console.log(`💬 Nova mensagem criada para solicitação ${insertMessage.requestId}`);
       return teamMessage;
     } catch (error) {
       console.error("DatabaseStorage.createTeamMessage error:", error);
@@ -4724,7 +4625,6 @@ export class MemStorage implements IStorage {
             eq(teamMessages.senderId, userId)
           )
         );
-      console.log(`📖 Mensagens marcadas como lidas para solicitação ${requestId}`);
     } catch (error) {
       console.error("DatabaseStorage.markMessagesAsRead error:", error);
     }
@@ -4783,7 +4683,6 @@ export class MemStorage implements IStorage {
       respondedAt: null,
     };
     this.teamRequests.set(id, teamRequest);
-    console.log(`🤝 Nova solicitação de equipe criada: ID ${id}`);
     return teamRequest;
   }
 
@@ -4814,7 +4713,6 @@ export class MemStorage implements IStorage {
     };
     
     this.teamRequests.set(requestId, updatedRequest);
-    console.log(`✅ Solicitação ${requestId} atualizada para status: ${status}`);
     return updatedRequest;
   }
 
@@ -4832,7 +4730,6 @@ export class MemStorage implements IStorage {
       isRead: false,
     };
     this.teamMessages.set(id, teamMessage);
-    console.log(`💬 Nova mensagem criada para solicitação ${insertMessage.requestId}`);
     return teamMessage;
   }
 
@@ -4849,7 +4746,6 @@ export class MemStorage implements IStorage {
         this.teamMessages.set(id, message);
       }
     }
-    console.log(`📖 Mensagens marcadas como lidas para solicitação ${requestId}`);
   }
 
   async getUnreadMessageCount(requestId: number, userId: number): Promise<number> {
@@ -4879,7 +4775,6 @@ export class MemStorage implements IStorage {
   }
 
   async processWithdrawal(withdrawal: any): Promise<any> {
-    console.log(`💰 Processando saque de R$ ${(withdrawal.amount/1000).toFixed(2)} para usuário ${withdrawal.userId}`);
     return { success: true, transactionId: `WTH${Date.now()}` };
   }
 
@@ -4890,7 +4785,6 @@ export class MemStorage implements IStorage {
       id: Date.now(),
       createdAt: new Date(),
     };
-    console.log(`📧 Notificação criada: ${notification.title} para usuário ${notification.userId}`);
     return created;
   }
 
@@ -4907,7 +4801,6 @@ export class MemStorage implements IStorage {
       metadata,
       createdAt: new Date(),
     };
-    console.log(`🔔 Evento do sistema: ${eventType} - ${description}`);
     return event;
   }
 
@@ -5078,7 +4971,6 @@ export class MemStorage implements IStorage {
   // 💬 SISTEMA DE CHAT DIRETO DE 24 HORAS
   async createChatSession(session: any): Promise<void> {
     this.chatSessions.set(session.id, session);
-    console.log(`💬 Chat session criada: ${session.id} - ${session.clientName} x ${session.professionalName}`);
   }
 
   async getChatSession(chatId: string): Promise<any> {
@@ -5111,7 +5003,6 @@ export class MemStorage implements IStorage {
     if (session) {
       session.isActive = false;
       session.closedAt = new Date();
-      console.log(`🚫 Chat fechado: ${chatId}`);
     }
   }
 
@@ -5160,7 +5051,6 @@ export class MemStorage implements IStorage {
     }
     
     this.professionalCertifications.get(certificationData.professionalId)!.push(newCertification);
-    console.log(`📋 Certificação criada: ${certificationData.certificationType} para profissional ${certificationData.professionalId}`);
     return newCertification;
   }
 
@@ -5177,7 +5067,6 @@ export class MemStorage implements IStorage {
           validatedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         });
-        console.log(`✅ Certificação validada: ${certification.certificationType} - Status: ${validationData.validationStatus}`);
         return certification;
       }
     }
@@ -5383,7 +5272,6 @@ export class MemStorage implements IStorage {
         details: JSON.stringify({ type, duration })
       });
 
-      console.log(`✅ Usuário ${userId} ${type === 'permanent' ? 'banido' : 'suspenso'}: ${reason}`);
     } catch (error) {
       console.error("MemStorage.banUser error:", error);
       throw error;
@@ -5458,7 +5346,6 @@ export class MemStorage implements IStorage {
 
     this.teamHirings.set(newTeamHiring.id, newTeamHiring);
     
-    console.log(`🤝 Team Hiring criado: ID ${newTeamHiring.id}, ${professionalCount} profissionais, ${discountPercentage}% desconto`);
     return newTeamHiring;
   }
 
@@ -5485,7 +5372,6 @@ export class MemStorage implements IStorage {
     };
 
     this.teamHirings.set(id, updatedHiring);
-    console.log(`🔄 Team Hiring ${id} status atualizado para: ${status}`);
     return updatedHiring;
   }
 
@@ -5555,7 +5441,6 @@ export class MemStorage implements IStorage {
 
   async createReferralCampaign(): Promise<any> {
     try {
-      console.log("📢 CAMPANHA PROMOCIONAL CRIADA: 100 clientes + 300 profissionais");
       return {
         id: 1,
         name: "Campanha 100 Clientes Iniciais",
@@ -5621,7 +5506,6 @@ export class MemStorage implements IStorage {
 
           if (newUser) {
             results.success.push(email);
-            console.log(`📧 Cliente promocional criado: ${email} - Código: ${referralCode}`);
           } else {
             results.failed.push(email);
           }
@@ -5654,7 +5538,6 @@ export class MemStorage implements IStorage {
             if (user.userType === 'client') {
               // Remove expired promotional clients
               this.users.delete(user.id);
-              console.log(`🗑️ Removendo cliente promocional expirado: ${user.email}`);
               clientsRemoved++;
             } else if (user.userType === 'professional') {
               // Restrict professionals to free plan
@@ -5666,7 +5549,6 @@ export class MemStorage implements IStorage {
                 credits: 0
               };
               this.users.set(user.id, updatedUser);
-              console.log(`⬇️ Profissional restrito ao plano free: ${user.email}`);
               professionalsRestricted++;
             }
           }
@@ -5697,7 +5579,6 @@ export class MemStorage implements IStorage {
     };
     
     this.professionalTeams.set(team.id, team);
-    console.log(`🏢 Equipe profissional criada: ${team.teamName} (ID: ${team.id})`);
     return team;
   }
 
@@ -5718,7 +5599,6 @@ export class MemStorage implements IStorage {
     };
     
     this.teamEmployees.set(employee.id, employee);
-    console.log(`👤 Funcionário adicionado: ${employee.name} (Equipe: ${employee.teamId})`);
     return employee;
   }
 
@@ -5753,7 +5633,6 @@ export class MemStorage implements IStorage {
     };
     
     this.teamInvitations.set(invitation.id, invitation);
-    console.log(`📧 Convite enviado para usuário ${invitation.invitedUserId} (Equipe: ${invitation.teamId})`);
     return invitation;
   }
 
@@ -5785,7 +5664,6 @@ export class MemStorage implements IStorage {
     }
     
     this.teamInvitations.set(invitationId, invitation);
-    console.log(`📨 Convite respondido: ${status} (ID: ${invitationId})`);
     return invitation;
   }
 
@@ -5808,7 +5686,6 @@ export class MemStorage implements IStorage {
     };
     
     this.teamEmployees.set(employee.id, employee);
-    console.log(`✅ Usuário da plataforma adicionado à equipe: ${employee.name}`);
     return employee;
   }
 
@@ -5819,7 +5696,6 @@ export class MemStorage implements IStorage {
     }
     
     this.teamEmployees.delete(employeeId);
-    console.log(`🗑️ Funcionário removido da equipe: ${employee.name}`);
     return true;
   }
 
@@ -5874,7 +5750,6 @@ export class MemStorage implements IStorage {
     professional.autoAcceptEnabled = enabled;
     professional.autoAcceptResponseTime = 1; // 1 hora por padrão
     
-    console.log(`🤖 Auto-aceitar ${enabled ? 'ATIVADO' : 'DESATIVADO'} para profissional ${professional.name} (ID: ${professionalId})`);
     
     return { 
       success: true, 
@@ -5917,7 +5792,6 @@ export class MemStorage implements IStorage {
       }
     }
     
-    console.log(`📊 Analytics auto-aceitar: ${analytics.length} profissionais com sistema ativo`);
     return analytics;
   }
 
@@ -5932,8 +5806,6 @@ export class MemStorage implements IStorage {
     
     if (!professional || !client || !professional.autoAcceptEnabled) return;
 
-    console.log(`📢 NOTIFICAÇÃO AUTO-ACEITAR: Cliente ${client.username} (${client.email}) informado sobre ${professional.name}`);
-    console.log(`⏰ PRAZO: Análise automática em 1 hora - se não aceitar, escalará para 24h`);
   }
 
   // Sistema de busca de alternativas baseado em ratings
@@ -5957,9 +5829,7 @@ export class MemStorage implements IStorage {
       })
       .slice(0, limit);
 
-    console.log(`🔄 ENCONTRADAS ${alternatives.length} alternativas bem avaliadas:`);
     alternatives.forEach((prof, index) => {
-      console.log(`   ${index + 1}. ${prof.name} - ⭐ ${prof.rating}/5 (${prof.reviews} avaliações)`);
     });
 
     return alternatives;
@@ -5972,21 +5842,16 @@ export class MemStorage implements IStorage {
     
     if (!professional || !client) return;
 
-    console.log(`⏰ EXPIRAÇÃO AUTO-ACEITAR: ${professional.name} não respondeu em 1 hora`);
     
     // Buscar as 5 melhores alternativas da mesma categoria
     const alternatives = await this.findAlternativeProfessionals(professionalId, 5);
     
     if (alternatives.length > 0) {
-      console.log(`🎯 ESCALAÇÃO AUTOMÁTICA: Oferecendo ${alternatives.length} profissionais alternativos para ${client.username}`);
-      console.log(`📊 CRITÉRIO: Melhores avaliados da categoria "${professional.category}"`);
       
       // Log das alternativas oferecidas
       alternatives.forEach((alt, index) => {
-        console.log(`   ${index + 1}. ${alt.name} - ⭐ ${alt.rating}/5 - Auto-aceitar: ${alt.autoAcceptEnabled ? 'SIM' : 'NÃO'}`);
       });
     } else {
-      console.log(`⚠️ NENHUMA ALTERNATIVA: Não há outros profissionais da categoria "${professional.category}" disponíveis`);
     }
   }
 
@@ -5997,8 +5862,6 @@ export class MemStorage implements IStorage {
     
     if (categoryProfessionals.length <= 1) return;
 
-    console.log(`🔄 ROTATIVIDADE ${category}: ${categoryProfessionals.length} profissionais com auto-aceitar ativo`);
-    console.log(`📋 EVITANDO SOBRECARGA: Sistema balanceará demanda entre profissionais disponíveis`);
   }
 
   // ================================
@@ -6020,7 +5883,6 @@ export class MemStorage implements IStorage {
     };
     
     this.profiles.set(profileKey, profile);
-    console.log(`👤 Perfil ${profileData.userType} criado para usuário ${profileData.userId}`);
     return profile;
   }
 
@@ -6037,7 +5899,6 @@ export class MemStorage implements IStorage {
     };
     
     this.profiles.set(profileKey, updatedProfile);
-    console.log(`👤 Perfil ${userType} atualizado para usuário ${userId}`);
     return updatedProfile;
   }
 
@@ -6051,7 +5912,6 @@ export class MemStorage implements IStorage {
         (userType === 'client' || profile.profession) // Profissional deve ter categoria
       );
     
-    console.log(`📋 Encontrados ${completedProfiles.length} perfis completos de ${userType}`);
     return completedProfiles;
   }
 
@@ -6078,20 +5938,15 @@ export class MemStorage implements IStorage {
       };
       
       this.professionals.set(professional.id, updatedProfessional);
-      console.log(`🔄 Dados orbitais atualizados para profissional ${professional.name}`);
     }
   }
 }
 
 // Sistema inteligente com Supabase Auth: Use dados reais quando Auth disponível
 async function createStorageInstance(): Promise<IStorage> {
-  console.log("🔍 Detectando ambiente de produção...");
   
   // Verificar se Supabase Auth está disponível
   if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
-    console.log("✅ SUPABASE AUTH DETECTADO - Modo produção ativo!");
-    console.log("🚀 Sistema operando com dados reais via Supabase");
-    console.log("📊 Usuários autênticos, profissionais reais, transações válidas");
     
     // Tentar conectar ao banco PostgreSQL se disponível
     if (process.env.DATABASE_URL) {
@@ -6102,12 +5957,9 @@ async function createStorageInstance(): Promise<IStorage> {
         );
         
         await Promise.race([testPromise, timeoutPromise]);
-        console.log("🎯 BANCO POSTGRESQL CONECTADO - Máxima performance!");
         return new DatabaseStorage();
         
       } catch (error) {
-        console.log("⚠️ PostgreSQL indisponível, usando Supabase Auth + MemStorage");
-        console.log("📋 Dados reais funcionando via API Supabase");
       }
     }
     
@@ -6115,15 +5967,12 @@ async function createStorageInstance(): Promise<IStorage> {
     return new MemStorage();
     
   } else {
-    console.log("📝 Supabase não configurado - usando sistema de demonstração");
     return new MemStorage();
   }
 }
 
 // Função para forçar MemStorage em caso de problemas persistentes
 function forceMemStorage() {
-  console.log("🔄 Forçando uso do MemStorage devido a problemas de conectividade");
-  console.log("📊 Sistema funcionando normalmente com dados em memória");
   return new MemStorage();
 }
 
@@ -6134,16 +5983,10 @@ createStorageInstance().then(storageInstance => {
   storage = storageInstance;
   
   if (storageInstance.constructor.name === 'DatabaseStorage') {
-    console.log("🎯 SISTEMA PRODUÇÃO ATIVO - Dados reais do Supabase!");
-    console.log("✅ Usuários autênticos, profissionais reais, transações válidas");
-    console.log("🚀 Sistema pronto para ambiente de produção");
   } else {
-    console.log("📋 Sistema de demonstração ativo");
-    console.log("✅ Todos os recursos funcionais para apresentação e testes");
   }
 }).catch((error) => {
   console.error("⚠️ Erro na inicialização:", error.message);
-  console.log("📊 Mantendo sistema de demonstração funcionando normalmente");
   storage = new MemStorage();
 });
 

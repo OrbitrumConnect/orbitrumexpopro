@@ -8,8 +8,6 @@ export function configureDomainAcceptance(req: Request, res: Response, next: Nex
   
   // Log todas as requisições para debug
   if (host?.includes('orbitrum.com.br')) {
-    console.log(`🌐 DOMÍNIO PERSONALIZADO: ${host}${req.path} - Method: ${req.method}`);
-    console.log(`🌐 Headers: ${JSON.stringify(req.headers)}`);
   }
   
   // Configurar headers para aceitar domínio personalizado

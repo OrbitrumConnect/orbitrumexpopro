@@ -15,7 +15,6 @@ export function ensureHealthEndpoint(app: Express) {
   );
 
   if (!hasHealthRoute) {
-    console.warn('🚨 HEALTH ENDPOINT AUSENTE - Criando emergencialmente');
     
     // Criar health endpoint de emergência
     app.get('/api/health', (req, res) => {
@@ -30,7 +29,6 @@ export function ensureHealthEndpoint(app: Express) {
       });
     });
     
-    console.log('✅ Health endpoint de emergência criado');
   }
 }
 

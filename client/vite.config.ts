@@ -13,8 +13,13 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5000,
-    // Removido proxy para Railway - usando apenas Supabase
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',

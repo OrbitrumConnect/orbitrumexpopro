@@ -21,10 +21,11 @@ type TabMapa = 'disponiveis' | 'rede' | 'todos';
 
 const counterFilter = 'contrast(1.176) brightness(0.667) hue-rotate(180deg) invert(1)';
 
-function pino(foto?: string | null) {
+function pino(foto?: string | null, ocupado?: boolean) {
+  const cor = ocupado ? '#FF9800' : C.cyan;
   const inner = foto
-    ? `<div style="filter:${counterFilter};width:36px;height:36px"><img src="${foto}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid ${C.cyan};box-shadow:0 0 0 3px ${C.cyan}55"/></div>`
-    : `<div style="width:28px;height:28px;border-radius:50%;background:${C.cyan};border:2px solid #001019;box-shadow:0 0 0 4px ${C.cyan}44"></div>`;
+    ? `<div style="filter:${counterFilter};width:36px;height:36px"><img src="${foto}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid ${cor};box-shadow:0 0 0 3px ${cor}55"/></div>`
+    : `<div style="width:28px;height:28px;border-radius:50%;background:${cor};border:2px solid #001019;box-shadow:0 0 0 4px ${cor}44"></div>`;
   return L.divIcon({ className: '', html: inner, iconSize: [36, 36], iconAnchor: [18, 18] });
 }
 
@@ -61,6 +62,7 @@ export default function MapaDisponiveis() {
   const [tab, setTab] = useState<TabMapa>('disponiveis');
   const [overlayFechado, setOverlayFechado] = useState(false);
   const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
+  const [ocupados, setOcupados] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const onR = () => setMobile(window.innerWidth < 900);
@@ -86,7 +88,7 @@ export default function MapaDisponiveis() {
     }).then(r => { if (!r.ok) throw 0; }).catch(() => {});
   };
 
-  const addMarkersToMap = (list: Prof[], map: L.Map) => {
+  const addMarkersToMap = (list: Prof[], map: L.Map, busySet?: Set<number>) => {
     if (clusterRef.current) { map.removeLayer(clusterRef.current); clusterRef.current = null; }
     markersRef.current = [];
     const cluster = L.markerClusterGroup({
@@ -103,8 +105,9 @@ export default function MapaDisponiveis() {
     const pts: [number, number][] = [];
     list.forEach(p => {
       if (p.latitude == null || p.longitude == null) return;
-      const m = L.marker([p.latitude, p.longitude], { icon: pino(p.avatar) });
-      m.bindTooltip(`${p.name}${p.title ? ' · ' + p.title : ''}`, { direction: 'top' });
+      const m = L.marker([p.latitude, p.longitude], { icon: pino(p.avatar, busySet?.has(p.id)) });
+      const busyLabel = busySet?.has(p.id) ? ' (Ocupado)' : '';
+      m.bindTooltip(`${p.name}${p.title ? ' · ' + p.title : ''}${busyLabel}`, { direction: 'top' });
       m.on('click', () => setProfModalId(p.id));
       cluster.addLayer(m);
       markersRef.current.push(m);
@@ -178,14 +181,19 @@ export default function MapaDisponiveis() {
       })
       .catch(() => {});
 
+    fetch('/api/service-flow/status/ocupados')
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j?.success) setOcupados(new Set(j.ocupados)); })
+      .catch(() => {});
+
     return () => { map.remove(); mapRef.current = null; };
   }, []);
 
   useEffect(() => {
     if (!mapRef.current) return;
     const list = tab === 'disponiveis' ? profs : tab === 'rede' ? redeProfs : todosProfs;
-    addMarkersToMap(list, mapRef.current);
-  }, [tab, profs, redeProfs, todosProfs]);
+    addMarkersToMap(list, mapRef.current, ocupados);
+  }, [tab, profs, redeProfs, todosProfs, ocupados]);
 
   const activeList = tab === 'disponiveis' ? profs : tab === 'rede' ? redeProfs : todosProfs;
   const tabLabel = { disponiveis: 'Disponíveis agora', rede: 'Minha Rede', todos: 'Todos' };
@@ -195,35 +203,35 @@ export default function MapaDisponiveis() {
       <Sidebar />
       <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', flexWrap: 'wrap', gap: 8 }}>
+          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '10px 12px' : '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', flexWrap: 'wrap', gap: mobile ? 4 : 8 }}>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: 0.5 }}>Mapa da Rede</div>
-              <div style={{ fontSize: 13, color: C.ink2 }}>Terminal operacional — a rede na geografia</div>
+              <div style={{ fontWeight: 700, fontSize: mobile ? 14 : 17, letterSpacing: 0.5 }}>Mapa da Rede</div>
+              {!mobile && <div style={{ fontSize: 13, color: C.ink2 }}>Terminal operacional — a rede na geografia</div>}
             </div>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <div style={{ fontSize: 13, color: C.cyan, fontWeight: 600 }}>{carregou ? `${activeList.length} ${tab === 'disponiveis' ? 'disponíveis' : 'profissionais'}` : '…'}</div>
+            <div style={{ display: 'flex', gap: mobile ? 6 : 10, alignItems: 'center' }}>
+              <div style={{ fontSize: mobile ? 11 : 13, color: C.cyan, fontWeight: 600 }}>{carregou ? `${activeList.length} ${tab === 'disponiveis' ? 'disponíveis' : 'profissionais'}` : '…'}</div>
               {user && (
                 <button onClick={toggleDisponibilidade}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: disponivel ? `${C.cyan}1f` : 'transparent', border: `1px solid ${disponivel ? C.borderHot : C.border}`, borderRadius: 16, padding: '6px 14px', color: disponivel ? C.cyan : C.ink3, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: disponivel ? C.cyan : C.ink3, boxShadow: disponivel ? `0 0 6px ${C.cyan}` : 'none' }} />
-                  {disponivel ? 'Você: Disponível' : 'Ativar presença'}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: mobile ? 4 : 6, background: disponivel ? `${C.cyan}1f` : 'transparent', border: `1px solid ${disponivel ? C.borderHot : C.border}`, borderRadius: 16, padding: mobile ? '4px 10px' : '6px 14px', color: disponivel ? C.cyan : C.ink3, fontSize: mobile ? 11 : 12, fontWeight: 500, cursor: 'pointer' }}>
+                  <span style={{ width: mobile ? 6 : 8, height: mobile ? 6 : 8, borderRadius: '50%', background: disponivel ? C.cyan : C.ink3, boxShadow: disponivel ? `0 0 6px ${C.cyan}` : 'none' }} />
+                  {disponivel ? 'Disponível' : 'Ativar'}
                 </button>
               )}
             </div>
           </header>
 
           {/* TABS — terminal do mapa */}
-          <div style={{ display: 'flex', gap: 4, padding: '10px 24px 0 clamp(18px, 14vw, 56px)', background: 'rgba(4,17,31,0.5)' }}>
+          <div style={{ display: 'flex', gap: mobile ? 2 : 4, padding: mobile ? '6px 12px 0' : '10px 24px 0 clamp(18px, 14vw, 56px)', background: 'rgba(4,17,31,0.5)' }}>
             {(['disponiveis', 'rede', 'todos'] as TabMapa[]).map(t => {
               const on = tab === t;
               return (
                 <button key={t} onClick={() => setTab(t)}
-                  style={{ padding: '8px 18px', borderRadius: '10px 10px 0 0',
+                  style={{ padding: mobile ? '5px 10px' : '8px 18px', borderRadius: '10px 10px 0 0',
                     borderTop: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderLeft: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderRight: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderBottom: 'none', background: on ? `${C.blue}22` : 'transparent',
-                    color: on ? C.cyan : C.ink2, fontSize: 13, fontWeight: on ? 600 : 400, cursor: 'pointer', letterSpacing: 0.3 }}>
+                    color: on ? C.cyan : C.ink2, fontSize: mobile ? 11 : 13, fontWeight: on ? 600 : 400, cursor: 'pointer', letterSpacing: 0.3 }}>
                   {t === 'disponiveis' && '● '}{tabLabel[t]}
                 </button>
               );
@@ -231,8 +239,8 @@ export default function MapaDisponiveis() {
           </div>
 
           <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(12px, 3vw, 24px)' }}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, fontSize: 13, color: C.ink2 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: C.cyan, flexShrink: 0 }} />
+            <div style={{ display: 'flex', gap: mobile ? 6 : 8, alignItems: 'center', marginBottom: mobile ? 8 : 12, fontSize: mobile ? 11 : 13, color: C.ink2 }}>
+              <span style={{ width: mobile ? 7 : 10, height: mobile ? 7 : 10, borderRadius: '50%', background: C.cyan, flexShrink: 0 }} />
               <span>
                 {tab === 'disponiveis' && <>Só quem está <b style={{ color: C.cyan }}>disponível</b> aparece. Toque no pino ou card pra conectar.</>}
                 {tab === 'rede' && <>Profissionais da <b style={{ color: C.cyan }}>sua rede</b> — quem você conhece, quem te indicaram, quem já trabalhou com você.</>}
@@ -302,9 +310,15 @@ export default function MapaDisponiveis() {
                         <div style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</div>
                         <div style={{ color: C.ink2, fontSize: 12 }}>{p.title}</div>
                         {tab === 'disponiveis' && (
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4, fontSize: 11, color: C.cyan }}>
-                            <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.cyan, boxShadow: `0 0 6px ${C.cyan}` }} /> Disponível
-                          </div>
+                          ocupados.has(p.id) ? (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4, fontSize: 11, color: '#FF9800' }}>
+                              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF9800', boxShadow: '0 0 6px #FF980088' }} /> Ocupado
+                            </div>
+                          ) : (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4, fontSize: 11, color: C.cyan }}>
+                              <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.cyan, boxShadow: `0 0 6px ${C.cyan}` }} /> Disponível
+                            </div>
+                          )
                         )}
                         {p.chips && p.chips.length > 0 && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
@@ -312,27 +326,29 @@ export default function MapaDisponiveis() {
                           </div>
                         )}
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); setConversaId(p.id); }}
-                        style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '7px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
+                      <button onClick={(e) => { e.stopPropagation(); if (!ocupados.has(p.id)) setConversaId(p.id); }}
+                        style={{ border: 'none', cursor: ocupados.has(p.id) ? 'not-allowed' : 'pointer', borderRadius: 16, padding: '7px 16px', background: ocupados.has(p.id) ? 'rgba(255,152,0,0.2)' : `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: ocupados.has(p.id) ? '#FF9800' : '#012', fontWeight: 600, fontSize: 12, flexShrink: 0, opacity: ocupados.has(p.id) ? 0.7 : 1 }}>{ocupados.has(p.id) ? 'Ocupado' : 'Conectar'}</button>
                     </div>
                   ))}
                 </div>
               </>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr 1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: mobile ? 8 : 14, marginTop: mobile ? 16 : 28 }}>
-              {[
-                { icon: '📍', title: 'Localização real', desc: 'Autorizada e temporária.' },
-                { icon: '🔗', title: 'Conecte direto', desc: 'Toque pra ver e conectar.' },
-                { icon: '🛡️', title: 'Privacidade', desc: 'Desativou? Saiu do mapa.' },
-              ].map((step, i) => (
-                <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: mobile ? 10 : 14, padding: mobile ? 10 : 18, textAlign: 'center' }}>
-                  <div style={{ fontSize: mobile ? 16 : 22, marginBottom: mobile ? 4 : 8 }}>{step.icon}</div>
-                  <div style={{ fontWeight: 600, fontSize: mobile ? 11 : 13, marginBottom: mobile ? 2 : 4 }}>{step.title}</div>
-                  <div style={{ color: C.ink2, fontSize: mobile ? 10 : 12, lineHeight: 1.4 }}>{step.desc}</div>
-                </div>
-              ))}
-            </div>
+            {!mobile && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginTop: 28 }}>
+                {[
+                  { icon: '📍', title: 'Localização real', desc: 'Autorizada e temporária.' },
+                  { icon: '🔗', title: 'Conecte direto', desc: 'Toque pra ver e conectar.' },
+                  { icon: '🛡️', title: 'Privacidade', desc: 'Desativou? Saiu do mapa.' },
+                ].map((step, i) => (
+                  <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, textAlign: 'center' }}>
+                    <div style={{ fontSize: 22, marginBottom: 8 }}>{step.icon}</div>
+                    <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>{step.title}</div>
+                    <div style={{ color: C.ink2, fontSize: 12, lineHeight: 1.4 }}>{step.desc}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {profModalId != null && (

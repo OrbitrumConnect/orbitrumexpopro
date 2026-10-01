@@ -16,7 +16,6 @@ export function setupAdminRoutes(app: Express) {
     try {
       // Para desenvolvimento, permitir acesso se não há autenticação
       if (!req.user && process.env.NODE_ENV === 'development') {
-        console.log('🛠️ MODO DESENVOLVIMENTO: Permitindo acesso admin sem autenticação');
         next();
         return;
       }
@@ -37,14 +36,12 @@ export function setupAdminRoutes(app: Express) {
       const isAdmin = userEmail === adminEmail;
       
       if (!isAdmin) {
-        console.log(`🚫 Tentativa de acesso admin negada para: ${userEmail}`);
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: "Acesso negado - Privilégios de administrador necessários",
           message: "Apenas o administrador master pode acessar esta área"
         });
       }
       
-      console.log(`✅ Acesso admin autorizado para: ${userEmail}`);
       next();
     } catch (error) {
       console.error('Erro ao verificar admin:', error);
@@ -55,8 +52,6 @@ export function setupAdminRoutes(app: Express) {
   // TOKENS CREDITADOS - Controle administrativo
   app.get('/api/admin/tokens-creditados', requireAdmin, async (req, res) => {
     try {
-      console.log('🎯 BUSCANDO TOKENS CREDITADOS PARA DASHBOARD ADMIN');
-      
       const users = await storage.getAllUsers();
       const tokensCreditados = [];
       
@@ -75,7 +70,6 @@ export function setupAdminRoutes(app: Express) {
             status: 'Creditado ✅'
           });
           
-          console.log(`💰 ${user.email}: ${user.tokensComprados} tokens (R$ ${valorPix.toFixed(2)})`);
         }
       }
       
@@ -86,7 +80,6 @@ export function setupAdminRoutes(app: Express) {
         usuarios: tokensCreditados
       };
       
-      console.log('📊 RESUMO TOKENS:', resumo);
       res.json(resumo);
       
     } catch (error) {
@@ -138,7 +131,6 @@ export function setupAdminRoutes(app: Express) {
 
       const campaign = await storage.createReferralCampaign(campaignData);
       
-      console.log(`📈 Nova campanha criada: ${name} (${maxParticipants} participantes)`);
       res.json({ success: true, campaign });
     } catch (error) {
       console.error('Erro ao criar campanha:', error);
@@ -277,8 +269,6 @@ export function setupAdminRoutes(app: Express) {
   // Estatísticas gerais do sistema
   app.get('/api/admin/stats', requireAdmin, async (req, res) => {
     try {
-      console.log('🔍 INICIANDO busca de estatísticas administrativas...');
-      
       // Horário atual de Brasília
       const currentTime = BrazilTime.formatNow();
       const currentDay = BrazilTime.now().date();
@@ -318,7 +308,6 @@ export function setupAdminRoutes(app: Express) {
         }
       };
 
-      console.log('✅ ESTATÍSTICAS CALCULADAS:', stats);
       res.json(stats);
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
@@ -329,8 +318,6 @@ export function setupAdminRoutes(app: Express) {
   // Sincronizar dados do Supabase com MemStorage (manual)
   app.post('/api/admin/sync-supabase', requireAdmin, async (req, res) => {
     try {
-      console.log('🔄 INICIANDO sincronização manual com Supabase...');
-      
       const { supabaseSync } = await import('./supabase-sync');
       const result = await supabaseSync.manualSync();
       
@@ -356,12 +343,8 @@ export function setupAdminRoutes(app: Express) {
   // Endpoint para limpar usuários de teste/fake
   app.post('/api/admin/limpar-usuarios-teste', (req, res) => {
     try {
-      console.log('🗑️ LIMPANDO USUÁRIOS DE TESTE...');
-      
       // Chamar método de limpeza
       const result = (storage as any).removeTestUsers();
-      
-      console.log('✅ LIMPEZA CONCLUÍDA - Removidos:', result.removed, 'Restantes:', result.remaining);
       
       res.json({
         success: true,
@@ -381,7 +364,6 @@ export function setupAdminRoutes(app: Express) {
   // Listar todos os usuários com filtros
   app.get('/api/admin/users', requireAdmin, async (req, res) => {
     try {
-      console.log('🔍 INICIANDO busca de usuários administrativos...');
       const { status, plan, page = 1, limit = 20 } = req.query;
       
       const users = await storage.getAllUsersAdmin({
@@ -391,7 +373,6 @@ export function setupAdminRoutes(app: Express) {
         limit: Number(limit)
       });
 
-      console.log(`✅ USUÁRIOS RETORNADOS: ${users.length} (página ${page})`);
       res.json(users);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
@@ -538,49 +519,30 @@ export function setupAdminRoutes(app: Express) {
   // CREDITAR TOKENS PARA USUÁRIO - SISTEMA BACKUP SIMPLES E DIRETO
   app.post('/api/admin/creditar-tokens', async (req, res) => {
     try {
-      console.log('🚀 ENDPOINT /api/admin/creditar-tokens CHAMADO');
-      console.log('📋 Request body:', req.body);
-      
       const { userId, tokens, description } = req.body;
-      
-      console.log(`🔧 CREDITANDO TOKENS: ${tokens} para usuário ${userId}`);
-      console.log(`📝 Descrição: ${description}`);
 
       if (!userId || !tokens) {
-        console.log('❌ Dados faltando');
         return res.status(400).json({ error: 'userId e tokens são obrigatórios' });
       }
 
       // Para Maria Helena (ID 2)
       const userIdNum = Number(userId);
-      console.log(`🎯 User ID numérico: ${userIdNum}`);
-      
+
       // CRÉDITO DIRETO PARA MARIA HELENA
       if (userIdNum === 2) {
-        console.log('💰 CREDITANDO TOKENS DIRETAMENTE PARA MARIA HELENA (ID: 2)');
-        
         const user = await storage.getUser(2);
-        console.log('👤 Usuário encontrado:', user ? `${user.email} (ID: ${user.id})` : 'NÃO ENCONTRADO');
         
         if (user) {
           const tokensToAdd = Number(tokens);
           const newPurchasedTokens = user.tokensComprados + tokensToAdd;
           const newTotalTokens = user.tokensPlano + user.tokensGanhos + newPurchasedTokens - user.tokensUsados;
-          
-          console.log(`📊 ANTES: tokensComprados=${user.tokensComprados}, total=${user.tokens}`);
-          console.log(`📊 DEPOIS: tokensComprados=${newPurchasedTokens}, total=${newTotalTokens}`);
-          
+
           await storage.updateUser(2, {
             tokensComprados: newPurchasedTokens,
             tokens: newTotalTokens
           });
           
-          console.log(`✅ TOKENS CREDITADOS COM SUCESSO!`);
-          console.log(`👤 Maria Helena (${user.email})`);
-          console.log(`💰 Tokens adicionados: ${tokensToAdd}`);
-          console.log(`🎯 Total tokens comprados: ${newPurchasedTokens}`);
-
-          return res.json({ 
+          return res.json({
             success: true, 
             message: `${tokensToAdd} tokens creditados para Maria Helena`,
             newBalance: newPurchasedTokens,
@@ -589,7 +551,6 @@ export function setupAdminRoutes(app: Express) {
             userEmail: user.email
           });
         } else {
-          console.log('❌ Maria Helena não encontrada no storage');
           return res.status(404).json({ error: 'Maria Helena não encontrada no storage' });
         }
       } else if (userIdNum === 3) {
@@ -605,13 +566,8 @@ export function setupAdminRoutes(app: Express) {
             tokens: newTotalTokens
           });
           
-          console.log(`✅ TOKENS CREDITADOS COM SUCESSO!`);
-          console.log(`👤 Pedro (${user.email})`);
-          console.log(`💰 Tokens adicionados: ${tokensToAdd}`);
-          console.log(`🎯 Total tokens comprados: ${newPurchasedTokens}`);
-
-          return res.json({ 
-            success: true, 
+          return res.json({
+            success: true,
             message: `${tokensToAdd} tokens creditados para Pedro`,
             newBalance: newPurchasedTokens,
             totalTokens: newTotalTokens,
@@ -619,11 +575,9 @@ export function setupAdminRoutes(app: Express) {
             userEmail: user.email
           });
         } else {
-          console.log('❌ Pedro não encontrado no storage');
           return res.status(404).json({ error: 'Pedro não encontrado no storage' });
         }
       } else {
-        console.log(`❌ User ID ${userIdNum} não permitido (apenas Maria Helena ID: 2 ou Pedro ID: 3)`);
         return res.status(400).json({ error: 'Este endpoint é específico para Maria Helena (ID: 2) ou Pedro (ID: 3)' });
       }
 
@@ -636,17 +590,12 @@ export function setupAdminRoutes(app: Express) {
   // Creditar PIX para Pedro Henrique (usuário atual)
   app.post("/api/admin/creditar-pix-pedro", async (req, res) => {
     try {
-      console.log('🚀 CREDITANDO PIX PARA PEDRO HENRIQUE');
-      
       const { amount } = req.body;
       const userId = 1; // Pedro Henrique
       
       // Calcular tokens (R$ 1,00 = 720 tokens)
       const tokens = Math.floor(amount * 720);
-      
-      console.log(`💰 PIX: R$ ${amount.toFixed(2)}`);
-      console.log(`🪙 Tokens: ${tokens.toLocaleString()}`);
-      
+
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: 'Usuário não encontrado' });
@@ -660,10 +609,6 @@ export function setupAdminRoutes(app: Express) {
         tokensComprados: newPurchaseTokens,
         tokens: newTotalTokens
       });
-      
-      console.log(`✅ PIX R$ ${amount.toFixed(2)} → ${tokens.toLocaleString()} tokens creditados!`);
-      console.log(`👤 Pedro Henrique (${user.email})`);
-      console.log(`💼 Novo saldo: ${newPurchaseTokens.toLocaleString()} tokens`);
       
       res.json({
         success: true,
@@ -697,8 +642,6 @@ export function setupAdminRoutes(app: Express) {
         tokens: newTotal,
         tokensComprados: newPurchased
       });
-      
-      console.log(`✅ ${tokensToAdd} tokens creditados para ${user.email}`);
       
       res.json({
         success: true,
@@ -777,8 +720,6 @@ export function setupAdminRoutes(app: Express) {
   // API para rastreamento de compras em tempo real
   app.get('/api/admin/purchases', requireAdmin, async (req, res) => {
     try {
-      console.log('🔍 BUSCANDO histórico de compras...');
-      
       // Buscar todas as ações administrativas
       const allActions = await storage.getAdminActions();
       
@@ -798,7 +739,6 @@ export function setupAdminRoutes(app: Express) {
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 50); // Últimas 50 compras
 
-      console.log(`✅ COMPRAS ENCONTRADAS: ${purchases.length}`);
       res.json(purchases);
     } catch (error) {
       console.error('Erro ao buscar compras:', error);
@@ -898,8 +838,6 @@ export function setupAdminRoutes(app: Express) {
         }
       };
       
-      console.log(`💰 SIMULAÇÃO: Saque de R$ ${(withdrawableAmount/1000).toFixed(2)} para usuário ${userId}`);
-      
       res.json(result);
     } catch (error) {
       console.error('Erro na simulação de saque:', error);
@@ -992,8 +930,6 @@ export function setupAdminRoutes(app: Express) {
   // API para limpar completamente o MemStorage
   app.post('/api/admin/reset-storage', requireAdmin, async (req, res) => {
     try {
-      console.log('🔥 RESET COMPLETO DO MEMSTORAGE SOLICITADO');
-      
       // Verificar se storage tem método clearAllData
       if (typeof storage.clearAllData === 'function') {
         await storage.clearAllData();
@@ -1022,8 +958,6 @@ export function setupAdminRoutes(app: Express) {
   // API para forçar reset de todos os tokens para 0
   app.post('/api/admin/force-zero-tokens', requireAdmin, async (req, res) => {
     try {
-      console.log('🔄 ADMIN: Forçando reset de todos os tokens para 0...');
-      
       // Buscar todos os usuários
       const allUsers = await storage.getAllUsers();
       let updatedCount = 0;
@@ -1039,14 +973,12 @@ export function setupAdminRoutes(app: Express) {
             plan: 'free'
           });
           updatedCount++;
-          console.log(`✅ ADMIN: Usuário ${user.username} (ID: ${user.id}) -> 0 tokens`);
         } catch (updateError) {
           console.error(`❌ ADMIN: Erro ao atualizar usuário ${user.id}:`, updateError);
         }
       }
       
-      console.log(`✅ ADMIN: ${updatedCount} usuários atualizados para 0 tokens`);
-      res.json({ 
+      res.json({
         success: true, 
         message: `${updatedCount} usuários atualizados para 0 tokens`,
         updatedUsers: updatedCount
@@ -1156,16 +1088,11 @@ export function setupAdminRoutes(app: Express) {
   // EMERGENCY ENDPOINT FOR MARIA HELENA - PIX R$ 6.00 (SECURED)
   app.get('/api/admin/credit-maria-helena-emergency', requireAdmin, async (req, res) => {
     try {
-      console.log('🚨 ENDPOINT EMERGÊNCIA MARIA HELENA EXECUTADO');
-      
       const user = await storage.getUser(2);
       if (!user) {
         return res.json({ error: 'Maria Helena não encontrada', status: 404 });
       }
 
-      console.log(`👤 ENCONTRADA: ${user.email} (ID: ${user.id})`);
-      console.log(`💰 TOKENS ATUAIS: ${user.tokensComprados}`);
-      
       const tokensToAdd = 4320;
       const newTokens = user.tokensComprados + tokensToAdd;
       const totalTokens = user.tokensPlano + user.tokensGanhos + newTokens - user.tokensUsados;
@@ -1175,10 +1102,7 @@ export function setupAdminRoutes(app: Express) {
         tokens: totalTokens
       });
 
-      console.log(`✅ CREDITADO: +${tokensToAdd} tokens`);
-      console.log(`📊 NOVO TOTAL: ${newTokens} tokens comprados`);
-      
-      res.json({ 
+      res.json({
         success: true,
         message: 'MARIA HELENA: 4.320 tokens creditados com sucesso!',
         user: user.email,

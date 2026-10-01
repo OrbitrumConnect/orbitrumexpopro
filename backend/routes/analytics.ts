@@ -20,14 +20,6 @@ router.post('/behavior-advanced', async (req: Request, res: Response) => {
   try {
     const data = req.body;
     
-    console.log('🔥 DADOS COMPORTAMENTAIS RECEBIDOS:', {
-      user: data.user,
-      activeTab: data.activeTab,
-      deviceType: data.performance?.deviceType,
-      timeOfDay: data.usagePattern?.timeOfDay,
-      sessionDuration: Math.floor((data.usagePattern?.sessionDuration || 0) / 1000) + 's'
-    });
-
     // Armazenar dados para análise
     behaviorData.push({
       ...data,
@@ -41,8 +33,6 @@ router.post('/behavior-advanced', async (req: Request, res: Response) => {
     // Gerar insights para otimização
     const insights = generateUserInsights(data);
     
-    console.log('💡 INSIGHTS GERADOS:', insights);
-
     res.status(200).json({ 
       success: true, 
       message: 'Dados comportamentais processados',

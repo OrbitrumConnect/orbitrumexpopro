@@ -284,8 +284,17 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
               )}
             </Button>
 
+            <button type="button" onClick={toggleMode}
+              style={{ width: '100%', background: isLogin ? 'rgba(0,229,255,0.08)' : 'none', border: `1px solid ${isLogin ? 'rgba(0,229,255,0.25)' : 'rgba(0,174,255,0.15)'}`, borderRadius: 12, padding: '12px 16px', color: '#91A9BD', fontSize: 14, cursor: 'pointer', transition: 'all 0.2s' }}>
+              {isLogin ? (
+                <>Não tem conta? <span style={{ color: '#00E5FF', fontWeight: 700, fontSize: 15 }}>Cadastre-se grátis</span></>
+              ) : (
+                <>Já tem conta? <span style={{ color: '#00E5FF', fontWeight: 600 }}>Entrar</span></>
+              )}
+            </button>
+
             {isLogin && (
-              <div className="flex items-center justify-center space-x-2 pt-2">
+              <div className="flex items-center justify-center space-x-2 pt-1">
                 <input id="rememberMe" type="checkbox" checked={formData.rememberMe} onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))} className="w-4 h-4 text-cyan-400 border-gray-700 rounded focus:ring-cyan-400 focus:ring-2" />
                 <Label htmlFor="rememberMe" className="text-sm text-gray-300 cursor-pointer">Permanecer conectado (30 dias)</Label>
               </div>
@@ -307,16 +316,6 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             </Button>
           </div>
         </form>
-
-        <div className="mt-4 text-center">
-          <button type="button" onClick={toggleMode} style={{ background: 'none', border: 'none', color: '#91A9BD', fontSize: 13, cursor: 'pointer' }}>
-            {isLogin ? (
-              <>Não tem conta? <span style={{ color: '#00E5FF', fontWeight: 600 }}>Cadastre-se grátis</span></>
-            ) : (
-              <>Já tem conta? <span style={{ color: '#00E5FF', fontWeight: 600 }}>Entrar</span></>
-            )}
-          </button>
-        </div>
 
         <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(0,174,255,0.15)' }}>
           <p className="text-xs text-center" style={{ color: '#607A91' }}>Ao continuar, você concorda com nossos <span style={{ color: '#00E5FF', cursor: 'pointer' }}>Termos de Uso</span> e <span style={{ color: '#00E5FF', cursor: 'pointer' }}>Política de Privacidade</span></p>

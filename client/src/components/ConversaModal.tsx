@@ -55,6 +55,9 @@ export default function ConversaModal({ profId, onClose }: Props) {
   const [proRespondeu, setProRespondeu] = useState(false);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
 
+  const [aceite, setAceite] = useState({ aceiteCliente: true, aceiteProfissional: false });
+  const [confirmacao, setConfirmacao] = useState({ confirmacaoCliente: false, confirmacaoProfissional: false });
+
   const clienteUserId = user?.id_interno;
   const souOPro = prof && clienteUserId && prof.userId === clienteUserId;
   const outroNome = souOPro ? (prof?.clientName || 'o cliente') : (prof?.name?.split(' ')[0] ?? 'o profissional');
@@ -67,6 +70,21 @@ export default function ConversaModal({ profId, onClose }: Props) {
       .then(j => { if (j.success) setProf(j.profissional); })
       .catch(() => {});
   }, [profId, clienteUserId]);
+
+  // Carregar estado do backend ao abrir
+  useEffect(() => {
+    if (!chatIdRef.current) return;
+    fetch(`/api/service-flow/${chatIdRef.current}`)
+      .then(r => r.json())
+      .then(j => {
+        if (j.success && j.exists) {
+          setEstado(j.estado);
+          setAceite({ aceiteCliente: j.aceiteCliente, aceiteProfissional: j.aceiteProfissional });
+          setConfirmacao({ confirmacaoCliente: j.confirmacaoCliente, confirmacaoProfissional: j.confirmacaoProfissional });
+        }
+      })
+      .catch(() => {});
+  }, [prof]);
 
   const criarOuCarregarChat = useCallback(async () => {
     if (!prof || !clienteUserId) return;
@@ -171,38 +189,89 @@ export default function ConversaModal({ profId, onClose }: Props) {
     }
   }
 
-  // Serviço concluído → registra o fato (declarado). Depois a confirmação valida.
-  async function marcarConcluido() {
-    setEstado('concluido');
+  const profUserId = prof?.userId ?? prof?.id;
+
+  // Aceitar solicitação (profissional aceita)
+  async function aceitarSolicitacao() {
+    if (!chatIdRef.current || !clienteUserId || !profUserId) return;
     try {
-      const r = await fetch('/api/professional/update-service-status', {
+      const r = await fetch(`/api/service-flow/${chatIdRef.current}/aceitar`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceId: `conv-${profId}-${clienteUserId}-${Date.now()}`,
-          status: 'concluido',
-          professionalId: prof?.userId,
-          clientUserId: clienteUserId,
-          description: `Serviço com ${prof?.name}`,
-          category: null, region: prof?.city ?? null,
-        }),
+        body: JSON.stringify({ userId: clienteUserId, clientId: clienteUserId, professionalId: profUserId }),
       });
       const j = await r.json();
-      if (j.relationalFactId) { setFactId(j.relationalFactId); setAviso('Experiência registrada. Falta a confirmação dos dois lados.'); }
-      else setAviso('Serviço marcado como concluído.');
-    } catch { setAviso('Não foi possível registrar agora.'); }
+      if (j.success) {
+        setAceite({ aceiteCliente: j.aceiteCliente, aceiteProfissional: j.aceiteProfissional });
+        if (j.aceiteProfissional) setAviso('Profissional aceitou! Agora combinem o serviço.');
+      }
+    } catch { setAviso('Não foi possível aceitar agora.'); }
   }
 
-  // Os dois confirmam → fato vira VALIDADO. Nunca paga por confirmar.
-  async function confirmar() {
-    if (!factId) return;
+  // Avançar estado no backend (trilha bilateral real)
+  async function avancarEstado(novoEstado: Estado) {
+    if (!chatIdRef.current || !clienteUserId || !profUserId) return;
     try {
-      const r = await fetch(`/api/facts/${factId}/confirm`, {
+      const r = await fetch(`/api/service-flow/${chatIdRef.current}/transicao`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clienteConfirmou: true, profissionalConfirmou: true }),
+        body: JSON.stringify({ userId: clienteUserId, clientId: clienteUserId, professionalId: profUserId, novoEstado }),
       });
       const j = await r.json();
-      if (j.confianca === 'validado') { setEstado('validado'); setAviso('Experiência validada pelos dois lados. A rede aprendeu.'); }
+      if (j.success) {
+        setEstado(j.estado);
+      } else {
+        setAviso(j.message || 'Transição não permitida.');
+      }
+    } catch { setAviso('Erro ao atualizar estado.'); }
+
+    // Gatilho extra: ao concluir, registra fato relacional
+    if (novoEstado === 'concluido') {
+      try {
+        const r = await fetch('/api/professional/update-service-status', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            serviceId: `conv-${profId}-${clienteUserId}-${Date.now()}`,
+            status: 'concluido',
+            professionalId: profUserId,
+            clientUserId: clienteUserId,
+            description: `Serviço com ${prof?.name}`,
+            category: null, region: prof?.city ?? null,
+          }),
+        });
+        const j = await r.json();
+        if (j.relationalFactId) { setFactId(j.relationalFactId); setAviso('Experiência registrada. Falta a confirmação dos dois lados.'); }
+        else setAviso('Serviço marcado como concluído.');
+      } catch { setAviso('Não foi possível registrar agora.'); }
+    }
+  }
+
+  // Confirmação bilateral REAL — cada lado confirma separado
+  async function confirmar() {
+    if (!chatIdRef.current || !clienteUserId) return;
+    try {
+      const r = await fetch(`/api/service-flow/${chatIdRef.current}/confirmar`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: clienteUserId }),
+      });
+      const j = await r.json();
+      if (j.success) {
+        setConfirmacao({ confirmacaoCliente: j.confirmacaoCliente, confirmacaoProfissional: j.confirmacaoProfissional });
+        if (j.validado) {
+          setEstado('validado');
+          setAviso('Experiência validada pelos dois lados. A rede aprendeu.');
+        } else {
+          const faltaQuem = !j.confirmacaoCliente ? 'o cliente' : 'o profissional';
+          setAviso(`Sua confirmação registrada. Falta ${faltaQuem} confirmar.`);
+        }
+      }
     } catch { setAviso('Não foi possível confirmar agora.'); }
+
+    // Atualizar fato relacional se existir
+    if (factId) {
+      fetch(`/api/facts/${factId}/confirm`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clienteConfirmou: true, profissionalConfirmou: false }),
+      }).catch(() => {});
+    }
   }
 
   const idx = FLUXO.findIndex(([e]) => e === estado);
@@ -220,7 +289,9 @@ export default function ConversaModal({ profId, onClose }: Props) {
             : <div style={{ width: 38, height: 38, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}` }} />}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, fontSize: 15 }}>{prof?.name ?? 'Profissional'}</div>
-            <div style={{ fontSize: 11, color: C.cyan }}>Online</div>
+            <div style={{ fontSize: 11, color: estado === 'validado' ? '#4ADE80' : estado === 'em_servico' ? '#FF9800' : C.cyan }}>
+              {estado === 'validado' ? '✓ Concluído' : estado === 'em_servico' ? 'Em serviço' : estado === 'a_caminho' ? 'A caminho' : estado === 'chegou' ? 'No local' : 'Online'}
+            </div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.ink2, fontSize: 22, cursor: 'pointer' }}>×</button>
         </header>
@@ -319,34 +390,50 @@ export default function ConversaModal({ profId, onClose }: Props) {
           <div ref={msgsEndRef} />
         </div>
 
-        {/* ação de ciclo */}
+        {/* ação de ciclo — trilha bilateral real */}
         {aviso && <div style={{ padding: '8px 18px', color: C.cyan, fontSize: 12, textAlign: 'center' }}>{aviso}</div>}
-        <div style={{ padding: '0 18px 10px', display: 'flex', gap: 8, justifyContent: 'center' }}>
-          {estado === 'conversando' && (
-            <button onClick={() => setEstado('combinado')} style={botao(C)}>
-              {souOPro ? 'Aceitar serviço' : 'Combinamos o serviço'}
+        <div style={{ padding: '0 18px 10px', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {estado === 'conversando' && !aceite.aceiteProfissional && souOPro && (
+            <button onClick={aceitarSolicitacao} style={botao(C)}>Aceitar solicitação</button>
+          )}
+          {estado === 'conversando' && !aceite.aceiteProfissional && !souOPro && (
+            <div style={{ color: C.ink2, fontSize: 12, textAlign: 'center' }}>Aguardando o profissional aceitar...</div>
+          )}
+          {estado === 'conversando' && aceite.aceiteProfissional && (
+            <button onClick={() => avancarEstado('combinado')} style={botao(C)}>
+              {souOPro ? 'Serviço combinado' : 'Combinamos o serviço'}
             </button>
           )}
-          {estado === 'combinado' && (
-            <button onClick={() => setEstado('a_caminho')} style={botao(C)}>
-              {souOPro ? 'Estou a caminho' : 'Profissional a caminho'}
-            </button>
+          {estado === 'combinado' && souOPro && (
+            <button onClick={() => avancarEstado('a_caminho')} style={botao(C)}>Estou a caminho</button>
+          )}
+          {estado === 'combinado' && !souOPro && (
+            <div style={{ color: C.ink2, fontSize: 12 }}>Aguardando profissional iniciar deslocamento...</div>
           )}
           {estado === 'a_caminho' && (
-            <button onClick={() => setEstado('chegou')} style={botao(C)}>
+            <button onClick={() => avancarEstado('chegou')} style={botao(C)}>
               {souOPro ? 'Cheguei ao local' : 'Profissional chegou'}
             </button>
           )}
           {estado === 'chegou' && (
-            <button onClick={() => setEstado('em_servico')} style={botao(C)}>Iniciar serviço</button>
+            <button onClick={() => avancarEstado('em_servico')} style={botao(C)}>Iniciar serviço</button>
           )}
           {estado === 'em_servico' && (
-            <button onClick={marcarConcluido} style={botao(C)}>
+            <button onClick={() => avancarEstado('concluido')} style={botao(C)}>
               {souOPro ? 'Serviço realizado' : 'Serviço concluído'}
             </button>
           )}
-          {estado === 'concluido' && factId && (
-            <button onClick={confirmar} style={botao(C)}>Confirmar experiência (os dois lados)</button>
+          {estado === 'concluido' && (
+            <>
+              <button onClick={confirmar} style={botao(C)}>Confirmar minha parte</button>
+              <div style={{ width: '100%', textAlign: 'center', fontSize: 11, color: C.ink3, marginTop: 4 }}>
+                {confirmacao.confirmacaoCliente && confirmacao.confirmacaoProfissional
+                  ? '✓ Ambos confirmaram'
+                  : confirmacao.confirmacaoCliente ? '✓ Você confirmou — aguardando profissional'
+                  : confirmacao.confirmacaoProfissional ? '✓ Profissional confirmou — confirme sua parte'
+                  : 'Os dois lados precisam confirmar'}
+              </div>
+            </>
           )}
           {estado === 'validado' && (
             <div style={{ color: C.cyan, fontSize: 13, fontWeight: 600 }}>✓ Experiência validada — a rede aprendeu</div>

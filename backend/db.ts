@@ -3,7 +3,6 @@ import postgres from 'postgres';
 import * as schema from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
-  console.log("DATABASE_URL nao configurada - usando sistema local");
 }
 
 // Configuração para Supabase - desabilitar prefetch para modo Transaction pool

@@ -61,14 +61,6 @@ router.post('/add-service', async (req: Request, res: Response) => {
 
     serviceCalendar.push(serviceEntry);
 
-    console.log('📅 SERVIÇO ADICIONADO AO CALENDÁRIO:', {
-      id: serviceEntry.id,
-      professional: professional.username,
-      client: client.username,
-      service: serviceType,
-      date: `${date} ${time}`
-    });
-
     // Criar notificações para ambas as partes
     const notifications = [
       {
@@ -207,13 +199,6 @@ router.post('/request-cancellation', async (req: Request, res: Response) => {
 
     serviceNotifications.push(notification);
 
-    console.log('❌ CANCELAMENTO SOLICITADO:', {
-      serviceId,
-      requestedBy: requester?.username,
-      awaitingConsent: otherUser?.username,
-      reason
-    });
-
     res.json({
       success: true,
       message: 'Solicitação de cancelamento enviada',
@@ -289,12 +274,6 @@ router.post('/respond-cancellation', async (req: Request, res: Response) => {
 
       serviceNotifications.push(notification);
 
-      console.log('✅ CANCELAMENTO APROVADO:', {
-        serviceId,
-        approvedBy: responder?.username,
-        originalRequester: requester?.username
-      });
-
       res.json({
         success: true,
         message: 'Cancelamento aprovado com sucesso',
@@ -321,13 +300,6 @@ router.post('/respond-cancellation', async (req: Request, res: Response) => {
       };
 
       serviceNotifications.push(notification);
-
-      console.log('❌ CANCELAMENTO REJEITADO:', {
-        serviceId,
-        rejectedBy: responder?.username,
-        originalRequester: requester?.username,
-        reason
-      });
 
       res.json({
         success: true,

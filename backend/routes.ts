@@ -29,6 +29,30 @@ import {
 import { perfilRelacional, atividadeRecente } from './relational-facts';
 import { eq as _eq } from 'drizzle-orm';
 
+// Fallback: quando DATABASE_URL não existe, orbitmatch usa o MemStorage
+const hasDb = !!process.env.DATABASE_URL;
+async function queryProfessionals(): Promise<any[]> {
+  if (hasDb) return _db.select().from(_professionals);
+  return (await storage.getAllProfessionals()) as any[];
+}
+async function queryUsers(): Promise<any[]> {
+  if (hasDb) return _db.select().from(_users);
+  const total = await storage.getTotalUsers();
+  const result: any[] = [];
+  for (let i = 1; i <= Math.max(total, 50); i++) {
+    const u = await storage.getUser(i);
+    if (u) result.push(u);
+  }
+  return result;
+}
+async function queryProfessionalById(id: number): Promise<any | undefined> {
+  if (hasDb) {
+    const [p] = await _db.select().from(_professionals).where(_eq(_professionals.id, id));
+    return p;
+  }
+  return storage.getProfessional(id);
+}
+
 // Helper functions para carteira administrativa
 function getNextSundayDate(): string {
   const today = new Date();
@@ -133,11 +157,9 @@ function setupHealthCheck(app: Express) {
       // Se não houver profissionais reais, usar demonstrativos para apresentação
       if (activeProfessionals.length === 0) {
         const demoProfessionals = allProfessionals.filter(prof => prof.isDemo && prof.available);
-        console.log(`📍 GPS: ${demoProfessionals.length} profissionais demonstrativos para apresentação`);
         return res.json(demoProfessionals);
       }
       
-      console.log(`📍 GPS: ${activeProfessionals.length} profissionais reais ativos`);
       res.json(activeProfessionals);
     } catch (error) {
       console.error('❌ GPS: Erro ao buscar profissionais ativos:', error);
@@ -217,12 +239,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRIAR JOÃO VIDAL MANUALMENTE - ENDPOINT EMERGENCIAL
   app.post('/api/admin/criar-joao-manual', async (req, res) => {
     try {
-      console.log('🚀 CRIANDO JOÃO VIDAL MANUALMENTE...');
       
       // Verificar se já existe
       const existingUser = await storage.getUserByEmail('joao.vidal@remederi.com');
       if (existingUser) {
-        console.log('✅ João Vidal já existe:', existingUser);
         return res.json({ 
           success: true, 
           message: "João Vidal já existe no sistema",
@@ -261,7 +281,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const newUser = await storage.createUser(userData);
-      console.log(`✅ JOÃO VIDAL CRIADO MANUALMENTE: ${newUser.email} (ID: ${newUser.id})`);
       
       res.json({ 
         success: true, 
@@ -282,7 +301,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // FORÇAR DETECÇÃO DE NOVOS USUÁRIOS SUPABASE
   app.post('/api/admin/detectar-usuarios-supabase', async (req, res) => {
     try {
-      console.log('🔍 FORÇANDO DETECÇÃO DE USUÁRIOS SUPABASE...');
       
       // Força nova detecção através do MemStorage
       if ('detectSupabaseUsers' in storage) {
@@ -291,8 +309,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Buscar usuários atualizados
         const totalUsers = Array.from((storage as any).users.values());
         const supabaseUsers = totalUsers.filter(u => u.supabaseId?.startsWith('manual_'));
-        
-        console.log(`✅ DETECÇÃO CONCLUÍDA - Total: ${totalUsers.length}, Supabase: ${supabaseUsers.length}`);
         
         res.json({ 
           success: true, 
@@ -342,7 +358,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Marcar email como verificado diretamente
       await storage.updateUser(user.id, { emailVerified: true });
       
-      console.log('✅ EMAIL VERIFICADO MANUALMENTE PELO ADMIN:', email);
       res.json({
         success: true,
         message: `Email ${email} verificado manualmente com sucesso!`,
@@ -375,8 +390,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { transactionId, tokens } = req.body;
       
-      console.log('💰 Liberando tokens manualmente:', { transactionId, tokens });
-      
       // Buscar usuário pelo ID fixo (usuário de teste)
       const userId = 1;
       const user = await storage.getUser(userId);
@@ -391,7 +404,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tokensComprados: (user.tokensComprados || 0) + tokens
       });
       
-      console.log('✅ Tokens liberados com sucesso para usuário', userId);
       res.json({ success: true, message: `${tokens} tokens liberados com sucesso` });
     } catch (error) {
       console.error('❌ Erro ao liberar tokens:', error);
@@ -450,7 +462,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           gamesPlayedToday: 0, // Admin tem jogos ilimitados
           plan: 'admin'
         };
-        console.log('✅ Admin master logado:', authUser.data.user.email);
         return res.json(adminUser);
       }
       
@@ -527,8 +538,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!updatedUser) {
         return res.status(500).json({ message: "Erro ao transformar conta em profissional" });
       }
-      
-      console.log(`✅ Conta transformada: ${user.email} agora é profissional`);
       
       res.json({ 
         success: true, 
@@ -613,14 +622,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log('📍 Buscando profissionais próximos:', { latitude, longitude, radius });
-      
       const allProfessionals = await storage.getAllProfessionals();
-      console.log('📍 Total de profissionais encontrados:', allProfessionals.length);
       
       // Filtrar profissionais próximos
       const nearbyProfessionals = allProfessionals.filter((prof: any) => {
-        console.log('📍 Verificando:', prof.name, 'Lat:', prof.latitude, 'Lon:', prof.longitude);
         if (!prof.latitude || !prof.longitude) return false;
         
         // Calcular distância usando fórmula de Haversine
@@ -631,7 +636,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           prof.longitude
         );
         
-        console.log('📍 Distância calculada:', distance, 'km');
         return distance <= parseInt(radius as string);
       }).map((prof: any) => ({
         ...prof,
@@ -642,8 +646,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           prof.longitude
         )
       })).sort((a: any, b: any) => a.distance - b.distance);
-      
-      console.log('📍 Encontrados', nearbyProfessionals.length, 'profissionais próximos');
       
       res.json({
         success: true,
@@ -947,11 +949,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/teams/create-with-requests", handleAsyncError(async (req, res) => {
     const { name, professionals, projectTitle, description, clientId, clientName } = req.body;
 
-    console.log("🎯 INICIANDO CRIAÇÃO DE TIME:");
-    console.log("   Nome:", name);
-    console.log("   Cliente:", clientName, "(ID:", clientId, ")");
-    console.log("   Profissionais:", professionals?.length || 0);
-
     if (!professionals || professionals.length === 0) {
       return res.status(400).json({
         success: false,
@@ -965,8 +962,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       userId: clientId,
       professionalIds: professionals.map((p: any) => p.id.toString())
     });
-
-    console.log("✅ TIME CRIADO:", team.name, "(ID:", team.id, ")");
 
     // Criar solicitações para cada profissional
     const requests = await Promise.all(
@@ -982,9 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           clientName: clientName
         };
 
-        console.log("📤 CRIANDO SOLICITAÇÃO PARA:", professional.name, "(ID:", professional.id, ")");
         const request = await storage.createTeamRequest(requestData);
-        console.log("   ✅ Solicitação criada ID:", request.id);
         return request;
       })
     );
@@ -999,15 +992,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: "team_request",
           data: { teamId: team.id, clientName, projectTitle }
         });
-        console.log("🔔 NOTIFICAÇÃO ENVIADA para:", professional.name);
         return notification;
       })
     );
-
-    console.log("🎉 PROCESSO COMPLETO:");
-    console.log("   Time criado:", team.name);
-    console.log("   Solicitações:", requests.length);
-    console.log("   Notificações:", notifications.length);
 
     res.json({
       success: true,
@@ -1083,12 +1070,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await storage.updateProfessionalAutoAccept(professionalId, enabled);
       
       // Log para admin ver atividades
-      console.log(`🎯 AUTO-ACEITAR ${enabled ? 'ATIVADO' : 'DESATIVADO'}:`, {
-        profissional: userEmail,
-        status: enabled ? 'ATIVO' : 'INATIVO',
-        timestamp: new Date().toISOString(),
-        professionalId
-      });
       
       // Enviar dados para tracking comportamental do admin
       await behaviorTracker.track({
@@ -1150,8 +1131,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ error: 'Valor e tokens são obrigatórios' });
     }
 
-    console.log(`💰 CRIANDO PIX PARA TOKENS: ${tokens} tokens por R$ ${amount} - ${userEmail}`);
-
     // Criar PIX válido
     const transactionId = `TKN${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
     const pixKey = '03669282106'; // CPF Pedro Galluf
@@ -1160,8 +1139,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Simular QR Code base64 (placeholder válido)
     const placeholderQR = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
 
-    console.log(`✅ PIX TOKENS CRIADO: ${transactionId} - Válido para ${pixKey}`);
-    
     res.json({
       success: true,
       qrCodeBase64: placeholderQR,
@@ -1239,8 +1216,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId, amount, description } = req.body;
       
-      console.log(`🔧 CRÉDITO MANUAL: ${amount} tokens para usuário ${userId}`);
-      
       const user = await storage.getUser(parseInt(userId));
       if (!user) {
         return res.status(404).json({ error: 'Usuário não encontrado' });
@@ -1251,8 +1226,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUser(parseInt(userId), {
         purchaseTokens: newTokens
       });
-      
-      console.log(`✅ CREDITADO: ${amount} tokens para ${user.email || `usuário ${userId}`}`);
       
       res.json({
         success: true,
@@ -1270,7 +1243,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ENDPOINT EMERGÊNCIA: Restaurar dados completos do admin
   app.post("/api/admin/restore-emergency", async (req, res) => {
     try {
-      console.log('🚨 RESTAURANDO DADOS ADMIN EMERGÊNCIA...');
       
       // Restaurar Pedro com tokens permanentes
       let pedro = await storage.getUserByEmail('phpg69@gmail.com');
@@ -1287,7 +1259,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           tokensPlano: 0,
           canMakePurchases: true
         });
-        console.log('✅ Pedro restaurado com 2160 tokens');
       }
       
       // Restaurar Maria Helena com tokens permanentes
@@ -1305,7 +1276,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           tokensPlano: 0,
           canMakePurchases: true
         });
-        console.log('✅ Maria Helena restaurada com 4320 tokens');
       }
       
       // Atualizar admin master para plano Max com tokens
@@ -1319,7 +1289,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adminLevel: 10,
           userType: "admin" as any
         });
-        console.log('✅ Admin master atualizado para Max com 30k tokens');
       }
       
       res.json({
@@ -1431,8 +1400,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const professionalId = parseInt(req.params.id);
       const { serviceType, tokenCost } = req.body;
       
-      console.log(`🎯 CONSUMO DIRETO: ${serviceType} - ${tokenCost} tokens`);
-      
       // Get user
       const user = await storage.getUser(1);
       if (!user) {
@@ -1476,7 +1443,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             tokensGanhos: newTokensGanhos
           });
           
-          console.log(`💰 COMISSÃO PAGA: +${professionalCommission} tokens ganhos para ${professional.name} (só para consumo)`);
         }
 
         // 💬 CRIAR SESSÃO DE CHAT DE 24 HORAS
@@ -1517,7 +1483,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: new Date().toISOString()
         });
         
-        console.log(`🔔 NOTIFICAÇÃO CRIADA para ${professional.name}: +${professionalCommission} tokens`);
       } catch (error) {
         console.error('Erro ao processar comissão/notificação:', error);
         // Não falhar a requisição por erro de comissão
@@ -1545,8 +1510,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      console.log(`✅ TOKENS DEDUZIDOS: ${finalTokenCost} - Comissão profissional: ${professionalCommission} - Serviço: ${serviceType}`);
-      
       res.json({
         success: true,
         message: serviceMessage,
@@ -1615,7 +1578,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Registrar solicitação de saque (em produção, integrar com sistema PIX)
       const saqueId = Date.now();
-      console.log(`💰 SAQUE PIX SOLICITADO - User: ${userEmail}, Valor: R$ ${valorReais}, PIX: ${pixKey}, ID: ${saqueId}`);
       
       // Debitar tokens do plano (simular processamento)
       await storage.updateUser(user.id, {
@@ -1650,39 +1612,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User-Email header obrigatório" });
       }
       
-      console.log(`🔍 Buscando usuário por email: ${userEmail}`);
-      
       // Buscar usuário por email diretamente
       let user = await storage.getUserByEmail(userEmail);
       
       // Se usuário não existe, criar automaticamente (funciona para MemStorage)
       if (!user) {
-        console.log(`🆕 Criando usuário automaticamente: ${userEmail}`);
-        console.log(`🔍 Verificando se método createUserIfNotExists existe:`, typeof (storage as any).createUserIfNotExists);
         
         if (typeof (storage as any).createUserIfNotExists === 'function') {
           try {
             user = await (storage as any).createUserIfNotExists(userEmail, 'client');
-            console.log(`✅ Usuário criado com sucesso: ${user.email} (ID: ${user.id})`);
           } catch (error) {
             console.error('❌ Erro ao criar usuário:', error);
           }
         } else {
-          console.log('⚠️ Método createUserIfNotExists não encontrado no storage');
         }
       }
       
       if (!user) {
-        console.log(`❌ Usuário não encontrado: ${userEmail}`);
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
       
-      console.log(`✅ Usuário encontrado: ID ${user.id}, Email ${user.email}`);
-      
       // Buscar carteira usando o ID do usuário encontrado
       const wallet = await storage.getUserWallet(user.id);
-      
-      console.log(`💰 WALLET ENCONTRADA para ${userEmail}:`, wallet);
       
       return res.json(wallet || {
         tokensPlano: 0,
@@ -1712,11 +1663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
       
-      console.log(`💰 WALLET INSTANTÂNEA - User ID: ${userId}, Email: ${user.email}`);
-      console.log(`💰 Tokens ATUAIS: ${user.tokens}, Comprados: ${user.tokensComprados}`);
-      
       const wallet = await storage.getUserWallet(user.id);
-      console.log(`💰 Carteira INSTANTÂNEA:`, wallet);
       
       // Headers para evitar cache e garantir dados frescos INSTANTÂNEOS
       res.set({
@@ -1818,7 +1765,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/users/documents/upload", async (req, res) => {
     try {
       const formData = req.body;
-      console.log('📄 Upload de documentos recebido:', formData);
       
       // Simular processamento de múltiplos documentos
       const results = [];
@@ -1827,8 +1773,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (key.includes('type')) {
           const documentType = value as string;
           const userId = 1; // Mock user ID
-          
-          console.log(`🤖 INICIANDO ANÁLISE IA - DOCUMENTO: ${documentType}`);
           
           // Simular análise por IA
           const aiAnalysis = await performDocumentAIAnalysis(documentType, userId);
@@ -1888,8 +1832,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { type, userId = 1 } = req.body; // Mock implementation
       
-      console.log('🤖 INICIANDO ANÁLISE IA - DOCUMENTO:', { type, userId });
-      
       // Simular análise por IA (em produção seria uma API real de verificação)
       const aiAnalysis = await performDocumentAIAnalysis(type, userId);
       
@@ -1903,8 +1845,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adminNotes: `✅ Aprovado automaticamente por IA - ${aiAnalysis.confidence}% confiança`
         });
 
-        console.log('✅ IA APROVOU DOCUMENTO:', { type, userId, confidence: aiAnalysis.confidence });
-        
         res.json({ 
           success: true, 
           message: 'Documento verificado e aprovado automaticamente pela IA!',
@@ -1919,8 +1859,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adminNotes: `⏳ Pendente revisão manual - IA detectou: ${aiAnalysis.issues.join(', ')}`
         });
 
-        console.log('⏳ IA SOLICITA REVISÃO MANUAL:', { type, userId, issues: aiAnalysis.issues });
-        
         res.json({ 
           success: true, 
           message: 'Documento enviado para revisão manual devido a inconsistências detectadas pela IA',
@@ -1935,8 +1873,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adminNotes: `❌ Rejeitado pela IA - ${aiAnalysis.issues.join(', ')}`
         });
 
-        console.log('❌ IA REJEITOU DOCUMENTO:', { type, userId, issues: aiAnalysis.issues });
-        
         res.json({ 
           success: false, 
           message: 'Documento rejeitado pela análise automática. Por favor, envie documentos mais claros.',
@@ -2023,7 +1959,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API TEMPORÁRIA para aprovar documentos do usuário 1 (João Eduardo)
   app.post("/api/approve-user-documents", async (req, res) => {
     try {
-      console.log('🚀 APROVANDO DOCUMENTOS DO USUÁRIO 1 (João Eduardo)');
       
       // Aprovar documentos do usuário 1 (orbit_user)
       await storage.updateUser(1, {
@@ -2131,7 +2066,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Endpoint para confirmação de email (redirecionamento do Supabase)
   app.get("/auth/confirm", async (req, res) => {
     try {
-      console.log('📧 Redirecionamento de confirmação de email recebido');
       // Redirecionar para a página principal com mensagem de sucesso
       res.redirect("/?confirmed=true");
     } catch (error) {
@@ -2148,10 +2082,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { chatSession } = req.body;
       
       await storage.createChatSession(chatSession);
-      
-      console.log(`💬 Nova sessão de chat criada: ${chatSession.id}`);
-      console.log(`👥 Participantes: ${chatSession.clientName} x ${chatSession.professionalName}`);
-      console.log(`⏰ Expira em: ${chatSession.expiresAt}`);
       
       res.json({ 
         success: true,
@@ -2221,8 +2151,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: new Date().toISOString()
       });
       
-      console.log(`💬 Mensagem enviada no chat ${chatId}: ${senderName} -> ${message}`);
-      
       res.json({ 
         success: true,
         message: "Mensagem enviada com sucesso",
@@ -2265,8 +2193,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email } = req.params;
       
-      console.log(`🗑️ Removendo usuário completamente: ${email}`);
-      
       // 1. Remover do Supabase Auth
       const supabase = getSupabase();
       if (supabase) {
@@ -2276,16 +2202,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (userToDelete) {
             await supabase.auth.admin.deleteUser(userToDelete.id);
-            console.log(`✅ Usuário removido do Supabase Auth: ${email}`);
           }
         } catch (supabaseError) {
-          console.log(`⚠️ Erro ao remover do Supabase: ${supabaseError}`);
         }
       }
       
       // 2. Remover do storage interno
       await storage.deleteUserByEmail(email);
-      console.log(`✅ Usuário removido do storage interno: ${email}`);
       
       res.json({ 
         success: true,
@@ -2355,7 +2278,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Processar cadastro via link master
       if (referralCode === 'MASTER2025') {
-        console.log(`🌟 MASTER REFERRAL SIGNUP: ${email} via link master`);
         
         // Criar usuário com plano Max grátis por 30 dias
         const masterUser = await storage.createUser({
@@ -2380,8 +2302,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           promotionalCode: userReferralCode
         });
 
-        console.log(`✅ USUÁRIO MASTER CRIADO: ${email} com plano Max 30 dias + código ${userReferralCode}`);
-        
         return res.json({
           success: true,
           message: 'Cadastro Master realizado com sucesso! 30 dias grátis plano Max.',
@@ -2625,7 +2545,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { collectReportData, generatePDFReport } = await import('./report-generator');
       
-      console.log('📄 Gerando relatório PDF...');
       const reportData = await collectReportData(storage);
       const pdfBuffer = await generatePDFReport(reportData);
       
@@ -2636,7 +2555,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Length', pdfBuffer.length);
       
       res.send(pdfBuffer);
-      console.log('✅ Relatório PDF gerado com sucesso');
     } catch (error) {
       console.error("Erro ao gerar relatório PDF:", error);
       res.status(500).json({ success: false, message: "Erro ao gerar relatório PDF" });
@@ -2647,7 +2565,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { collectReportData, generateExcelReport } = await import('./report-generator');
       
-      console.log('📊 Gerando relatório Excel...');
       const reportData = await collectReportData(storage);
       const excelBuffer = await generateExcelReport(reportData);
       
@@ -2658,7 +2575,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Length', excelBuffer.length);
       
       res.send(excelBuffer);
-      console.log('✅ Relatório Excel gerado com sucesso');
     } catch (error) {
       console.error("Erro ao gerar relatório Excel:", error);
       res.status(500).json({ success: false, message: "Erro ao gerar relatório Excel" });
@@ -2680,9 +2596,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ success: false, message: `Usuário com email ${oldEmail} não encontrado` });
       }
       
-      console.log(`🔄 CORREÇÃO DE EMAIL: ${oldEmail} → ${newEmail}`);
-      console.log(`💰 Tokens a manter: ${userWithTokens.tokensComprados}`);
-      
       // Atualizar o email do usuário existente (preservando todos os tokens)
       const updatedUser = await storage.updateUser(userWithTokens.id, {
         email: newEmail,
@@ -2692,11 +2605,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verificar se existe conta duplicada com novo email e removê-la
       const duplicateUser = await storage.getUserByEmail(newEmail);
       if (duplicateUser && duplicateUser.id !== userWithTokens.id) {
-        console.log(`🗑️ Removendo conta duplicada: ${newEmail} (ID: ${duplicateUser.id})`);
         // Não implementando remoção - muito perigoso. Apenas avisar.
       }
-      
-      console.log(`✅ EMAIL CORRIGIDO: ${oldEmail} → ${newEmail}, tokens preservados: ${userWithTokens.tokensComprados}`);
       
       res.json({ 
         success: true, 
@@ -2716,8 +2626,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { findBestMatches, generateMatchExplanation } = await import('./ai-matching');
       const { projectType, budget, urgency, workPreference, location, experienceRequired } = req.body;
-      
-      console.log('🤖 IA MATCHING - Critérios:', { projectType, urgency, workPreference });
       
       // Buscar todos os profissionais
       const allProfessionals = await storage.getAllProfessionals();
@@ -2770,8 +2678,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         aiExplanation: generateMatchExplanation(clientProfile, prof)
       }));
       
-      console.log('🎯 IA encontrou', bestMatches.length, 'profissionais compatíveis');
-      
       res.json({
         success: true,
         professionals: matchesWithExplanations,
@@ -2784,8 +2690,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ success: false, message: "Erro no sistema de IA" });
     }
   });
-
-
 
   // 🚗 SISTEMA DE RASTREAMENTO EM TEMPO REAL
   app.get("/api/tracking/active", async (req, res) => {
@@ -2828,8 +2732,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log(`🚗 Iniciando rastreamento para serviço ${serviceId}`);
-      
       // Aqui você salvaria no banco de dados
       // Por enquanto, apenas retornar confirmação
       
@@ -2857,8 +2759,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log(`🛑 Parando rastreamento para serviço ${serviceId}`);
-      
       res.json({
         success: true,
         message: "Rastreamento finalizado com sucesso",
@@ -2875,7 +2775,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // NOVA ROTA: Estatísticas de distribuição de planos para o admin
   app.get("/api/admin/plan-distribution", async (req, res) => {
     try {
-      console.log('📊 Calculando distribuição de planos...');
       
       const allUsers = await storage.getAllUsers();
       const planCounts = {
@@ -2930,8 +2829,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: planPrices[plan] || 0
       }));
 
-      console.log(`📊 Distribuição calculada: ${totalUsers} usuários, ${planStats.length} planos`);
-
       res.json({
         success: true,
         totalUsers,
@@ -2958,8 +2855,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log(`📍 Localização atualizada - Serviço ${serviceId}: ${lat}, ${lng}`);
-      
       // Em produção, salvaria no banco e notificaria via WebSocket
       res.json({
         success: true,
@@ -2983,8 +2878,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "serviceId obrigatório" 
         });
       }
-      
-      console.log(`🏁 Profissional chegou - Serviço ${serviceId}`);
       
       // Em produção, enviaria notificação para o cliente via WebSocket/Push
       res.json({
@@ -3077,10 +2970,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "userId é obrigatório" });
       }
 
-      // Lê do banco (fonte da verdade). Cada profissional é um user (userId preenchido),
-      // então o fato (subject_id → users.id) e a busca falam o MESMO id. Sem colisão.
-      const profissionais = await _db.select().from(_professionals);
-      const usuarios = await _db.select().from(_users);
+      const profissionais = await queryProfessionals();
+      const usuarios = await queryUsers();
 
       // Nome real para os motivos (§35): profissional pelo professionals.name;
       // demais pessoas pelo full_name/username. Nunca expõe username técnico (prof_N).
@@ -3123,12 +3014,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const profId = parseInt(req.params.profId);
       const quemProcura = parseInt(String(req.query.userId || '0'));
 
-      const [prof]: any[] = await _db.select().from(_professionals).where(_eq(_professionals.id, profId));
+      const prof: any = await queryProfessionalById(profId);
       if (!prof) return res.status(404).json({ success: false, message: "Profissional não encontrado" });
 
       const profUserId = prof.userId ?? prof.id;
-      const usuarios = await _db.select().from(_users);
-      const profissionais = await _db.select().from(_professionals);
+      const usuarios = await queryUsers();
+      const profissionais = await queryProfessionals();
       const nomeDeProfPorUserId = new Map<number, string>();
       for (const p of profissionais as any[]) if (p.userId) nomeDeProfPorUserId.set(p.userId, p.name);
       const nomePorId = (id: number) => nomeDeProfPorUserId.get(id)
@@ -3168,8 +3059,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orbitmatch/atividade", async (req, res) => {
     try {
       const userId = parseInt(String(req.query.userId || "0"));
-      const usuarios = await _db.select().from(_users);
-      const profissionais = await _db.select().from(_professionals);
+      const usuarios = await queryUsers();
+      const profissionais = await queryProfessionals();
       const nomeProf = new Map<number, string>(); const avaProf = new Map<number, string>();
       for (const p of profissionais as any[]) { if (p.userId) { nomeProf.set(p.userId, p.name); if (p.avatar) avaProf.set(p.userId, p.avatar); } }
       const nomePorId = (id: number) => nomeProf.get(id) || (usuarios as any[]).find(u => u.id === id)?.fullName || (usuarios as any[]).find(u => u.id === id)?.username;
@@ -3194,7 +3085,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!vu || vu > agora) disp.add(f.subjectId);
         }
       }
-      const profissionais = await _db.select().from(_professionals);
+      const profissionais = await queryProfessionals();
       const itens = (profissionais as any[])
         .filter(p => p.latitude != null && p.longitude != null && disp.has(p.userId ?? p.id))
         .map(p => ({ id: p.id, name: p.name, title: p.title, avatar: p.avatar, latitude: p.latitude, longitude: p.longitude, available: true }));
@@ -3216,8 +3107,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log(`🔄 Status atualizado - Serviço ${serviceId}: ${status}${reason ? ` (${reason})` : ''}`);
-
       // 🔗 GATILHO: serviço concluído vira fato relacional "trabalhou_com".
       // Idempotente por originRef — retry ou clique duplo não duplicam.
       // Nunca derruba a resposta da rota: fato é efeito, não pré-requisito.
@@ -3236,7 +3125,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               concluidoEm: timestamp ? new Date(timestamp) : new Date(),
             });
             relationalFactId = fato.id;
-            console.log(`🔗 Fato ${criado ? 'registrado' : 'já existia'}: trabalhou_com #${fato.id} (${fato.confidence})`);
           }
         } catch (e) {
           console.error('🔗 Falha ao registrar fato relacional (rota segue normalmente):', e);
@@ -3313,8 +3201,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         valorNovo: `${(user.tokensComprados || 0) + totalTokens} tokens (+${totalTokens})`,
         categoria: 'financeiro'
       });
-
-      console.log(`🛒 COMPRA REALIZADA - Cliente: ${user.username}, Pacote: ${selectedPackage.name}, Tokens: ${totalTokens}, Valor: R$ ${selectedPackage.price}`);
 
       res.json({
         success: true,
@@ -3520,8 +3406,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         duration: duration || 50,
         createdAt: new Date().toISOString()
       };
-      
-      console.log("🎮 Jogo FREE salvo:", freeGameScore);
       
       res.status(201).json({
         success: true,
@@ -4049,10 +3933,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       if (recentPendingPayments.length > 0) {
-        console.log(`🔍 Verificando ${recentPendingPayments.length} pagamentos pendentes...`);
         
         for (let payment of recentPendingPayments) {
-          console.log(`⏳ Pagamento pendente: ${payment.transactionId} - R$ ${payment.amount}`);
           
           // TODO: Implementar verificação real via Mercado Pago API
           // const status = await PaymentProcessor.checkPaymentStatus(payment.transactionId, payment.provider);
@@ -4069,7 +3951,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Iniciar polling a cada 15 segundos (como sites de apostas)
   setInterval(checkPendingPayments, 15000);
-  console.log('🚀 Sistema de polling PIX iniciado (15s como sites de apostas)');
 
   // 🧠 SISTEMA DE ANALYTICS E IA COMPORTAMENTAL
   
@@ -4180,8 +4061,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const professionalId = parseInt(req.params.id);
       const { enabled } = req.body;
       
-      console.log(`🤖 Configurando auto-aceitar para profissional ${professionalId}: ${enabled ? 'ATIVO' : 'INATIVO'}`);
-      
       const result = await storage.updateProfessionalAutoAccept(professionalId, enabled);
       
       res.json(result);
@@ -4233,7 +4112,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { event, data } = req.body;
       
       // Log do tracking para o admin ver em tempo real
-      console.log(`📊 ANALYTICS TRACK - ${event}:`, data);
       
       // Aqui você pode salvar no banco de dados se necessário
       // await storage.saveTrackingData({ event, data, timestamp: new Date() });
@@ -4248,7 +4126,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ success: false, message: error.message });
     }
   });
-
 
   // =====================================================
   // SERVICE TRACKING ROUTES - Sistema de Rastreamento de Serviços
@@ -4301,8 +4178,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         additionalData 
       } = req.body;
 
-      console.log(`🚀 ATUALIZAÇÃO SERVIÇO ${serviceId}: ${status} por ${userType} ${userId}`);
-
       let completionCode = null;
       let message = '';
 
@@ -4310,19 +4185,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       switch (status) {
         case 'traveling':
           message = 'Profissional iniciou trajeto para o local';
-          console.log(`📱 NOTIFICAÇÃO CLIENTE: ${message}`, { serviceId, userId, userType, timestamp, location });
-          console.log(`👨‍💼 ADMIN NOTIFICATION: service_started`, { serviceId, userId, userType, timestamp });
           break;
 
         case 'arrived':
           message = 'Profissional chegou ao local';
-          console.log(`📱 NOTIFICAÇÃO CLIENTE: ${message}`, { serviceId, userId, userType, timestamp, location });
-          console.log(`👨‍💼 ADMIN NOTIFICATION: professional_arrived`, { serviceId, userId, userType, timestamp });
           break;
 
         case 'in_progress':
           message = 'Cliente confirmou início do serviço';
-          console.log(`📱 NOTIFICAÇÃO PROFISSIONAL: ${message}`, { serviceId, userId, userType, timestamp });
           break;
 
         case 'completed':
@@ -4330,17 +4200,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const time = Date.now().toString().slice(-6);
           completionCode = `ORB-${date}-${time}`;
           message = `Serviço finalizado! Código: ${completionCode}`;
-          console.log(`📱 NOTIFICAÇÃO AMBOS: ${message}`, { completionCode, serviceId, userId, userType, timestamp });
-          console.log(`👨‍💼 ADMIN NOTIFICATION: service_completed`, { 
-            serviceId, userId, userType, timestamp, completionCode 
-          });
           break;
 
         case 'rated':
           message = 'Avaliação enviada com sucesso';
-          console.log(`👨‍💼 ADMIN NOTIFICATION: service_rated`, { 
-            serviceId, rating: additionalData?.rating, feedback: additionalData?.feedback 
-          });
           break;
       }
 
@@ -4354,7 +4217,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: { location, additionalData },
         service_execution: true
       };
-      console.log('📊 ANALYTICS DATA:', analyticsData);
 
       res.json({ 
         success: true, 
@@ -4445,7 +4307,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics behavior advanced endpoint
   app.post("/api/analytics/behavior-advanced", async (req, res) => {
     const { event, category, properties } = req.body;
-    console.log(`📊 Analytics: ${event} - ${category}`, properties);
     res.json({ success: true, tracked: true });
   });
 
@@ -4591,8 +4452,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  console.log('✅ Missing endpoints e carteira detalhada configurados');
-  
   // ================================
   // ROTAS DE PERFIL COMPLETAS
   // ================================
@@ -4608,8 +4467,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Buscar perfis completos (para sistema orbital)
   app.get('/api/profiles/completed', profileRoutes.getCompletedProfiles);
-
-  console.log('✅ Rotas de perfil configuradas');
 
   // Catch-all de /api e handler de erros — DEPOIS de todas as rotas, senão sombreiam.
   app.use('/api/*', notFoundHandler);

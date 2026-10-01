@@ -42,7 +42,6 @@ async function checkDatabase(): Promise<boolean> {
     await storage.getUsers();
     return true;
   } catch (error) {
-    console.warn('⚠️ Database health check failed:', error);
     return false;
   }
 }
@@ -54,7 +53,6 @@ async function checkAuth(): Promise<boolean> {
   const hasSupabaseKey = !!process.env.SUPABASE_ANON_KEY;
     return hasSupabaseUrl && hasSupabaseKey;
   } catch (error) {
-    console.warn('⚠️ Auth health check failed:', error);
     return false;
   }
 }
@@ -65,7 +63,6 @@ async function checkStorage(): Promise<boolean> {
     await storage.getUsers();
     return true;
   } catch (error) {
-    console.warn('⚠️ Storage health check failed:', error);
     return false;
   }
 }
@@ -76,7 +73,6 @@ function checkMemory(): boolean {
     const maxMemory = 512 * 1024 * 1024; // 512MB limite
     return memUsage.heapUsed < maxMemory;
   } catch (error) {
-    console.warn('⚠️ Memory health check failed:', error);
     return false;
   }
 }
@@ -130,12 +126,10 @@ export function setupHealthCheck(app: Express) {
     try {
       const health = await checkHealth();
       if (health.status !== 'healthy') {
-        console.warn('⚠️ Sistema não está 100% saudável:', health);
       }
     } catch (error) {
       console.error('🚨 Erro no health check automático:', error);
     }
   }, 5 * 60 * 1000); // A cada 5 minutos
   
-  console.log('✅ Health check configurado - /health e /health/detailed');
 }

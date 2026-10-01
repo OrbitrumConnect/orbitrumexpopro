@@ -35,6 +35,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
   const [perfil, setPerfil] = useState<any>(null);
   const [carregando, setCarregando] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [proOcupado, setProOcupado] = useState(false);
   const userId = user?.id_interno ?? 1;
 
   useEffect(() => {
@@ -45,7 +46,11 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
         () => {}
       );
     }
-  }, [isOpen]);
+    fetch('/api/service-flow/status/ocupados')
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j?.success) setProOcupado(j.ocupados.includes(professionalId)); })
+      .catch(() => {});
+  }, [isOpen, professionalId]);
 
   const buildFallbackPerfil = (p: any) => ({
     profissional: p,
@@ -150,11 +155,15 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
                       📍 ~{dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`} de você
                     </span>
                   )}
-                  {p.available && (
+                  {proOcupado ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#FF9800', background: 'rgba(255,152,0,0.1)', border: '1px solid rgba(255,152,0,0.25)', borderRadius: 10, padding: '5px 12px' }}>
+                      Em atendimento
+                    </span>
+                  ) : p.available ? (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#5BF5A0', background: 'rgba(91,245,160,0.1)', border: '1px solid rgba(91,245,160,0.2)', borderRadius: 10, padding: '5px 12px' }}>
                       Disponível agora
                     </span>
-                  )}
+                  ) : null}
                   {horario && (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.ink2, background: `${C.blue}10`, border: `1px solid ${C.border}`, borderRadius: 10, padding: '5px 12px' }}>
                       {horario}
@@ -258,10 +267,16 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
             )}
 
             {/* CTA — conectar leva à conversa/experiência */}
+            {proOcupado && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,152,0,0.1)', border: '1px solid rgba(255,152,0,0.3)', borderRadius: 12, padding: '10px 16px', marginBottom: 10 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF9800', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: '#FF9800', fontWeight: 500 }}>Este profissional está em atendimento no momento</span>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => { if (onConectar) { onConectar(p.id); } else { onClose(); setLocation(`/conversa/${p.id}`); } }}
-                style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 24, padding: '14px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 15, boxShadow: `0 0 20px ${C.blue}44` }}>
-                Chamar
+              <button onClick={() => { if (proOcupado) return; if (onConectar) { onConectar(p.id); } else { onClose(); setLocation(`/conversa/${p.id}`); } }}
+                style={{ flex: 1, border: 'none', cursor: proOcupado ? 'not-allowed' : 'pointer', borderRadius: 24, padding: '14px', background: proOcupado ? 'rgba(255,152,0,0.15)' : `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: proOcupado ? '#FF9800' : '#012', fontWeight: 600, fontSize: 15, boxShadow: proOcupado ? 'none' : `0 0 20px ${C.blue}44`, opacity: proOcupado ? 0.7 : 1 }}>
+                {proOcupado ? 'Ocupado' : 'Chamar'}
               </button>
               <button onClick={() => { onClose(); setLocation(`/perfil/${p.id}`); }}
                 style={{ flex: 1, border: `1px solid ${C.borderHot}`, cursor: 'pointer', borderRadius: 24, padding: '14px', background: 'transparent', color: C.ink, fontWeight: 600, fontSize: 15 }}>

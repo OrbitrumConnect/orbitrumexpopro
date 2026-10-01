@@ -36,13 +36,7 @@ export class PixTracker {
     
     pixTransactions.set(transactionId, transaction);
     pendingTransactions.add(transactionId);
-    
-    console.log(`🏷️ TRANSAÇÃO PIX REGISTRADA:`);
-    console.log(`📋 ID: ${transactionId}`);
-    console.log(`👤 Usuário: ${userEmail} (ID: ${userId})`);
-    console.log(`💰 Valor: R$ ${amount.toFixed(2)}`);
-    console.log(`🪙 Tokens: ${tokens.toLocaleString()}`);
-    
+
     return transaction;
   }
   
@@ -67,7 +61,6 @@ export class PixTracker {
     const transaction = this.findTransactionByAmount(amount);
     
     if (!transaction) {
-      console.log(`❌ PIX de R$ ${amount.toFixed(2)} não correlacionado com nenhum usuário`);
       return {
         success: false,
         message: `PIX de R$ ${amount.toFixed(2)} não correlacionado com nenhum usuário`
@@ -95,12 +88,6 @@ export class PixTracker {
       transaction.status = 'completed';
       pixTransactions.set(transaction.id, transaction);
       pendingTransactions.delete(transaction.id);
-      
-      console.log(`✅ PIX PROCESSADO AUTOMATICAMENTE:`);
-      console.log(`👤 Usuário: ${transaction.userEmail}`);
-      console.log(`💰 Valor: R$ ${transaction.amount.toFixed(2)}`);
-      console.log(`🪙 Tokens creditados: ${transaction.tokens.toLocaleString()}`);
-      console.log(`💼 Saldo atual: ${newBalance.toLocaleString()}`);
       
       return {
         success: true,
@@ -137,14 +124,12 @@ export class PixTracker {
         pixTransactions.set(transaction.id, transaction);
         pendingTransactions.delete(transaction.id);
         
-        console.log(`⏰ Transação expirada: ${transaction.id} (${transaction.userEmail})`);
       }
     }
   }
   
   // Simular detecção de PIX (será substituído pelo webhook real)
   static simulatePixDetection(amount: number): void {
-    console.log(`🔍 PIX DETECTADO: R$ ${amount.toFixed(2)}`);
     this.processPixPayment(amount);
   }
 }

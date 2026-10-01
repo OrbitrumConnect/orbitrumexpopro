@@ -64,7 +64,6 @@ export class ReferralSystem {
     };
 
     // Salvar no storage (se disponível) ou manter em memória
-    console.log('🎯 Campanha promocional criada:', campaign.name);
     return campaign as ReferralCampaign;
   }
 
@@ -101,8 +100,6 @@ export class ReferralSystem {
       promotionalPhase: 'active'
     });
 
-    console.log(`🔗 Link de referral criado para ${user.email}: ${code}`);
-
     return {
       code,
       url,
@@ -117,8 +114,6 @@ export class ReferralSystem {
     const success: string[] = [];
     const failed: string[] = [];
     const maxClients = 100;
-
-    console.log(`🚀 Iniciando convite para ${Math.min(clientEmails.length, maxClients)} clientes iniciais...`);
 
     for (let i = 0; i < Math.min(clientEmails.length, maxClients); i++) {
       const email = clientEmails[i];
@@ -153,16 +148,13 @@ export class ReferralSystem {
         const referralLink = await this.createReferralLink(newUser.id, 'professional');
         
         success.push(`${email} - Plano Max ativado até ${moment(promotionalUser.planExpiryDate).format('DD/MM/YYYY')}`);
-        
-        console.log(`✅ Cliente ${email} convidado - Código: ${referralLink.code}`);
-        
+
       } catch (error) {
         failed.push(`${email} - Erro: ${error}`);
         console.error(`❌ Erro ao convidar ${email}:`, error);
       }
     }
 
-    console.log(`📊 Resultado: ${success.length} sucessos, ${failed.length} falhas`);
     return { success, failed };
   }
 
@@ -217,15 +209,11 @@ export class ReferralSystem {
         });
 
         bonusApplied = true;
-        console.log(`🎉 BÔNUS! ${referrer.email} atingiu 3 referrals - +1 mês concedido!`);
       } else {
         await storage.updateUser(referrer.id, {
           referralCount: updatedReferralCount
         });
       }
-
-      // Registrar o referral
-      console.log(`✅ Referral processado: ${newUser.email} convidado por ${referrer.email} (${updatedReferralCount}/3)`);
 
       return {
         success: true,
@@ -257,7 +245,6 @@ export class ReferralSystem {
           if (user.plan === 'free' || user.plan === 'max' && user.isPromotionalUser) {
             await storage.deleteUser(user.id);
             clientsRemoved++;
-            console.log(`🗑️ Cliente ${user.email} removido - não renovou após promoção`);
           }
         } else if (user.userType === 'professional') {
           // Profissionais: manter mas restringir
@@ -268,12 +255,9 @@ export class ReferralSystem {
             promotionalPhase: 'expired'
           });
           professionalsRestricted++;
-          console.log(`🔒 Profissional ${user.email} restrito - pode reativar pagando`);
         }
       }
 
-      console.log(`📊 Expiração concluída: ${clientsRemoved} clientes removidos, ${professionalsRestricted} profissionais restritos`);
-      
     } catch (error) {
       console.error('❌ Erro ao expirar usuários promocionais:', error);
     }

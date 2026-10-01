@@ -13,7 +13,6 @@ export class MercadoPagoService {
         idempotencyKey: 'orbitrum-pix'
       }
     });
-    console.log('🔧 MP configurado com aplicação: 7104494430748102');
   }
 
   // Criar pagamento PIX - Vai gerar PIX para sua conta Nubank
@@ -42,7 +41,6 @@ export class MercadoPagoService {
     };
 
     try {
-      console.log('💳 Criando PIX MP para recebimento em Nubank 03669282106');
       const payment = new Payment(this.client);
       const response = await payment.create({ body: paymentData });
       
@@ -85,14 +83,9 @@ export class MercadoPagoService {
   async processWebhook(webhookData: any) {
     try {
       if (webhookData.type === 'payment' && webhookData.data?.id) {
-        console.log(`🔔 Webhook MP recebido: ${webhookData.data.id}`);
-        
         const paymentStatus = await this.checkPaymentStatus(webhookData.data.id);
         
         if (paymentStatus?.approved) {
-          console.log(`✅ PIX APROVADO no Nubank: R$ ${paymentStatus.amount}`);
-          console.log(`📧 Ref: ${paymentStatus.external_reference}`);
-          
           return {
             success: true,
             amount: paymentStatus.amount,

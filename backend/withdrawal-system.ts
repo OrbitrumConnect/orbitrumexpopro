@@ -32,12 +32,8 @@ export class WithdrawalSystem {
 
   public initialize() {
     if (this.isInitialized) {
-      console.log('🔄 Sistema de saques já está ativo');
       return;
     }
-
-    const currentTime = this.getCurrentBrazilDate();
-    console.log(`🚀 Inicializando sistema automático de saques... (${currentTime})`);
 
     // Abre janela de saque: dia 3 às 00:00
     cron.schedule('0 0 3 * *', async () => {
@@ -64,14 +60,11 @@ export class WithdrawalSystem {
     this.checkCurrentWithdrawalWindow();
 
     this.isInitialized = true;
-    console.log('✅ Sistema de saques ativo - próxima janela: dia 3 às 00:00');
   }
 
   private async openWithdrawalWindow() {
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
-    
-    console.log('🟢 JANELA DE SAQUE ABERTA - 24h disponível');
     
     // Log do evento no sistema
     await storage.logSystemEvent(
@@ -101,12 +94,9 @@ export class WithdrawalSystem {
       }
     }
 
-    console.log(`📊 Processados ${users.length} usuários para janela de saque`);
   }
 
   private async closeWithdrawalWindow() {
-    console.log('🔴 JANELA DE SAQUE FECHADA - retorno à pool');
-    
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
     
@@ -137,12 +127,9 @@ export class WithdrawalSystem {
       }
     }
 
-    console.log(`💹 R$ ${(totalReturned/1000).toFixed(2)} retornaram à pool de saques`);
   }
 
   private async sendWithdrawalNotifications() {
-    console.log('📧 Enviando notificações de janela de saque...');
-    
     const users = await storage.getAllUsersAdmin({});
     let notificationsSent = 0;
     
@@ -159,7 +146,6 @@ export class WithdrawalSystem {
       }
     }
 
-    console.log(`📨 ${notificationsSent} notificações de saque enviadas`);
   }
 
   private checkCurrentWithdrawalWindow() {
@@ -167,10 +153,9 @@ export class WithdrawalSystem {
     const day = today.getDate();
     
     if (day === 3) {
-      console.log('🟢 JANELA DE SAQUE ATIVA - usuários podem sacar hoje');
+      // Janela ativa
     } else {
-      const nextWindow = day < 3 ? `dia 3 deste mês` : `dia 3 do próximo mês`;
-      console.log(`🔒 Janela de saque fechada - próxima: ${nextWindow}`);
+      // Janela fechada
     }
   }
 
@@ -216,7 +201,6 @@ export class WithdrawalSystem {
           urgent: false
         });
 
-        console.log(`💰 Saque processado: R$ ${(amount/1000).toFixed(2)} para usuário ${userId}`);
         return { success: true, message: 'Saque processado com sucesso! Valor chegará via PIX em até 2h úteis.' };
       }
       

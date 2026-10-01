@@ -17,7 +17,6 @@ export async function restoreAdminMaster() {
       adminLevel: 10
     });
 
-    console.log('✅ Admin master restaurado:', adminUser);
     return adminUser;
   } catch (error) {
     console.error('❌ Erro ao restaurar admin:', error);

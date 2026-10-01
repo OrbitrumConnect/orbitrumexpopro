@@ -166,14 +166,6 @@ export function securityLogger(req: Request, res: Response, next: NextFunction) 
     );
     
     if (foundSuspicious.length > 0) {
-      console.warn('🚨 TENTATIVA SUSPEITA DETECTADA:', {
-        ip: req.ip,
-        url: req.url,
-        method: req.method,
-        patterns: foundSuspicious,
-        userAgent: req.headers['user-agent'],
-        timestamp: new Date().toISOString()
-      });
     }
   }
   
@@ -226,5 +218,4 @@ export function setupSecurity(app: Express) {
   app.use('/api/payment', paymentLimiter);
   app.use('/api/pix', paymentLimiter);
   
-  console.log('🛡️ Sistema de segurança ativado');
 }

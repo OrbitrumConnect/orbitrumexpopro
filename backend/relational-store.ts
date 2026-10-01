@@ -10,8 +10,3 @@ export const factStore: FactStore = process.env.DATABASE_URL
   ? new DrizzleFactStore()
   : new MemFactStore();
 
-console.log(
-  process.env.DATABASE_URL
-    ? '🔗 Fatos relacionais: persistindo no Postgres'
-    : '⚠️ Fatos relacionais: em memória (sem DATABASE_URL)',
-);

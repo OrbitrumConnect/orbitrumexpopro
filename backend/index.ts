@@ -42,7 +42,6 @@ app.use(customDomainHandler);
 if (process.env.NODE_ENV === 'production') {
   setupSecurity(app);
 } else {
-  console.log('⚠️ Segurança desabilitada para desenvolvimento - React funcionará normalmente');
 }
 
 app.use(express.json());
@@ -97,6 +96,10 @@ export const ready = (async () => {
   // REGISTRAR ROTAS FREE PLAN
   const { freePlanRouter } = await import('./routes/free-plan');
   app.use('/api/free-plan', freePlanRouter);
+
+  // REGISTRAR ROTAS SERVICE FLOW (trilha bilateral §10)
+  const serviceFlowRoutes = await import('./routes/service-flow');
+  app.use('/api/service-flow', serviceFlowRoutes.default);
   
   const server = await registerRoutes(app);
 
@@ -104,7 +107,6 @@ export const ready = (async () => {
   if (!IS_VERCEL) {
     // Inicializar WebSocket para comunicação em tempo real
     const dashboardWS = initializeWebSocket(server);
-    console.log('🔗 WebSocket inicializado para comunicação em tempo real dos dashboards');
 
     // Importar e inicializar sistema de expiração de planos
     const { planExpirySystem } = await import("./plan-expiry-system");
@@ -113,15 +115,12 @@ export const ready = (async () => {
     // Inicializar sincronização automática com Supabase
     const { supabaseSync } = await import("./supabase-sync");
     supabaseSync.start();
-    console.log('🔄 Sincronização automática Supabase ativa (a cada 5 minutos)');
 
     // Inicializar sistema de notificações em tempo real
     const { notificationSystem } = await import("./notification-system");
-    console.log('📧 Sistema de notificações em tempo real inicializado');
   }
 
   // 🤖 Telegram Bot TEMPORARIAMENTE DESABILITADO para estabilizar servidor
-  console.log('⚠️ Telegram Bot desabilitado temporariamente para estabilidade');
   // try {
   //   const { startTelegramBot } = await import("./telegram-integration");
   //   startTelegramBot();
@@ -182,7 +181,6 @@ export const ready = (async () => {
     server.listen({
       port,
       host: "0.0.0.0",
-      reusePort: true,
     }, async () => {
       log(`serving on port ${port}`);
       startHealthMonitoring();

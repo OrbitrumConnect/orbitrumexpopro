@@ -136,7 +136,6 @@ class DailyDataManager {
       }
     });
 
-    console.log(`📊 Sistema de fontes de dados inicializado - ${this.dataSources.size} fontes ativas`);
   }
 
   private startCronJobs(): void {
@@ -148,11 +147,9 @@ class DailyDataManager {
     });
 
     this.cronJobs.set('daily-update', cronJob);
-    console.log('🕐 Cron job configurado: Atualização diária às 00:00 (Brasília)');
   }
 
   private async updateAllDataSources(): Promise<void> {
-    console.log('🔄 Iniciando atualização diária das fontes de dados...');
     const brazilTime = this.getBrazilTime();
     const nextUpdate = this.getNextUpdateTime();
 
@@ -183,14 +180,12 @@ class DailyDataManager {
         source.nextUpdate = nextUpdate;
         source.status = 'active';
         
-        console.log(`✅ Fonte ${source.name} atualizada com sucesso`);
       } catch (error) {
-        console.error(`❌ Erro ao atualizar fonte ${source.name}:`, error);
+        console.error(`Erro ao atualizar fonte ${source.name}:`, error);
         source.status = 'error';
       }
     }
 
-    console.log('🎯 Atualização diária concluída!');
   }
 
   private async updateUserData(): Promise<any> {
@@ -262,11 +257,9 @@ class DailyDataManager {
     if (sourceId) {
       const source = this.dataSources.get(sourceId);
       if (source) {
-        console.log(`🔄 Forçando atualização da fonte: ${source.name}`);
-        await this.updateAllDataSources();
+          await this.updateAllDataSources();
       }
     } else {
-      console.log('🔄 Forçando atualização de todas as fontes...');
       await this.updateAllDataSources();
     }
   }

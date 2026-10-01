@@ -68,15 +68,6 @@ class LogOptimizer {
       const formattedMessage = `${emoji} [${category.toUpperCase()}] ${message}`;
       
       switch (level) {
-        case 'debug':
-          console.debug(formattedMessage, ...args);
-          break;
-        case 'info':
-          console.log(formattedMessage, ...args);
-          break;
-        case 'warn':
-          console.warn(formattedMessage, ...args);
-          break;
         case 'error':
           console.error(formattedMessage, ...args);
           break;

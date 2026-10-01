@@ -18,11 +18,9 @@ export class SSLDetector {
       });
       
       this.sslAvailable = response.ok;
-      console.log(`🔒 SSL Check: https://${domain} → ${this.sslAvailable ? 'OK' : 'FAILED'}`);
       return this.sslAvailable;
     } catch (error) {
       this.sslAvailable = false;
-      console.log(`⚠️ SSL não disponível para ${domain}, usando HTTP`);
       return false;
     }
   }
@@ -57,14 +55,11 @@ export class SSLDetector {
       return;
     }
     
-    console.log('🔍 Verificando disponibilidade SSL...');
     await this.checkSSL(domain);
     
     if (this.sslAvailable) {
-      console.log('✅ SSL disponível - usando HTTPS');
       process.env.SSL_ENABLED = 'true';
     } else {
-      console.log('⚠️ SSL não disponível - usando HTTP temporariamente');
       process.env.SSL_ENABLED = 'false';
     }
   }

@@ -36,15 +36,13 @@ export interface AuthResult {
  * Registro de novo usuário com verificação de email
  */
 export async function registerUser(
-  email: string, 
-  password: string, 
+  email: string,
+  password: string,
   username: string,
   fullName: string,
   phone?: string
 ): Promise<AuthResult> {
   try {
-    console.log('🔍 registerUser chamado:', { email, username, supabaseConfigured: !!supabase });
-    
     // Verificar se email já existe
     const existingUser = await storage.getUserByEmail(email);
     if (existingUser) {
@@ -56,11 +54,8 @@ export async function registerUser(
 
     // Se Supabase Auth estiver configurado, usar ele
     if (supabase) {
-      console.log('🚀 Usando Supabase Auth para registro...');
-      
       // SISTEMA AUTOMÁTICO DE REGISTRO COM EMAIL DE CONFIRMAÇÃO
-      console.log('📧 Iniciando registro automático com email de confirmação...');
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -79,27 +74,17 @@ export async function registerUser(
         console.error('❌ Erro no registro Supabase:', error.message);
         // Se o erro for de usuário já existente, ainda assim tentamos confirmar o email
         if (error.message.includes('already registered') || error.message.includes('User already registered')) {
-          console.log('👤 Usuário já existe, tentando reenviar email de confirmação...');
-          
           // Tentar reenviar email para usuário existente
           const resendResult = await resendConfirmationEmail(email);
           if (resendResult.success) {
-            return { 
-              success: true, 
+            return {
+              success: true,
               message: "✅ Usuário já existe. Email de confirmação reenviado! Verifique sua caixa de entrada.",
-              requiresVerification: true 
+              requiresVerification: true
             };
           }
         }
         return { success: false, message: `Erro no registro: ${error.message}` };
-      }
-
-      console.log('✅ Registro Supabase realizado com sucesso!');
-      console.log('📧 Email de confirmação enviado automaticamente pelo Supabase');
-      
-      // Se o usuário precisa confirmar email
-      if (data.user && !data.user.email_confirmed_at) {
-        console.log('⏳ Usuário precisa confirmar email antes do primeiro login');
       }
 
       // Criar usuário no nosso banco de dados local
@@ -116,29 +101,21 @@ export async function registerUser(
         termsAcceptedAt: new Date()
       });
 
-      console.log('👤 Usuário criado no banco local:', { id: user.id, email, username });
-
       // SISTEMA AUTOMÁTICO DE BACKUP: Garantir que email seja enviado
       // Enviar email de backup após 3 segundos automaticamente
       setTimeout(async () => {
         try {
-          console.log('🔄 BACKUP AUTOMÁTICO: Verificando confirmação de email...');
           const backupResult = await resendConfirmationEmail(email);
-          if (backupResult.success) {
-            console.log('✅ Email de backup enviado automaticamente');
-          } else {
-            console.log('⚠️ Email de backup não foi necessário ou falhou:', backupResult.message);
-          }
         } catch (error) {
           console.error('❌ Erro no sistema de backup automático:', error);
         }
       }, 3000); // 3 segundos de delay
 
-      return { 
-        success: true, 
-        user, 
+      return {
+        success: true,
+        user,
         message: "✅ Conta criada com sucesso! Email de confirmação enviado automaticamente. Verifique sua caixa de entrada e pasta de spam. O email será reenviado automaticamente se necessário.",
-        requiresVerification: true 
+        requiresVerification: true
       };
     } else {
       // Fallback para autenticação local (desenvolvimento)
@@ -168,11 +145,8 @@ export async function registerUser(
 export async function resendConfirmationEmail(email: string): Promise<AuthResult> {
   try {
     if (!supabase) {
-      console.log('⚠️ Supabase não configurado para reenvio de email');
       return { success: false, message: "Sistema de email não configurado" };
     }
-
-    console.log('🔄 INICIANDO reenvio automático de email para:', email);
 
     // Sistema de múltiplas tentativas para garantir entrega
     let success = false;
@@ -180,8 +154,6 @@ export async function resendConfirmationEmail(email: string): Promise<AuthResult
     const maxAttempts = 3;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`📧 Tentativa ${attempt}/${maxAttempts} de reenvio para ${email}...`);
-      
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
@@ -191,26 +163,21 @@ export async function resendConfirmationEmail(email: string): Promise<AuthResult
       });
 
       if (!error) {
-        console.log(`✅ SUCESSO na tentativa ${attempt}! Email reenviado para ${email}`);
         success = true;
         break;
       }
 
       lastError = error;
-      console.log(`❌ Falha na tentativa ${attempt}:`, error.message);
-      
+
       // Se não é a última tentativa, aguarda antes de tentar novamente
       if (attempt < maxAttempts) {
-        console.log(`⏳ Aguardando ${attempt * 2}s antes da próxima tentativa...`);
         await new Promise(resolve => setTimeout(resolve, attempt * 2000)); // 2s, 4s, 6s
       }
     }
 
     if (success) {
-      console.log(`🎉 EMAIL ENVIADO COM SUCESSO para ${email} após múltiplas tentativas`);
       return { success: true, message: "Email de confirmação enviado com sucesso" };
     } else {
-      console.log(`💥 FALHA TOTAL após ${maxAttempts} tentativas para ${email}:`, lastError?.message);
       return { success: false, message: `Falha após ${maxAttempts} tentativas: ${lastError?.message}` };
     }
 
@@ -245,10 +212,10 @@ export async function loginWithGoogle(): Promise<{ success: boolean; url?: strin
       return { success: false, message: `Erro no login Google: ${error.message}` };
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       url: data.url,
-      message: "Redirecionando para Google..." 
+      message: "Redirecionando para Google..."
     };
   } catch (error) {
     console.error('❌ Erro no Google OAuth:', error);
@@ -258,8 +225,6 @@ export async function loginWithGoogle(): Promise<{ success: boolean; url?: strin
 
 export async function loginUser(email: string, password: string): Promise<AuthResult> {
   try {
-    console.log('🔐 Tentativa de login para:', email);
-    
     // Se Supabase Auth estiver configurado, usar ele
     if (supabase) {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -268,83 +233,69 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
       });
 
       if (error) {
-        console.log('❌ Erro no login Supabase para', email, ':', error.message);
-        
         // DETECÇÃO DE EMAIL NÃO CONFIRMADO VIA ERROR MESSAGE
-        if (error.message.includes('Email not confirmed') || 
+        if (error.message.includes('Email not confirmed') ||
             error.message.includes('email not confirmed') ||
             error.message.includes('not confirmed')) {
-          
-          console.log('🚨 EMAIL NÃO CONFIRMADO DETECTADO VIA ERROR para:', email);
-          console.log('🔄 Iniciando reenvio automático via error handler...');
-          
+
           // TENTAR REENVIO AUTOMÁTICO IMEDIATAMENTE
           try {
             const resendResult = await resendConfirmationEmail(email);
             if (resendResult.success) {
-              console.log('✅ Email de confirmação reenviado automaticamente via error handler!');
-              return { 
-                success: false, 
+              return {
+                success: false,
                 message: "❌ Email não confirmado. ✅ Novo email de confirmação enviado automaticamente! Verifique sua caixa de entrada e pasta de spam.",
-                requiresVerification: true 
+                requiresVerification: true
               };
-            } else {
-              console.log('⚠️ Falha no reenvio automático via error handler:', resendResult.message);
             }
           } catch (resendError) {
             console.error('❌ Erro no reenvio automático via error handler:', resendError);
           }
-          
-          return { 
-            success: false, 
+
+          return {
+            success: false,
             message: "❌ Email não confirmado. Use o botão 'Reenviar Email' para receber nova confirmação.",
-            requiresVerification: true 
+            requiresVerification: true
           };
         }
-        
+
         if (error.message.includes('Invalid login credentials')) {
           return { success: false, message: "⚠️ Senha incorreta ou email não cadastrado no sistema" };
         }
-        
+
         return { success: false, message: "❌ " + error.message };
       }
 
       // SISTEMA AUTOMÁTICO DE DETECÇÃO E REENVIO DE EMAIL
       if (!data.user.email_confirmed_at) {
-        console.log('🚨 EMAIL NÃO CONFIRMADO DETECTADO para:', email);
-        console.log('🔄 Iniciando reenvio automático de confirmação...');
-        
         // TENTAR REENVIO AUTOMÁTICO IMEDIATAMENTE
         try {
           const resendResult = await resendConfirmationEmail(email);
           if (resendResult.success) {
-            console.log('✅ Email de confirmação reenviado automaticamente!');
-            return { 
-              success: false, 
+            return {
+              success: false,
               message: "❌ Email não confirmado. ✅ Novo email de confirmação enviado automaticamente! Verifique sua caixa de entrada e pasta de spam.",
-              requiresVerification: true 
+              requiresVerification: true
             };
-          } else {
-            console.log('⚠️ Falha no reenvio automático:', resendResult.message);
           }
         } catch (error) {
           console.error('❌ Erro no reenvio automático durante login:', error);
         }
-        
-        return { 
-          success: false, 
+
+        return {
+          success: false,
           message: "❌ Email não confirmado. Use o botão 'Reenviar Email' para receber nova confirmação.",
-          requiresVerification: true 
+          requiresVerification: true
         };
       }
 
       // Buscar dados adicionais do nosso banco
       let user = await storage.getUserByEmail(email);
-      
+
       // Definir tipo de usuário baseado no email
       const isAdmin = email === 'passosmir4@gmail.com';
       const userType = isAdmin ? 'admin' : 'client';
-      
+
       if (!user) {
         // Se não existe no nosso banco, criar com dados do Supabase
         user = await storage.createUser({
@@ -367,7 +318,7 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
         if (!user.emailVerified) updates.emailVerified = true;
         if (user.userType !== userType) updates.userType = userType;
         // Admin mantém plano do usuário (não forçamos plano especial)
-        
+
         if (Object.keys(updates).length > 0) {
           user = await storage.updateUser(user.id, updates);
         }
@@ -394,10 +345,10 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
 
     // Verificar se email foi verificado
     if (!user.emailVerified) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: "Email não verificado. Verifique sua caixa de entrada.",
-        requiresVerification: true 
+        requiresVerification: true
       };
     }
 

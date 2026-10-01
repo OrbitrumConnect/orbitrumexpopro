@@ -31,7 +31,6 @@ export function customDomainHandler(req: Request, res: Response, next: NextFunct
     
     // Log do domínio personalizado detectado
     if (host?.includes('orbitrum.com.br')) {
-      console.log(`🌐 Domínio personalizado aceito: ${host}`);
     }
   }
   
