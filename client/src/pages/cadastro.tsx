@@ -451,7 +451,7 @@ export default function Cadastro() {
                     id="nomeCompleto"
                     value={formData.nomeCompleto}
                     onChange={(e) => handleInputChange('nomeCompleto', e.target.value)}
-                    className="bg-gray-800 border-gray-600"
+                    className="bg-[#061A2D] border-gray-600"
                     required
                   />
                 </div>
@@ -463,7 +463,7 @@ export default function Cadastro() {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="bg-gray-800 border-gray-600"
+                    className="bg-[#061A2D] border-gray-600"
                     required
                   />
                 </div>
@@ -476,7 +476,7 @@ export default function Cadastro() {
                       type={showPassword ? "text" : "password"}
                       value={formData.senha}
                       onChange={(e) => handleInputChange('senha', e.target.value)}
-                      className="bg-gray-800 border-gray-600 pr-10"
+                      className="bg-[#061A2D] border-gray-600 pr-10"
                       required
                     />
                     <Button
@@ -499,7 +499,7 @@ export default function Cadastro() {
                       type={showConfirmPassword ? "text" : "password"}
                       value={formData.confirmarSenha}
                       onChange={(e) => handleInputChange('confirmarSenha', e.target.value)}
-                      className="bg-gray-800 border-gray-600 pr-10"
+                      className="bg-[#061A2D] border-gray-600 pr-10"
                       required
                     />
                     <Button
@@ -521,7 +521,7 @@ export default function Cadastro() {
                     placeholder="(11) 99999-9999"
                     value={formData.telefone}
                     onChange={(e) => handleInputChange('telefone', e.target.value)}
-                    className="bg-gray-800 border-gray-600"
+                    className="bg-[#061A2D] border-gray-600"
                     required
                   />
                 </div>
@@ -533,7 +533,7 @@ export default function Cadastro() {
                     placeholder="000.000.000-00"
                     value={formData.cpf}
                     onChange={(e) => handleInputChange('cpf', e.target.value)}
-                    className="bg-gray-800 border-gray-600"
+                    className="bg-[#061A2D] border-gray-600"
                     required
                   />
                 </div>
@@ -558,7 +558,7 @@ export default function Cadastro() {
                           <span className="text-amber-400 font-medium"> Isso pode ser feito depois no seu dashboard.</span>
                         </p>
                         
-                        <div className="bg-gray-800/50 rounded-md p-3 mb-3">
+                        <div className="bg-[#061A2D]/50 rounded-md p-3 mb-3">
                           <p className="text-xs text-gray-400 mb-2 font-medium">Documentos necessários para cashback:</p>
                           <ul className="text-xs text-gray-300 space-y-1">
                             <li>• <span className="text-cyan-400">Selfie clara</span> para verificação de identidade</li>
@@ -594,7 +594,7 @@ export default function Cadastro() {
                         setSelectedCategory(value);
                         handleInputChange('especialidade', ''); // Reset especialidade
                       }}>
-                        <SelectTrigger className="bg-gray-800 border-gray-600 border-2 hover:border-cyan-400 transition-all">
+                        <SelectTrigger className="bg-[#061A2D] border-gray-600 border-2 hover:border-cyan-400 transition-all">
                           <SelectValue placeholder="🎯 Selecione sua área principal" />
                         </SelectTrigger>
                         <SelectContent className="bg-[#020914]/95 border-gray-600 backdrop-blur-sm">
@@ -615,7 +615,7 @@ export default function Cadastro() {
                       <div className="space-y-2">
                         <Label htmlFor="especialidade">Especialidade *</Label>
                         <Select onValueChange={(value) => handleInputChange('especialidade', value)}>
-                          <SelectTrigger className="bg-gray-800 border-gray-600 border-2 hover:border-cyan-400 transition-all">
+                          <SelectTrigger className="bg-[#061A2D] border-gray-600 border-2 hover:border-cyan-400 transition-all">
                             <SelectValue placeholder="⭐ Escolha sua especialidade" />
                           </SelectTrigger>
                           <SelectContent className="bg-[#020914]/95 border-gray-600 backdrop-blur-sm max-h-60">
@@ -648,7 +648,7 @@ export default function Cadastro() {
                         placeholder="45"
                         value={formData.precoBase}
                         onChange={(e) => handleInputChange('precoBase', e.target.value)}
-                        className="bg-gray-800 border-gray-600 border-2 hover:border-cyan-400 transition-all"
+                        className="bg-[#061A2D] border-gray-600 border-2 hover:border-cyan-400 transition-all"
                         required
                       />
                       <p className="text-xs text-yellow-400/80">
@@ -663,7 +663,7 @@ export default function Cadastro() {
                         placeholder="CPF, email ou telefone"
                         value={formData.pixChave}
                         onChange={(e) => handleInputChange('pixChave', e.target.value)}
-                        className="bg-gray-800 border-gray-600 border-2 hover:border-cyan-400 transition-all"
+                        className="bg-[#061A2D] border-gray-600 border-2 hover:border-cyan-400 transition-all"
                         required
                       />
                     </div>
@@ -679,7 +679,7 @@ export default function Cadastro() {
                       }
                       value={formData.descricaoServico}
                       onChange={(e) => handleInputChange('descricaoServico', e.target.value)}
-                      className="bg-gray-800 border-gray-600 border-2 hover:border-cyan-400 transition-all min-h-16 sm:min-h-24 text-sm"
+                      className="bg-[#061A2D] border-gray-600 border-2 hover:border-cyan-400 transition-all min-h-16 sm:min-h-24 text-sm"
                       required
                     />
                     {selectedCategory && formData.especialidade && (
@@ -707,7 +707,7 @@ export default function Cadastro() {
                             <span className="text-amber-400 font-medium"> Isso pode ser feito agora ou depois no seu dashboard.</span>
                           </p>
                           
-                          <div className="bg-gray-800/50 rounded-md p-3 mb-3">
+                          <div className="bg-[#061A2D]/50 rounded-md p-3 mb-3">
                             <p className="text-xs text-gray-400 mb-2 font-medium">Documentos necessários para cashback:</p>
                             <ul className="text-xs text-gray-300 space-y-1">
                               <li>• <span className="text-cyan-400">Selfie clara</span> para verificação de identidade</li>
@@ -868,7 +868,7 @@ export default function Cadastro() {
                 Enviamos um email de confirmação para <strong>{formData.email}</strong>
               </p>
               
-              <div className="space-y-4 text-left bg-gray-800/50 rounded-lg p-6">
+              <div className="space-y-4 text-left bg-[#061A2D]/50 rounded-lg p-6">
                 <h3 className="font-semibold text-cyan-400">Próximos Passos:</h3>
                 <ol className="space-y-2 text-sm text-gray-300">
                   <li>1. Verifique sua caixa de entrada (e spam)</li>

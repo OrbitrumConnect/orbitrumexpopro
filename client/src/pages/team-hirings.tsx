@@ -140,7 +140,7 @@ export default function TeamHirings() {
                 return (
                   <Card 
                     key={hiring.id}
-                    className={`border-cyan-500/30 cursor-pointer transition-all hover:bg-gray-800/70 ${
+                    className={`border-cyan-500/30 cursor-pointer transition-all hover:bg-[#061A2D]/70 ${
                       selectedHiring?.id === hiring.id ? 'ring-2 ring-cyan-400' : ''
                     }`}
                     onClick={() => setSelectedHiring(hiring)}

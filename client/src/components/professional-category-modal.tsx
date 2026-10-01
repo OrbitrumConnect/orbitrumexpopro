@@ -102,12 +102,12 @@ export function ProfessionalCategoryModal({ isOpen, onComplete, onCancel, userEm
               setSelectedCategory(value);
               setSelectedSpecialty(""); // Reset specialty when category changes
             }}>
-              <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
+              <SelectTrigger className="bg-[#020914]/50 border-gray-600 text-white">
                 <SelectValue placeholder="Escolha sua área..." />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-600">
+              <SelectContent className="bg-[#020914] border-gray-600">
                 {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id} className="text-white hover:bg-gray-800">
+                  <SelectItem key={category.id} value={category.id} className="text-white hover:bg-[#061A2D]">
                     {category.name}
                   </SelectItem>
                 ))}
@@ -122,12 +122,12 @@ export function ProfessionalCategoryModal({ isOpen, onComplete, onCancel, userEm
                 Especialidade:
               </label>
               <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
-                <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
+                <SelectTrigger className="bg-[#020914]/50 border-gray-600 text-white">
                   <SelectValue placeholder="Sua especialidade..." />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-600">
+                <SelectContent className="bg-[#020914] border-gray-600">
                   {selectedCategoryData.specialties.map((specialty) => (
-                    <SelectItem key={specialty} value={specialty} className="text-white hover:bg-gray-800">
+                    <SelectItem key={specialty} value={specialty} className="text-white hover:bg-[#061A2D]">
                       {specialty}
                     </SelectItem>
                   ))}
@@ -155,7 +155,7 @@ export function ProfessionalCategoryModal({ isOpen, onComplete, onCancel, userEm
               variant="outline"
               onClick={onCancel}
               disabled={loading}
-              className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+              className="flex-1 border-gray-600 text-gray-300 hover:bg-[#061A2D]"
             >
               Cancelar
             </Button>

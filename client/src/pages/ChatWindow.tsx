@@ -193,7 +193,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
       {/* Message Input */}
       {!isExpired ? (
-        <form onSubmit={handleSendMessage} className="p-4 bg-gray-800/50 border-t border-gray-700">
+        <form onSubmit={handleSendMessage} className="p-4 bg-[#061A2D]/50 border-t border-gray-700">
           <div className="flex space-x-2">
             <Input
               value={message}

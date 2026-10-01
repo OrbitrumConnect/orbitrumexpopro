@@ -223,7 +223,7 @@ export default function AdminDashboard() {
 
       {/* Sistema de Abas Completo */}
       <Tabs defaultValue="overview" className="w-full mt-6">
-        <TabsList className="flex w-full overflow-x-auto bg-gray-800/50" style={{ display: 'flex', overflowX: 'auto', WebkitOverflowScrolling: 'touch', gap: 2 }}>
+        <TabsList className="flex w-full overflow-x-auto bg-[#061A2D]/50" style={{ display: 'flex', overflowX: 'auto', WebkitOverflowScrolling: 'touch', gap: 2 }}>
           <TabsTrigger value="overview" className="text-cyan-400 text-xs">Visão Geral</TabsTrigger>
           <TabsTrigger value="users" className="text-green-400 text-xs">Usuários</TabsTrigger>
           <TabsTrigger value="tokens" className="text-blue-400 text-xs">Tokens</TabsTrigger>
@@ -360,17 +360,17 @@ export default function AdminDashboard() {
 
               {/* Resumo de estatísticas */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-cyan-400 font-semibold mb-2">Total de Usuários</h4>
                   <p className="text-2xl font-bold text-white">{safeStats.totalUsers}</p>
                   <p className="text-gray-300 text-sm">4 usuários pagantes</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-green-400 font-semibold mb-2">Usuários Ativos</h4>
                   <p className="text-2xl font-bold text-white">{safeStats.activeUsers}</p>
                   <p className="text-gray-300 text-sm">100% de engajamento</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-yellow-400 font-semibold mb-2">Taxa de Conversão</h4>
                   <p className="text-2xl font-bold text-white">100%</p>
                   <p className="text-gray-300 text-sm">Todos pagaram</p>
@@ -424,22 +424,22 @@ export default function AdminDashboard() {
 
               {/* Estatísticas gerais de tokens */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-cyan-400 font-semibold mb-2">Total de Tokens</h4>
                   <p className="text-2xl font-bold text-white">29.520</p>
                   <p className="text-gray-300 text-sm">Em circulação</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-yellow-400 font-semibold mb-2">Tokens Vendidos</h4>
                   <p className="text-2xl font-bold text-white">29.520</p>
                   <p className="text-gray-300 text-sm">Por PIX</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-red-400 font-semibold mb-2">Tokens Usados</h4>
                   <p className="text-2xl font-bold text-white">0</p>
                   <p className="text-gray-300 text-sm">Em serviços</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-green-400 font-semibold mb-2">Taxa de Conversão</h4>
                   <p className="text-2xl font-bold text-white">1.389</p>
                   <p className="text-gray-300 text-sm">Tokens por real</p>
@@ -527,22 +527,22 @@ export default function AdminDashboard() {
 
               {/* Métricas financeiras */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-green-400 font-semibold mb-2">Receita Bruta</h4>
                   <p className="text-2xl font-bold text-white">R$ 41,00</p>
                   <p className="text-gray-300 text-sm">100% via PIX</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-blue-400 font-semibold mb-2">Ticket Médio</h4>
                   <p className="text-2xl font-bold text-white">R$ 13,67</p>
                   <p className="text-gray-300 text-sm">Por transação</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-purple-400 font-semibold mb-2">Conversão</h4>
                   <p className="text-2xl font-bold text-white">100%</p>
                   <p className="text-gray-300 text-sm">Todos pagaram</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h4 className="text-yellow-400 font-semibold mb-2">LTV</h4>
                   <p className="text-2xl font-bold text-white">R$ 13,67</p>
                   <p className="text-gray-300 text-sm">Lifetime Value</p>
@@ -550,7 +550,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Informações PIX */}
-              <div className="mt-6 p-4 bg-gray-800/30 rounded-lg">
+              <div className="mt-6 p-4 bg-[#061A2D]/30 rounded-lg">
                 <h5 className="text-white font-semibold mb-2">💳 Dados PIX</h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
@@ -624,25 +624,25 @@ export default function AdminDashboard() {
 
               {/* Breakdown por plano */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h6 className="text-blue-400 font-medium mb-2">Básico R$ 7</h6>
                   <p className="text-white font-bold">R$ 0,61</p>
                   <p className="text-gray-300 text-sm">por mês (8,7%)</p>
                   <p className="text-gray-400 text-xs">0 usuários ativos</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h6 className="text-green-400 font-medium mb-2">Standard R$ 14</h6>
                   <p className="text-white font-bold">R$ 1,22</p>
                   <p className="text-gray-300 text-sm">por mês (8,7%)</p>
                   <p className="text-gray-400 text-xs">0 usuários ativos</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h6 className="text-purple-400 font-medium mb-2">Pro R$ 21</h6>
                   <p className="text-white font-bold">R$ 1,83</p>
                   <p className="text-gray-300 text-sm">por mês (8,7%)</p>
                   <p className="text-gray-400 text-xs">0 usuários ativos</p>
                 </div>
-                <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                <div className="text-center p-4 bg-[#061A2D]/50 rounded-lg">
                   <h6 className="text-yellow-400 font-medium mb-2">Max R$ 30</h6>
                   <p className="text-white font-bold">R$ 2,61</p>
                   <p className="text-gray-300 text-sm">por mês (8,7%)</p>
@@ -651,7 +651,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Informações do sistema */}
-              <div className="p-4 bg-gray-800/30 rounded-lg">
+              <div className="p-4 bg-[#061A2D]/30 rounded-lg">
                 <h6 className="text-white font-semibold mb-3">ℹ️ Informações do Sistema</h6>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
@@ -731,7 +731,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="p-4 bg-gray-800/50 rounded-lg">
+                  <div className="p-4 bg-[#061A2D]/50 rounded-lg">
                     <h6 className="text-white font-medium mb-3">🔧 Ferramentas de Moderação</h6>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center text-gray-300">
@@ -819,7 +819,7 @@ export default function AdminDashboard() {
 
               {/* Breakdown detalhado */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="p-4 bg-gray-800/50 rounded-lg">
+                <div className="p-4 bg-[#061A2D]/50 rounded-lg">
                   <h6 className="text-white font-semibold mb-4">💰 Breakdown Financeiro</h6>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between items-center">
@@ -843,7 +843,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-800/50 rounded-lg">
+                <div className="p-4 bg-[#061A2D]/50 rounded-lg">
                   <h6 className="text-white font-semibold mb-4">📊 Métricas de Performance</h6>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between items-center">
@@ -895,7 +895,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Insights e recomendações */}
-              <div className="p-4 bg-gray-800/30 rounded-lg">
+              <div className="p-4 bg-[#061A2D]/30 rounded-lg">
                 <h6 className="text-orange-400 font-semibold mb-3">💡 Insights e Recomendações</h6>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
@@ -953,7 +953,7 @@ export default function AdminDashboard() {
 
               {/* Breakdown por tipo de usuário */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-4 bg-gray-800/50 rounded-lg">
+                <div className="p-4 bg-[#061A2D]/50 rounded-lg">
                   <h5 className="text-white font-semibold mb-4">Distribuição por Tipo</h5>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
@@ -971,7 +971,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-800/50 rounded-lg">
+                <div className="p-4 bg-[#061A2D]/50 rounded-lg">
                   <h5 className="text-white font-semibold mb-4">Receita por Segmento</h5>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
@@ -991,7 +991,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Histórico de crescimento */}
-              <div className="mt-6 p-4 bg-gray-800/30 rounded-lg">
+              <div className="mt-6 p-4 bg-[#061A2D]/30 rounded-lg">
                 <h5 className="text-white font-semibold mb-4">📊 Histórico de Crescimento</h5>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center">
@@ -1058,7 +1058,7 @@ export default function AdminDashboard() {
 
               {/* Detalhes dos planos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-4 bg-gray-800/50 rounded-lg">
+                <div className="p-4 bg-[#061A2D]/50 rounded-lg">
                   <h5 className="text-white font-semibold mb-4">🎯 Estratégia Atual</h5>
                   <div className="space-y-2 text-sm">
                     <p className="text-gray-300">• Foco em venda de tokens (R$ 3-32)</p>
@@ -1069,7 +1069,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-800/50 rounded-lg">
+                <div className="p-4 bg-[#061A2D]/50 rounded-lg">
                   <h5 className="text-white font-semibold mb-4">💡 Oportunidades</h5>
                   <div className="space-y-2 text-sm">
                     <p className="text-green-400">• Cashback 8,7% mensal atrai usuários</p>

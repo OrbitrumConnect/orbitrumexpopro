@@ -127,7 +127,7 @@ export default function CadastroProfissional() {
                       className={`cursor-pointer transition-all duration-200 ${
                         isSelected 
                           ? 'bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-500/20' 
-                          : 'bg-gray-800/50 border-gray-600 hover:border-gray-500'
+                          : 'bg-[#061A2D]/50 border-gray-600 hover:border-gray-500'
                       }`}
                       onClick={() => handleCategorySelect(category)}
                     >
@@ -193,7 +193,7 @@ export default function CadastroProfissional() {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                   required
                 />
               </div>
@@ -205,7 +205,7 @@ export default function CadastroProfissional() {
                   placeholder="ex: Eletricista Residencial"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                   required
                 />
               </div>
@@ -217,7 +217,7 @@ export default function CadastroProfissional() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                   required
                 />
               </div>
@@ -229,7 +229,7 @@ export default function CadastroProfissional() {
                   placeholder="(11) 99999-9999"
                   value={formData.phone}
                   onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                   required
                 />
               </div>
@@ -241,7 +241,7 @@ export default function CadastroProfissional() {
                   placeholder="000.000.000-00"
                   value={formData.cpf}
                   onChange={(e) => setFormData(prev => ({ ...prev, cpf: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                   required
                 />
               </div>
@@ -254,7 +254,7 @@ export default function CadastroProfissional() {
                   placeholder="45"
                   value={formData.hourlyRate}
                   onChange={(e) => setFormData(prev => ({ ...prev, hourlyRate: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                   required
                 />
               </div>
@@ -266,7 +266,7 @@ export default function CadastroProfissional() {
                   placeholder="00000-000"
                   value={formData.cep}
                   onChange={(e) => setFormData(prev => ({ ...prev, cep: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                   required
                 />
               </div>
@@ -278,7 +278,7 @@ export default function CadastroProfissional() {
                   placeholder="CPF, email ou telefone"
                   value={formData.pixKey}
                   onChange={(e) => setFormData(prev => ({ ...prev, pixKey: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                   required
                 />
               </div>
@@ -290,7 +290,7 @@ export default function CadastroProfissional() {
                   placeholder="Rua, número, bairro, cidade"
                   value={formData.address}
                   onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                  className="bg-gray-800 border-gray-600"
+                  className="bg-[#061A2D] border-gray-600"
                 />
               </div>
 
@@ -301,7 +301,7 @@ export default function CadastroProfissional() {
                   placeholder="Conte um pouco sobre sua experiência e diferenciais..."
                   value={formData.bio}
                   onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 min-h-20"
+                  className="bg-[#061A2D] border-gray-600 min-h-20"
                 />
               </div>
             </CardContent>

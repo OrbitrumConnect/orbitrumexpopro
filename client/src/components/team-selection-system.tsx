@@ -132,7 +132,7 @@ export function TeamSelectionSystem({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 overflow-y-auto max-h-[calc(85vh-100px)]">
             {/* Equipe Selecionada */}
             <div className="lg:col-span-1">
-              <Card className="bg-gray-800/50 border-cyan-500/30 sticky top-0">
+              <Card className="bg-[#061A2D]/50 border-cyan-500/30 sticky top-0">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base text-cyan-400 flex items-center gap-2">
                     <Users className="w-4 h-4" />
@@ -208,7 +208,7 @@ export function TeamSelectionSystem({
                         </div>
 
                         {selectedProfessionals.length < 5 && (
-                          <div className="text-xs text-gray-400 text-center mt-2 p-2 bg-gray-800/50 rounded">
+                          <div className="text-xs text-gray-400 text-center mt-2 p-2 bg-[#061A2D]/50 rounded">
                             💡 5+ profissionais = 15% desconto<br />
                             10+ profissionais = 20% desconto
                           </div>
@@ -239,7 +239,7 @@ export function TeamSelectionSystem({
                 {allProfessionals
                   .filter(prof => !selectedProfessionals.find(selected => selected.id === prof.id))
                   .map((prof) => (
-                    <Card key={prof.id} className="bg-gray-800/30 border-gray-700/50 hover:border-cyan-500/30 transition-colors">
+                    <Card key={prof.id} className="bg-[#061A2D]/30 border-gray-700/50 hover:border-cyan-500/30 transition-colors">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3 mb-3">
                           <img

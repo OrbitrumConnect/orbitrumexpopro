@@ -148,7 +148,7 @@ export function TeamHiringModal({
 
         <div className="space-y-6">
           {/* Resumo da Equipe */}
-          <div className="bg-gray-800/50 rounded-lg p-4 border border-cyan-500/20">
+          <div className="bg-[#061A2D]/50 rounded-lg p-4 border border-cyan-500/20">
             <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
               <Users className="w-5 h-5" />
               Profissionais Selecionados ({professionals.length})
@@ -240,7 +240,7 @@ export function TeamHiringModal({
                       <Input
                         {...field}
                         placeholder="Ex: Desenvolvimento de aplicativo mobile"
-                        className="bg-gray-800/50 border-cyan-500/30 text-white placeholder-gray-400 focus:border-cyan-400"
+                        className="bg-[#061A2D]/50 border-cyan-500/30 text-white placeholder-gray-400 focus:border-cyan-400"
                       />
                     </FormControl>
                   </FormItem>
@@ -258,7 +258,7 @@ export function TeamHiringModal({
                         {...field}
                         placeholder="Descreva detalhadamente o projeto, objetivos, prazos e expectativas..."
                         rows={4}
-                        className="bg-gray-800/50 border-cyan-500/30 text-white placeholder-gray-400 focus:border-cyan-400"
+                        className="bg-[#061A2D]/50 border-cyan-500/30 text-white placeholder-gray-400 focus:border-cyan-400"
                       />
                     </FormControl>
                   </FormItem>
