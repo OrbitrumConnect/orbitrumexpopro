@@ -19,7 +19,7 @@ export function DocumentVerificationModal({
 }: DocumentVerificationModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md glassmorphism border-red-500/30 bg-gray-900/95">
+      <DialogContent className="max-w-md glassmorphism border-red-500/30 bg-[#020914]/95">
         <DialogHeader>
           <DialogTitle className="text-red-400 flex items-center gap-2">
             <Shield className="h-5 w-5" />

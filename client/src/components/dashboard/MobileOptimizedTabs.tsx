@@ -57,7 +57,7 @@ const MobileOptimizedTabs: React.FC<MobileOptimizedTabsProps> = ({
   ];
 
   return (
-    <div className="w-full bg-gray-900/50 border-b border-gray-700/50 p-2">
+    <div className="w-full bg-[#020914]/50 border-b border-gray-700/50 p-2">
       {/* Layout em grid 4x2 para mobile otimizado */}
       <div className="grid grid-cols-4 gap-2 max-w-sm mx-auto sm:max-w-2xl sm:grid-cols-8">
         {tabs.map((tab) => (
