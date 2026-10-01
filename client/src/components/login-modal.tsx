@@ -189,7 +189,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setFormData({ email: "", password: "", username: "", rememberMe: false });
+    setFormData({ email: "", password: "", username: "", rememberMe: false, userType: "", profession: "" });
     setEmailConfirmationError(false);
     setShowAlternativeEmail(false);
     setAlternativeEmail("");

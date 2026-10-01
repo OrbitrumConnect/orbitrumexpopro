@@ -106,7 +106,7 @@ function AppContent() {
         <Route path="/controle-gps" component={ProfessionalTracking} />
         {/* <Route path="/emergency-fix" component={EmergencyFix} /> */}
         <Route path="/chat/:chatId">
-          {(params) => <ChatWindow chatId={params.chatId} />}
+          {(params) => <ChatWindow chatId={params?.chatId ?? ""} />}
         </Route>
         <Route>
           <Inicio />
