@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 import Continuar from '@/components/Continuar';
 
 // PERFIL PROFISSIONAL — versão TESE (substitui o antigo modal de tokens).
@@ -25,6 +26,19 @@ const C = {
   border: 'rgba(0,190,255,0.22)', borderHot: 'rgba(0,220,255,0.5)',
   ink: '#EAF8FF', ink2: '#7FA9C2', ink3: '#5b7a90',
 };
+const DEMO_PROS: Record<number, { name: string; title: string; avatar: string; skills: string[]; city?: string; available?: boolean }> = {
+  1: { name: 'Carlos Silva', title: 'Pintor Profissional', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Pintura Residencial', 'Pintura Comercial'], city: 'Rio de Janeiro', available: true },
+  2: { name: 'Ana Santos', title: 'Desenvolvedora React', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b2e5c5b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['React', 'TypeScript', 'Node.js'], city: 'São Paulo', available: true },
+  3: { name: 'Roberto Lima', title: 'Personal Trainer', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Musculação', 'Cardio', 'Nutrição'], city: 'Rio de Janeiro', available: true },
+  4: { name: 'Maria Silva', title: 'Designer UI/UX', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Figma', 'Adobe XD', 'Photoshop'], city: 'Belo Horizonte', available: true },
+  5: { name: 'José Santos', title: 'Eletricista', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Instalação Elétrica', 'Manutenção'], city: 'Rio de Janeiro', available: true },
+  6: { name: 'Lucia Pereira', title: 'Advogada', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Direito Civil', 'Trabalhista'], city: 'São Paulo', available: true },
+  7: { name: 'Pedro Costa', title: 'Jardineiro', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Paisagismo', 'Manutenção'], city: 'Curitiba', available: true },
+  8: { name: 'Elena Rodriguez', title: 'Tradutora', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Inglês', 'Espanhol', 'Português'], city: 'Florianópolis', available: true },
+  9: { name: 'Bruno Oliveira', title: 'Programador Python', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Python', 'Django', 'FastAPI'], city: 'Porto Alegre', available: true },
+  10: { name: 'Carla Mendes', title: 'Psicóloga', avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100', skills: ['Terapia Cognitiva', 'Ansiedade'], city: 'Rio de Janeiro', available: true },
+};
+
 const CONF_LABEL: Record<string, string> = {
   declarado: 'Declarado', indicado: 'Indicado',
   validado: 'Experiência validada', verificado: 'Verificado',
@@ -33,17 +47,57 @@ const CONF_LABEL: Record<string, string> = {
 export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar }: ProfessionalModalProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [perfil, setPerfil] = useState<any>(null);
   const [carregando, setCarregando] = useState(false);
   const userId = user?.id_interno ?? 1;
+
+  const buildFallbackPerfil = (p: any) => ({
+    profissional: p,
+    contexto: { chips: [], motivos: [] },
+    placar: { experiencias: 0, indicacoes: 0, validacoes: 0 },
+    conexoesEmComum: 0, caminho: [], experienciasRelevantes: [],
+  });
+
+  const tryFallback = () => {
+    const cached: any[] | undefined = queryClient.getQueryData(['/api/professionals']);
+    if (cached) {
+      const found = cached.find((p: any) => p.id === professionalId);
+      if (found) { setPerfil(buildFallbackPerfil(found)); return; }
+    }
+    const demo = DEMO_PROS[professionalId];
+    if (demo) {
+      setPerfil(buildFallbackPerfil({ id: professionalId, ...demo, services: demo.skills }));
+      return;
+    }
+    fetch('/api/professionals').then(r => {
+      if (!r.ok) throw new Error('');
+      const ct = r.headers.get('content-type') || '';
+      if (!ct.includes('json')) throw new Error('');
+      return r.json();
+    }).then((list: any[]) => {
+      const found = Array.isArray(list) ? list.find((p: any) => p.id === professionalId) : null;
+      if (found) setPerfil(buildFallbackPerfil(found));
+    }).catch(() => {});
+  };
 
   useEffect(() => {
     if (!isOpen || !professionalId) return;
     setCarregando(true); setPerfil(null);
     fetch(`/api/orbitmatch/profile/${professionalId}?userId=${userId}`)
-      .then(r => r.json())
-      .then(j => { if (j.success) setPerfil(j); })
-      .finally(() => setCarregando(false));
+      .then(r => {
+        const ct = r.headers.get('content-type') || '';
+        if (!r.ok || !ct.includes('json')) throw new Error('not json');
+        return r.json();
+      })
+      .then(j => {
+        if (j.success) setPerfil(j); else throw new Error('no success');
+        setCarregando(false);
+      })
+      .catch(() => {
+        tryFallback();
+        setCarregando(false);
+      });
   }, [isOpen, professionalId, userId]);
 
   if (!isOpen) return null;
