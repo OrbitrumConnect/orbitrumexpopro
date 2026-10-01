@@ -76,13 +76,13 @@ export default function PerfilProfissional() {
           <div style={{ maxWidth: 800, margin: '0 auto', padding: 'clamp(16px, 3vw, 32px)' }}>
             {/* Hero */}
             <div style={{ background: C.card, border: `1px solid ${C.borderHot}`, borderRadius: 18, padding: 'clamp(20px, 4vw, 32px)', marginBottom: 20 }}>
-              <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: window.innerWidth < 640 ? 14 : 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                 {p.avatar
-                  ? <img src={p.avatar} alt={p.name} style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${C.borderHot}`, flexShrink: 0 }} />
-                  : <div style={{ width: 96, height: 96, borderRadius: '50%', background: `${C.blue}33`, border: `3px solid ${C.borderHot}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: 36, flexShrink: 0 }}>{p.name?.[0]}</div>}
-                <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ fontSize: 24, fontWeight: 700 }}>{p.name}</div>
-                  <div style={{ color: C.ink2, fontSize: 15, marginTop: 2 }}>{p.title}</div>
+                  ? <img src={p.avatar} alt={p.name} style={{ width: window.innerWidth < 640 ? 64 : 96, height: window.innerWidth < 640 ? 64 : 96, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${C.borderHot}`, flexShrink: 0 }} />
+                  : <div style={{ width: window.innerWidth < 640 ? 64 : 96, height: window.innerWidth < 640 ? 64 : 96, borderRadius: '50%', background: `${C.blue}33`, border: `3px solid ${C.borderHot}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.cyan, fontWeight: 700, fontSize: window.innerWidth < 640 ? 24 : 36, flexShrink: 0 }}>{p.name?.[0]}</div>}
+                <div style={{ flex: 1, minWidth: 160 }}>
+                  <div style={{ fontSize: window.innerWidth < 640 ? 18 : 24, fontWeight: 700 }}>{p.name}</div>
+                  <div style={{ color: C.ink2, fontSize: window.innerWidth < 640 ? 13 : 15, marginTop: 2 }}>{p.title}</div>
                   <div style={{ color: C.ink3, fontSize: 13, marginTop: 4 }}>
                     {p.city ? `${p.city}${p.state ? '/' + p.state : ''}` : 'Região a combinar'}
                   </div>
@@ -115,8 +115,8 @@ export default function PerfilProfissional() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
                 {[['Experiências', placar.experiencias], ['Indicações', placar.indicacoes], ['Validações', placar.validacoes]].map(([label, n]) => (
                   <div key={label as string} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: C.cyan }}>{n as number}</div>
-                    <div style={{ fontSize: 12, color: C.ink3, marginTop: 2 }}>{label}</div>
+                    <div style={{ fontSize: window.innerWidth < 640 ? 22 : 28, fontWeight: 700, color: C.cyan }}>{n as number}</div>
+                    <div style={{ fontSize: window.innerWidth < 640 ? 11 : 12, color: C.ink3, marginTop: 2 }}>{label}</div>
                   </div>
                 ))}
               </div>

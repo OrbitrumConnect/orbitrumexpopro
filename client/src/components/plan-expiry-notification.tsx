@@ -26,10 +26,10 @@ export function PlanExpiryNotification() {
     const checkNotifications = async () => {
       try {
         const { data, error } = await (await import('@/lib/supabase')).supabase
-          .from('notifications')
+          .from('user_notifications')
           .select('*')
           .eq('user_id', user?.id_interno ?? 0)
-          .eq('is_read', false)
+          .eq('read', false)
           .order('created_at', { ascending: false })
           .limit(5);
         if (error || !data?.length) return;
@@ -54,7 +54,7 @@ export function PlanExpiryNotification() {
   const markAsRead = async (notificationId: number) => {
     try {
       const { supabase } = await import('@/lib/supabase');
-      await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+      await supabase.from('user_notifications').update({ read: true, read_at: new Date().toISOString() }).eq('id', notificationId);
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
       );

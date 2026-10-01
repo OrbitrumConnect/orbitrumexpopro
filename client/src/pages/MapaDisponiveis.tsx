@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
 import { ProfessionalModal } from '@/components/professional-modal';
 import ConversaModal from '@/components/ConversaModal';
 import Sidebar from '@/components/Sidebar';
@@ -46,6 +48,7 @@ export default function MapaDisponiveis() {
   const ref = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const [profModalId, setProfModalId] = useState<number | null>(null);
   const [conversaId, setConversaId] = useState<number | null>(null);
   const [profs, setProfs] = useState<Prof[]>([]);
@@ -84,17 +87,31 @@ export default function MapaDisponiveis() {
   };
 
   const addMarkersToMap = (list: Prof[], map: L.Map) => {
-    markersRef.current.forEach(m => map.removeLayer(m));
+    if (clusterRef.current) { map.removeLayer(clusterRef.current); clusterRef.current = null; }
     markersRef.current = [];
+    const cluster = L.markerClusterGroup({
+      maxClusterRadius: 50,
+      iconCreateFunction: (c) => {
+        const count = c.getChildCount();
+        return L.divIcon({
+          className: '',
+          html: `<div style="filter:${counterFilter};width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,${C.cyan},${C.blue});display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#012;border:2px solid #020914;box-shadow:0 0 12px ${C.cyan}66">${count}</div>`,
+          iconSize: [40, 40], iconAnchor: [20, 20],
+        });
+      },
+    });
     const pts: [number, number][] = [];
     list.forEach(p => {
       if (p.latitude == null || p.longitude == null) return;
-      const m = L.marker([p.latitude, p.longitude], { icon: pino(p.avatar) }).addTo(map);
+      const m = L.marker([p.latitude, p.longitude], { icon: pino(p.avatar) });
       m.bindTooltip(`${p.name}${p.title ? ' · ' + p.title : ''}`, { direction: 'top' });
       m.on('click', () => setProfModalId(p.id));
+      cluster.addLayer(m);
       markersRef.current.push(m);
       pts.push([p.latitude, p.longitude]);
     });
+    map.addLayer(cluster);
+    clusterRef.current = cluster;
     if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.35));
   };
 
@@ -114,8 +131,11 @@ export default function MapaDisponiveis() {
           map.setView([latitude, longitude], 14);
           setUserLocation(true);
           userLatLng.current = [latitude, longitude];
-          const meIcon = L.divIcon({ className: '', html: `<div style="width:16px;height:16px;border-radius:50%;background:#00E5FF;border:3px solid #020914;box-shadow:0 0 12px #00E5FF99"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
-          L.marker([latitude, longitude], { icon: meIcon, zIndexOffset: 1000 }).addTo(map).bindTooltip('Você está aqui', { direction: 'top', className: '' });
+          const userFoto = user?.profilePhoto || (user as any)?.avatar;
+          const meIcon = userFoto
+            ? L.divIcon({ className: '', html: `<div style="filter:${counterFilter};width:44px;height:44px"><img src="${userFoto}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:3px solid #00E5FF;box-shadow:0 0 12px #00E5FF88"/></div>`, iconSize: [44, 44], iconAnchor: [22, 22] })
+            : L.divIcon({ className: '', html: `<div style="width:18px;height:18px;border-radius:50%;background:#00E5FF;border:3px solid #020914;box-shadow:0 0 12px #00E5FF99"></div>`, iconSize: [18, 18], iconAnchor: [9, 9] });
+          L.marker([latitude, longitude], { icon: meIcon, zIndexOffset: 1000 }).addTo(map).bindTooltip('Você', { permanent: false });
         },
         () => {}
       );
@@ -300,16 +320,16 @@ export default function MapaDisponiveis() {
               </>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginTop: 28 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr 1fr 1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: mobile ? 8 : 14, marginTop: mobile ? 16 : 28 }}>
               {[
-                { icon: '📍', title: 'Localização real', desc: 'Posição autorizada e temporária — só enquanto você ativar. Nada é rastreado.' },
-                { icon: '🔗', title: 'Conecte direto', desc: 'Toque no profissional pra ver por que apareceu e iniciar uma conversa.' },
-                { icon: '🛡️', title: 'Privacidade', desc: 'Sua localização só aparece quando você ativa. Desativou? Saiu do mapa.' },
+                { icon: '📍', title: 'Localização real', desc: 'Autorizada e temporária.' },
+                { icon: '🔗', title: 'Conecte direto', desc: 'Toque pra ver e conectar.' },
+                { icon: '🛡️', title: 'Privacidade', desc: 'Desativou? Saiu do mapa.' },
               ].map((step, i) => (
-                <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, marginBottom: 8 }}>{step.icon}</div>
-                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>{step.title}</div>
-                  <div style={{ color: C.ink2, fontSize: 12, lineHeight: 1.5 }}>{step.desc}</div>
+                <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: mobile ? 10 : 14, padding: mobile ? 10 : 18, textAlign: 'center' }}>
+                  <div style={{ fontSize: mobile ? 16 : 22, marginBottom: mobile ? 4 : 8 }}>{step.icon}</div>
+                  <div style={{ fontWeight: 600, fontSize: mobile ? 11 : 13, marginBottom: mobile ? 2 : 4 }}>{step.title}</div>
+                  <div style={{ color: C.ink2, fontSize: mobile ? 10 : 12, lineHeight: 1.4 }}>{step.desc}</div>
                 </div>
               ))}
             </div>
