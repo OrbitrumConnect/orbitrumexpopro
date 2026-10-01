@@ -225,37 +225,23 @@
 }
   
   .neon-text {
-    color: var(--neon-cyan);
-    text-shadow: 
-      0 0 3.95px var(--neon-cyan), 
-      0 0 7.9px var(--neon-cyan), 
-      0 0 11.85px var(--neon-cyan),
-      0 0 6.32px var(--neon-purple);
+    color: #00E5FF;
   }
 
-  /* Classe para páginas legais com glow reduzido em 25% */
   .neon-text-legal {
-    color: var(--neon-cyan);
-    text-shadow: 
-      0 0 2.96px var(--neon-cyan), 
-      0 0 5.92px var(--neon-cyan), 
-      0 0 8.89px var(--neon-cyan),
-      0 0 4.74px var(--neon-purple);
+    color: #00E5FF;
   }
   
   .neon-button {
-    background: var(--neon-cyan);
-    color: var(--space-black);
-    box-shadow: 
-      0 0 3.4px var(--neon-cyan),
-      0 0 6.8px var(--neon-cyan),
-      0 0 10.2px var(--neon-cyan);
+    background: linear-gradient(135deg, #00E5FF, #00AEEF);
+    color: #012;
+    font-weight: 600;
     transition: all 0.3s ease;
   }
-  
+
   .neon-button:hover {
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
-    background: var(--electric-blue);
+    background: linear-gradient(135deg, #00AEEF, #0077B6);
+    box-shadow: 0 0 12px rgba(0, 174, 255, 0.3);
   }
   
   .game-overlay {
