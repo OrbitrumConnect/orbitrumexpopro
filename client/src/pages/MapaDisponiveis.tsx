@@ -67,7 +67,7 @@ export default function MapaDisponiveis() {
   useEffect(() => {
     if (user?.id_interno) {
       fetch(`/api/facts/availability/${user.id_interno}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) throw 0; return r.json(); })
         .then(j => { if (j.success) setDisponivel(!!j.ativo); })
         .catch(() => {});
     }
@@ -79,7 +79,7 @@ export default function MapaDisponiveis() {
     fetch('/api/facts/availability', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ professionalUserId: user?.id_interno, regiao: user?.city || 'geral', ativo: novo }),
-    }).catch(() => setDisponivel(!novo));
+    }).then(r => { if (!r.ok) throw 0; }).catch(() => {});
   };
 
   const addMarkersToMap = (list: Prof[], map: L.Map) => {
@@ -120,7 +120,7 @@ export default function MapaDisponiveis() {
     }
 
     fetch('/api/orbitmatch/disponiveis')
-      .then(r => r.json())
+      .then(r => { if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) throw 0; return r.json(); })
       .then((j: any) => {
         const list: Prof[] = Array.isArray(j?.itens) ? j.itens : [];
         setProfs(list); setCarregou(true);
@@ -131,7 +131,7 @@ export default function MapaDisponiveis() {
     const userId = (user as any)?.id_interno ?? 0;
     if (userId) {
       fetch(`/api/orbitmatch/search?userId=${userId}`)
-        .then(r => r.ok ? r.json() : null)
+        .then(r => { if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) return null; return r.json(); })
         .then(j => {
           if (j?.resultados) {
             const rede: Prof[] = j.resultados.map((r: any) => ({
@@ -146,7 +146,7 @@ export default function MapaDisponiveis() {
     }
 
     fetch('/api/professionals')
-      .then(r => r.ok ? r.json() : [])
+      .then(r => { if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) return []; return r.json(); })
       .then((list: any[]) => {
         const all: Prof[] = (Array.isArray(list) ? list : []).map((p: any) => ({
           id: p.id, name: p.name, title: p.title, avatar: p.avatar,

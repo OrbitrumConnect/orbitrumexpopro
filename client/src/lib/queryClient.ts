@@ -147,8 +147,6 @@ export function setupCacheCleanup() {
       }
     });
     
-    if (removedCount > 0) {
-      console.log(`🧹 ${removedCount} queries antigas removidas do cache`);
-    }
+    void removedCount;
   }, 10 * 60 * 1000); // A cada 10 minutos
 }

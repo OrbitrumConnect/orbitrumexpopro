@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { X, Clock, AlertTriangle } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 
 interface NotificationData {
@@ -26,26 +25,22 @@ export function PlanExpiryNotification() {
     // Verificar notificações periodicamente
     const checkNotifications = async () => {
       try {
-        const response = await apiRequest("GET", "/api/notifications");
-        const data = await response.json();
-        
-        if ((data as any).success && (data as any).notifications?.length > 0) {
-          const unreadNotifications = (data as any).notifications.filter((n: NotificationData) => !n.isRead);
-          
-          if (unreadNotifications.length > 0) {
-            const latestNotification = unreadNotifications[0];
-            setActiveNotification(latestNotification);
-            setShowNotification(true);
-            
-            // Auto-hide após 10 segundos
-            setTimeout(() => {
-              setShowNotification(false);
-              markAsRead(latestNotification.id);
-            }, 10000);
-          }
-        }
-      } catch (error) {
-        console.error("Erro ao buscar notificações:", error);
+        const { data, error } = await (await import('@/lib/supabase')).supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user?.id_interno ?? 0)
+          .eq('is_read', false)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        if (error || !data?.length) return;
+        const latestNotification = data[0] as any;
+        setActiveNotification(latestNotification);
+        setShowNotification(true);
+        setTimeout(() => {
+          setShowNotification(false);
+          markAsRead(latestNotification.id);
+        }, 10000);
+      } catch {
       }
     };
 
@@ -58,12 +53,12 @@ export function PlanExpiryNotification() {
 
   const markAsRead = async (notificationId: number) => {
     try {
-      await apiRequest("POST", `/api/notifications/${notificationId}/read`);
-      setNotifications(prev => 
+      const { supabase } = await import('@/lib/supabase');
+      await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+      setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
       );
-    } catch (error) {
-      console.error("Erro ao marcar notificação como lida:", error);
+    } catch {
     }
   };
 
