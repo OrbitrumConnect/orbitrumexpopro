@@ -17,11 +17,13 @@ interface Prof { id: number; name: string; title?: string; avatar?: string | nul
 
 type TabMapa = 'disponiveis' | 'rede' | 'todos';
 
+const counterFilter = 'contrast(1.176) brightness(0.667) hue-rotate(180deg) invert(1)';
+
 function pino(foto?: string | null) {
   const inner = foto
-    ? `<img src="${foto}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid ${C.cyan};box-shadow:0 0 0 3px ${C.cyan}55"/>`
+    ? `<div style="filter:${counterFilter};width:36px;height:36px"><img src="${foto}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid ${C.cyan};box-shadow:0 0 0 3px ${C.cyan}55"/></div>`
     : `<div style="width:28px;height:28px;border-radius:50%;background:${C.cyan};border:2px solid #001019;box-shadow:0 0 0 4px ${C.cyan}44"></div>`;
-  return L.divIcon({ className: '', html: inner, iconSize: [32, 32], iconAnchor: [16, 16] });
+  return L.divIcon({ className: '', html: inner, iconSize: [36, 36], iconAnchor: [18, 18] });
 }
 
 function Avatar({ src, name }: { src?: string | null; name: string }) {

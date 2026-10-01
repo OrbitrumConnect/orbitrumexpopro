@@ -24,6 +24,7 @@ export default function Teams() {
   const [selectedProfessionalId, setSelectedProfessionalId] = useState<number | null>(null);
   const [criarOpen, setCriarOpen] = useState(false);
   const [nomeTime, setNomeTime] = useState('');
+  const [limiteTime, setLimiteTime] = useState<5 | 10>(5);
   const [profsSelecionados, setProfsSelecionados] = useState<string[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
@@ -90,7 +91,7 @@ export default function Teams() {
 
   const toggleProf = (id: string) => {
     setProfsSelecionados(prev =>
-      prev.includes(id) ? prev.filter(p => p !== id) : prev.length >= 10 ? prev : [...prev, id]
+      prev.includes(id) ? prev.filter(p => p !== id) : prev.length >= limiteTime ? prev : [...prev, id]
     );
   };
 
@@ -144,7 +145,7 @@ export default function Teams() {
             </div>
             <div style={{ fontSize: 13, color: C.ink2 }}>Monte times de profissionais para seus projetos</div>
           </div>
-          <button onClick={() => { setCriarOpen(true); setNomeTime(''); setProfsSelecionados([]); }}
+          <button onClick={() => { setCriarOpen(true); setNomeTime(''); setLimiteTime(5); setProfsSelecionados([]); }}
             style={{ background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, border: 'none', borderRadius: 10, padding: '8px 16px', color: '#012', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
             <UserPlus size={14} /> Criar Time
           </button>
@@ -231,7 +232,7 @@ export default function Teams() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
               {[
                 { icon: <UserPlus size={20} color={C.cyan} />, title: 'Adicione profissionais', desc: 'Navegue pelos perfis na rede e adicione quem precisar ao seu time.' },
-                { icon: <Users size={20} color={C.cyan} />, title: 'Organize times', desc: 'Monte equipes de até 10 profissionais para diferentes projetos.' },
+                { icon: <Users size={20} color={C.cyan} />, title: 'Organize times', desc: 'Monte equipes de até 5 ou 10 profissionais para diferentes projetos.' },
                 { icon: <Briefcase size={20} color={C.cyan} />, title: 'Coordene', desc: 'Gerencie suas equipes e coordene diferentes especialidades num projeto.' },
               ].map((step, i) => (
                 <div key={i} style={{ textAlign: 'center' }}>
@@ -264,8 +265,22 @@ export default function Teams() {
             </div>
 
             <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: C.ink2, marginBottom: 6, display: 'block' }}>Tamanho do time</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {([5, 10] as const).map(n => (
+                  <button key={n} onClick={() => { setLimiteTime(n); setProfsSelecionados(prev => prev.slice(0, n)); }}
+                    style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: `1px solid ${limiteTime === n ? C.borderHot : C.border}`,
+                      background: limiteTime === n ? `${C.cyan}18` : 'rgba(0,8,20,0.7)', color: limiteTime === n ? C.cyan : C.ink2,
+                      fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                    Até {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 12, color: C.ink2, marginBottom: 6, display: 'block' }}>
-                Profissionais ({profsSelecionados.length}/10)
+                Profissionais ({profsSelecionados.length}/{limiteTime})
               </label>
               <div style={{ position: 'relative' }}>
                 <button onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -273,9 +288,14 @@ export default function Teams() {
                   <span>{profsSelecionados.length > 0 ? `${profsSelecionados.length} selecionado${profsSelecionados.length > 1 ? 's' : ''}` : 'Selecionar profissionais...'}</span>
                   <ChevronDown size={14} />
                 </button>
-                {dropdownOpen && professionals.length > 0 && (
+                {dropdownOpen && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: '#071829', border: `1px solid ${C.borderHot}`, borderRadius: 10, marginTop: 4, maxHeight: 240, overflowY: 'auto' }}>
-                    {professionals.map(p => {
+                    {professionals.length === 0 ? (
+                      <div style={{ padding: '20px 14px', textAlign: 'center', color: C.ink2, fontSize: 13 }}>
+                        <Users size={20} color={C.ink3} style={{ margin: '0 auto 8px', display: 'block' }} />
+                        Nenhum profissional encontrado. Navegue pela rede e conecte com profissionais primeiro.
+                      </div>
+                    ) : professionals.map(p => {
                       const sel = profsSelecionados.includes(p.id.toString());
                       return (
                         <button key={p.id} onClick={() => toggleProf(p.id.toString())}
