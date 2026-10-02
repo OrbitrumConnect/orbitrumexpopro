@@ -44,6 +44,7 @@ import { TelegramThemeProvider } from "@/components/telegram-integration";
 import { HowItWorksModal } from "@/components/HowItWorksModal";
 import BottomNav from "@/components/BottomNav";
 import NotificacaoServico from "@/components/NotificacaoServico";
+import AppPromptBanner from "@/components/AppPromptBanner";
 // import EmergencyFix from "@/pages/emergency-fix";
 import { useState, useEffect } from "react";
 
@@ -119,6 +120,7 @@ function AppContent() {
       </Switch>
       {isMobile && <BottomNav />}
       <NotificacaoServico />
+      <AppPromptBanner />
       </TooltipProvider>
     </TelegramThemeProvider>
   );
