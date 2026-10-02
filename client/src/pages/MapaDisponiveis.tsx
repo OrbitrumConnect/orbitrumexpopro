@@ -203,51 +203,54 @@ export default function MapaDisponiveis() {
       <Sidebar />
       <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '10px 12px' : '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', flexWrap: 'wrap', gap: mobile ? 4 : 8 }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: mobile ? 14 : 17, letterSpacing: 0.5 }}>Mapa da Rede</div>
+          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '6px 10px' : '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', gap: mobile ? 4 : 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 6 : 10 }}>
+              <div style={{ fontWeight: 700, fontSize: mobile ? 13 : 17, letterSpacing: 0.5 }}>Mapa</div>
               {!mobile && <div style={{ fontSize: 13, color: C.ink2 }}>Terminal operacional — a rede na geografia</div>}
+              <div style={{ fontSize: mobile ? 10 : 13, color: C.cyan, fontWeight: 600 }}>{carregou ? `${activeList.length}` : '…'}</div>
             </div>
-            <div style={{ display: 'flex', gap: mobile ? 6 : 10, alignItems: 'center' }}>
-              <div style={{ fontSize: mobile ? 11 : 13, color: C.cyan, fontWeight: 600 }}>{carregou ? `${activeList.length} ${tab === 'disponiveis' ? 'disponíveis' : 'profissionais'}` : '…'}</div>
+            <div style={{ display: 'flex', gap: mobile ? 4 : 10, alignItems: 'center' }}>
               {user && (
                 <button onClick={toggleDisponibilidade}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: mobile ? 4 : 6, background: disponivel ? `${C.cyan}1f` : 'transparent', border: `1px solid ${disponivel ? C.borderHot : C.border}`, borderRadius: 16, padding: mobile ? '4px 10px' : '6px 14px', color: disponivel ? C.cyan : C.ink3, fontSize: mobile ? 11 : 12, fontWeight: 500, cursor: 'pointer' }}>
-                  <span style={{ width: mobile ? 6 : 8, height: mobile ? 6 : 8, borderRadius: '50%', background: disponivel ? C.cyan : C.ink3, boxShadow: disponivel ? `0 0 6px ${C.cyan}` : 'none' }} />
-                  {disponivel ? 'Disponível' : 'Ativar'}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: disponivel ? `${C.cyan}1f` : 'transparent', border: `1px solid ${disponivel ? C.borderHot : C.border}`, borderRadius: 14, padding: mobile ? '3px 8px' : '6px 14px', color: disponivel ? C.cyan : C.ink3, fontSize: mobile ? 10 : 12, fontWeight: 500, cursor: 'pointer' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: disponivel ? C.cyan : C.ink3, boxShadow: disponivel ? `0 0 6px ${C.cyan}` : 'none' }} />
+                  {disponivel ? 'On' : 'Off'}
                 </button>
               )}
             </div>
           </header>
 
           {/* TABS — terminal do mapa */}
-          <div style={{ display: 'flex', gap: mobile ? 2 : 4, padding: mobile ? '6px 12px 0' : '10px 24px 0 clamp(18px, 14vw, 56px)', background: 'rgba(4,17,31,0.5)' }}>
+          <div style={{ display: 'flex', gap: 0, padding: mobile ? '0 8px' : '10px 24px 0 clamp(18px, 14vw, 56px)', background: 'rgba(4,17,31,0.5)' }}>
             {(['disponiveis', 'rede', 'todos'] as TabMapa[]).map(t => {
               const on = tab === t;
+              const mobileLabel = { disponiveis: 'Agora', rede: 'Rede', todos: 'Todos' };
               return (
                 <button key={t} onClick={() => setTab(t)}
-                  style={{ padding: mobile ? '5px 10px' : '8px 18px', borderRadius: '10px 10px 0 0',
+                  style={{ padding: mobile ? '4px 10px' : '8px 18px', borderRadius: '8px 8px 0 0',
                     borderTop: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderLeft: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderRight: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderBottom: 'none', background: on ? `${C.blue}22` : 'transparent',
-                    color: on ? C.cyan : C.ink2, fontSize: mobile ? 11 : 13, fontWeight: on ? 600 : 400, cursor: 'pointer', letterSpacing: 0.3 }}>
-                  {t === 'disponiveis' && '● '}{tabLabel[t]}
+                    color: on ? C.cyan : C.ink2, fontSize: mobile ? 10 : 13, fontWeight: on ? 600 : 400, cursor: 'pointer', letterSpacing: 0.3 }}>
+                  {t === 'disponiveis' && '● '}{mobile ? mobileLabel[t] : tabLabel[t]}
                 </button>
               );
             })}
           </div>
 
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(12px, 3vw, 24px)' }}>
-            <div style={{ display: 'flex', gap: mobile ? 6 : 8, alignItems: 'center', marginBottom: mobile ? 8 : 12, fontSize: mobile ? 11 : 13, color: C.ink2 }}>
-              <span style={{ width: mobile ? 7 : 10, height: mobile ? 7 : 10, borderRadius: '50%', background: C.cyan, flexShrink: 0 }} />
-              <span>
-                {tab === 'disponiveis' && <>Só quem está <b style={{ color: C.cyan }}>disponível</b> aparece. Toque no pino ou card pra conectar.</>}
-                {tab === 'rede' && <>Profissionais da <b style={{ color: C.cyan }}>sua rede</b> — quem você conhece, quem te indicaram, quem já trabalhou com você.</>}
-                {tab === 'todos' && <>Todos os profissionais cadastrados. A rede explica <b style={{ color: C.cyan }}>por que</b> cada um apareceu.</>}
-              </span>
-              {userLocation && <span style={{ marginLeft: 'auto', fontSize: 11, color: C.ink3 }}>GPS ativo</span>}
-            </div>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: mobile ? '6px 8px' : 'clamp(12px, 3vw, 24px)' }}>
+            {!mobile && (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, fontSize: 13, color: C.ink2 }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: C.cyan, flexShrink: 0 }} />
+                <span>
+                  {tab === 'disponiveis' && <>Só quem está <b style={{ color: C.cyan }}>disponível</b> aparece. Toque no pino ou card pra conectar.</>}
+                  {tab === 'rede' && <>Profissionais da <b style={{ color: C.cyan }}>sua rede</b> — quem você conhece, quem te indicaram, quem já trabalhou com você.</>}
+                  {tab === 'todos' && <>Todos os profissionais cadastrados. A rede explica <b style={{ color: C.cyan }}>por que</b> cada um apareceu.</>}
+                </span>
+                {userLocation && <span style={{ marginLeft: 'auto', fontSize: 11, color: C.ink3 }}>GPS ativo</span>}
+              </div>
+            )}
 
             <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: `1px solid ${C.borderHot}`, boxShadow: `0 0 40px ${C.blue}12` }}>
               <div ref={ref} style={{ height: 'clamp(340px, 52vh, 540px)', width: '100%' }} />
