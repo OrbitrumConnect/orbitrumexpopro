@@ -234,24 +234,44 @@ function RequestsTab({ pendingCount, acceptedCount }: { pendingCount: number; ac
 
 function PortfolioTab({ user }: { user: any }) {
   const [fotos, setFotos] = useState<Array<{ id: string; url: string; descricao: string; data: string; servico: string }>>([]);
+  const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (!user?.id) return;
+    fetch(`/api/portfolio/${user.id}`).then(r => r.json()).then(items => {
+      if (Array.isArray(items)) setFotos(items);
+    }).catch(() => {});
+  }, [user?.id]);
+
   const handleUpload = (files: FileList | null) => {
-    if (!files) return;
-    Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFotos(prev => [...prev, {
-          id: Date.now().toString() + Math.random(),
-          url: reader.result as string,
-          descricao: '',
-          data: new Date().toLocaleDateString('pt-BR'),
-          servico: 'Trabalho realizado',
-        }]);
-      };
-      reader.readAsDataURL(file);
-    });
+    if (!files || !user?.id) return;
+    setUploading(true);
+    const promises = Array.from(files).filter(f => f.type.startsWith('image/')).map(file =>
+      new Promise<void>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const r = await fetch(`/api/portfolio/${user.id}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: reader.result as string }),
+            });
+            const j = await r.json();
+            if (j.item) setFotos(prev => [...prev, j.item]);
+          } catch {}
+          resolve();
+        };
+        reader.readAsDataURL(file);
+      })
+    );
+    Promise.all(promises).finally(() => setUploading(false));
+  };
+
+  const handleDelete = async (itemId: string) => {
+    if (!user?.id) return;
+    await fetch(`/api/portfolio/${user.id}/${itemId}`, { method: 'DELETE' });
+    setFotos(prev => prev.filter(f => f.id !== itemId));
   };
 
   return (
@@ -266,9 +286,9 @@ function PortfolioTab({ user }: { user: any }) {
               Mostre seus melhores trabalhos. Clientes veem seu portfólio antes de conectar.
             </div>
           </div>
-          <button onClick={() => fileRef.current?.click()}
-            style={{ border: 'none', borderRadius: 10, padding: '9px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Camera size={14} /> Adicionar fotos
+          <button onClick={() => fileRef.current?.click()} disabled={uploading}
+            style={{ border: 'none', borderRadius: 10, padding: '9px 16px', background: uploading ? C.ink3 : `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 13, cursor: uploading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Camera size={14} /> {uploading ? 'Enviando...' : 'Adicionar fotos'}
           </button>
           <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
             onChange={e => handleUpload(e.target.files)} />
@@ -279,6 +299,11 @@ function PortfolioTab({ user }: { user: any }) {
             {fotos.map(f => (
               <div key={f.id} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${C.border}`, background: C.bg2, position: 'relative' }}>
                 <img src={f.url} alt={f.descricao} style={{ width: '100%', height: 160, objectFit: 'cover' }} />
+                <button onClick={() => handleDelete(f.id)} style={{
+                  position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', fontSize: 14,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>×</button>
                 <div style={{ padding: '8px 10px' }}>
                   <div style={{ fontSize: 12, fontWeight: 500 }}>{f.servico}</div>
                   <div style={{ fontSize: 11, color: C.ink3, marginTop: 2 }}>{f.data}</div>

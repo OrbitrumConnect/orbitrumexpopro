@@ -117,6 +117,20 @@ export default function OrbitLink() {
             )}
           </div>
 
+          {/* Portfólio */}
+          {perfil?.portfolio?.length > 0 && (
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 20, padding: 'clamp(16px, 4vw, 24px)', marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: C.ink3, marginBottom: 12 }}>PORTFÓLIO</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                {perfil.portfolio.map((f: any) => (
+                  <div key={f.id} style={{ borderRadius: 10, overflow: 'hidden', border: `1px solid ${C.border}` }}>
+                    <img src={f.url} alt={f.descricao || f.servico} style={{ width: '100%', height: 120, objectFit: 'cover' }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* CTAs */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <button onClick={() => setLocation(`/perfil/${p.id}`)} style={{

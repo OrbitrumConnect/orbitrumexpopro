@@ -3096,6 +3096,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── Portfólio persistente ──────────────────────────────────────────────
+  const portfolioStore = new Map<number, Array<{ id: string; url: string; descricao: string; data: string; servico: string }>>();
+
   /** Orbit Link — perfil público do profissional, acessível sem login.
    *  Retorna APENAS dados públicos (nome, título, cidade, serviços, placar).
    *  Sem phone, sem userId, sem latitude/longitude — LGPD §44. */
@@ -3115,6 +3118,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const experiencias = fatos.filter(f => f.predicate === 'trabalhou_com' && f.confidence === 'validado').length;
       const indicacoes = fatos.filter(f => f.predicate === 'indicou').length;
 
+      const portfolio = portfolioStore.get(profId) || [];
+
       res.json({
         success: true,
         profissional: {
@@ -3129,11 +3134,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: prof.description ?? null,
         },
         placar: { experiencias, indicacoes },
+        portfolio: portfolio.slice(0, 6),
       });
     } catch (error) {
       console.error("Erro no perfil público:", error);
       res.status(500).json({ success: false, message: "Falha ao carregar perfil" });
     }
+  });
+
+  app.get("/api/portfolio/:profId", async (req, res) => {
+    const profId = parseInt(req.params.profId);
+    res.json(portfolioStore.get(profId) || []);
+  });
+
+  app.post("/api/portfolio/:profId", async (req, res) => {
+    const profId = parseInt(req.params.profId);
+    const { url, descricao, servico } = req.body;
+    if (!url) return res.status(400).json({ error: "url obrigatória" });
+    const items = portfolioStore.get(profId) || [];
+    const item = {
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+      url,
+      descricao: descricao || '',
+      data: new Date().toLocaleDateString('pt-BR'),
+      servico: servico || 'Trabalho realizado',
+    };
+    items.push(item);
+    portfolioStore.set(profId, items);
+    res.json({ success: true, item });
+  });
+
+  app.delete("/api/portfolio/:profId/:itemId", async (req, res) => {
+    const profId = parseInt(req.params.profId);
+    const items = portfolioStore.get(profId) || [];
+    const filtered = items.filter(i => i.id !== req.params.itemId);
+    portfolioStore.set(profId, filtered);
+    res.json({ success: true });
   });
 
   // Atividade recente da rede do usuário (design-alvo, faixa inferior). Vem dos fatos, §35.
