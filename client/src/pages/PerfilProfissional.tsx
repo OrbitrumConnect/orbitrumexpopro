@@ -121,6 +121,24 @@ export default function PerfilProfissional() {
                   Ver no mapa
                 </button>
               </div>
+              <button onClick={async () => {
+                  try {
+                    await fetch('/api/orbitmatch/indicar', {
+                      method: 'POST', headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ indicadorUserId: userId, profissionalId: p.id }),
+                    });
+                    const url = `${window.location.origin}/perfil/${p.id}`;
+                    if (navigator.share) {
+                      navigator.share({ title: `${p.name} no Orbitrum`, text: `Conheça ${p.name} — ${p.title}`, url });
+                    } else {
+                      navigator.clipboard.writeText(url);
+                      alert('Link copiado! Compartilhe com quem precisa.');
+                    }
+                  } catch { alert('Link copiado!'); }
+                }}
+                style={{ width: '100%', border: `1px solid ${C.border}`, cursor: 'pointer', borderRadius: 14, padding: '10px', background: 'transparent', color: C.cyan, fontWeight: 500, fontSize: 13, marginTop: 8 }}>
+                Indicar para alguém
+              </button>
             </div>
 
             {/* Placar */}

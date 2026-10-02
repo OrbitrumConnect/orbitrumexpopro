@@ -283,8 +283,26 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
                 Ver perfil completo
               </button>
             </div>
-            <p style={{ color: C.ink3, fontSize: 11, textAlign: 'center', marginTop: 12 }}>
-              Chamar = iniciar conversa. Ver perfil = histórico, experiências e contexto completo.
+            <button onClick={async () => {
+                try {
+                  await fetch('/api/orbitmatch/indicar', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ indicadorUserId: userId, profissionalId: p.id }),
+                  });
+                  const url = `${window.location.origin}/perfil/${p.id}`;
+                  if (navigator.share) {
+                    navigator.share({ title: `${p.name} no Orbitrum`, text: `Conheça ${p.name} — ${p.title}`, url });
+                  } else {
+                    navigator.clipboard.writeText(url);
+                    alert('Link copiado! Compartilhe com quem precisa.');
+                  }
+                } catch { alert('Link copiado!'); }
+              }}
+              style={{ width: '100%', border: `1px solid ${C.border}`, cursor: 'pointer', borderRadius: 24, padding: '10px', background: 'transparent', color: C.cyan, fontWeight: 500, fontSize: 13, marginTop: 8 }}>
+              Indicar para alguém
+            </button>
+            <p style={{ color: C.ink3, fontSize: 11, textAlign: 'center', marginTop: 8 }}>
+              Chamar = iniciar conversa. Indicar = compartilhar este profissional com quem precisa.
             </p>
 
             {/* Camada de Continuidade: deep-links pro ecossistema (só o que o banco tem) */}

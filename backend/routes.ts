@@ -3096,6 +3096,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Indicar profissional — core do plano Indicador (R$9,90)
+  // Cria fato relacional "indicou" ligando indicador→indicado
+  app.post("/api/orbitmatch/indicar", async (req, res) => {
+    try {
+      const { indicadorUserId, profissionalId, paraQuem, motivo } = req.body;
+      if (!indicadorUserId || !profissionalId) {
+        return res.status(400).json({ success: false, message: "indicadorUserId e profissionalId são obrigatórios" });
+      }
+
+      const prof: any = await queryProfessionalById(profissionalId);
+      if (!prof) return res.status(404).json({ success: false, message: "Profissional não encontrado" });
+
+      const profUserId = prof.userId ?? prof.id;
+      const refId = Date.now();
+
+      const { fato, criado } = await aoConfirmarIndicacao(factStore, {
+        referralId: refId,
+        indicadorUserId: Number(indicadorUserId),
+        indicadoUserId: profUserId,
+      });
+
+      res.json({
+        success: true,
+        indicacao: {
+          fatoId: fato.id,
+          criado,
+          indicador: indicadorUserId,
+          profissional: { id: prof.id, name: prof.name, title: prof.title },
+          paraQuem: paraQuem || null,
+          motivo: motivo || null,
+        },
+      });
+    } catch (error) {
+      console.error("Erro ao indicar:", error);
+      res.status(500).json({ success: false, message: "Falha ao registrar indicação" });
+    }
+  });
+
   app.post("/api/professional/update-service-status", async (req, res) => {
     try {
       const { serviceId, status, reason, professionalId, timestamp } = req.body;

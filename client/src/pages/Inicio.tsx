@@ -161,11 +161,13 @@ export default function Inicio() {
     }
   }, [userId]);
 
-  const buscar = (view?: 'rede' | 'profissionais' | 'indicacoes' | 'oportunidades' | 'conversas') => {
+  const buscar = (view?: 'rede' | 'profissionais' | 'indicacoes' | 'oportunidades' | 'conversas', catOverride?: string) => {
     const v = view || viewAtiva;
     if (view) setViewAtiva(view);
     setBuscou(true); setCarregando(true);
-    fetch(`/api/orbitmatch/search?userId=${userId}`)
+    const termo = catOverride ?? necessidade.trim();
+    const cat = termo ? `&categoria=${encodeURIComponent(termo)}` : '';
+    fetch(`/api/orbitmatch/search?userId=${userId}${cat}`)
       .then(r => r.json())
       .then(j => {
         if (!j.success) return;
@@ -322,7 +324,15 @@ export default function Inicio() {
                 <input value={necessidade} onChange={e => setNecessidade(e.target.value)} onKeyDown={e => e.key === 'Enter' && buscar()}
                   placeholder="Ex.: Preciso de um eletricista amanhã..."
                   style={{ flex: 1, background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 22, padding: mobile ? '10px 14px' : '12px 18px', color: C.ink, fontSize: mobile ? 13 : 14, outline: 'none' }} />
-                <button onClick={buscar} style={{ width: mobile ? 42 : 48, height: mobile ? 42 : 48, borderRadius: '50%', border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontSize: 18, fontWeight: 700 }}>→</button>
+                <button onClick={() => buscar()} style={{ width: mobile ? 42 : 48, height: mobile ? 42 : 48, borderRadius: '50%', border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontSize: 18, fontWeight: 700 }}>→</button>
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                {['Eletricista', 'Encanador', 'Diarista', 'Pintor', 'Cabeleireira', 'Pedreiro', 'Babá', 'Técnico'].map(cat => (
+                  <button key={cat} onClick={() => { setNecessidade(cat); buscar(undefined, cat); }}
+                    style={{ padding: '4px 10px', borderRadius: 12, border: `1px solid ${C.border}`, background: necessidade === cat ? `${C.blue}22` : 'transparent', color: necessidade === cat ? C.cyan : C.ink2, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    {cat}
+                  </button>
+                ))}
               </div>
             </div>
 
