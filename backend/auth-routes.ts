@@ -77,16 +77,44 @@ export function setupAuthRoutes(app: Express) {
         counter++;
       }
 
+      const finalUserType = tipo === 'professional' ? 'professional' : 'client';
+
       // Usar a função registerUser do Supabase
       const result = await registerUser(
         finalEmail,
         finalPassword,
         finalUsername,
         finalFullName,
-        finalPhone
+        finalPhone,
+        finalUserType as 'client' | 'professional'
       );
 
       if (result.success) {
+        // Se profissional, criar registro na tabela professionals
+        if (finalUserType === 'professional' && result.user) {
+          try {
+            const { categoria, especialidade, descricaoServico, precoBase, pixChave } = req.body;
+            await storage.createProfessional({
+              userId: result.user.id,
+              name: finalFullName,
+              title: especialidade || categoria || 'Profissional',
+              email: finalEmail,
+              phone: finalPhone || '',
+              cpf: cpf || '00000000000',
+              cep: '00000000',
+              pixKey: pixChave || 'pendente',
+              avatar: '',
+              orbitRing: 1,
+              orbitPosition: Math.floor(Math.random() * 12),
+              hourlyRate: precoBase ? parseInt(precoBase) : 0,
+              services: especialidade ? [especialidade] : [],
+              available: true,
+            });
+          } catch (profErr) {
+            console.error('❌ Erro ao criar perfil profissional (user criado OK):', profErr);
+          }
+        }
+
         res.status(201).json({
           success: true,
           message: result.requiresVerification

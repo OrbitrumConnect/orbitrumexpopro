@@ -203,7 +203,7 @@ export default function MapaDisponiveis() {
       <Sidebar />
       <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '6px 10px' : '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', gap: mobile ? 4 : 8 }}>
+          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '4px 8px' : '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', gap: mobile ? 4 : 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 6 : 10 }}>
               <div style={{ fontWeight: 700, fontSize: mobile ? 13 : 17, letterSpacing: 0.5 }}>Mapa</div>
               {!mobile && <div style={{ fontSize: 13, color: C.ink2 }}>Terminal operacional — a rede na geografia</div>}
@@ -221,18 +221,18 @@ export default function MapaDisponiveis() {
           </header>
 
           {/* TABS — terminal do mapa */}
-          <div style={{ display: 'flex', gap: 0, padding: mobile ? '0 8px' : '10px 24px 0 clamp(18px, 14vw, 56px)', background: 'rgba(4,17,31,0.5)' }}>
+          <div style={{ display: 'flex', gap: 0, padding: mobile ? '0 6px' : '10px 24px 0 clamp(18px, 14vw, 56px)', background: 'rgba(4,17,31,0.5)' }}>
             {(['disponiveis', 'rede', 'todos'] as TabMapa[]).map(t => {
               const on = tab === t;
               const mobileLabel = { disponiveis: 'Agora', rede: 'Rede', todos: 'Todos' };
               return (
                 <button key={t} onClick={() => setTab(t)}
-                  style={{ padding: mobile ? '4px 10px' : '8px 18px', borderRadius: '8px 8px 0 0',
+                  style={{ padding: mobile ? '3px 8px' : '8px 18px', borderRadius: '6px 6px 0 0',
                     borderTop: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderLeft: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderRight: on ? `1px solid ${C.borderHot}` : `1px solid transparent`,
                     borderBottom: 'none', background: on ? `${C.blue}22` : 'transparent',
-                    color: on ? C.cyan : C.ink2, fontSize: mobile ? 10 : 13, fontWeight: on ? 600 : 400, cursor: 'pointer', letterSpacing: 0.3 }}>
+                    color: on ? C.cyan : C.ink2, fontSize: mobile ? 9 : 13, fontWeight: on ? 600 : 400, cursor: 'pointer', letterSpacing: 0.2, lineHeight: 1.2 }}>
                   {t === 'disponiveis' && '● '}{mobile ? mobileLabel[t] : tabLabel[t]}
                 </button>
               );

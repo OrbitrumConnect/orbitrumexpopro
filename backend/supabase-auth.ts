@@ -40,7 +40,8 @@ export async function registerUser(
   password: string,
   username: string,
   fullName: string,
-  phone?: string
+  phone?: string,
+  userType: 'client' | 'professional' = 'client'
 ): Promise<AuthResult> {
   try {
     // Verificar se email já existe
@@ -65,7 +66,7 @@ export async function registerUser(
             username,
             full_name: fullName,
             phone,
-            user_type: 'client'
+            user_type: userType
           }
         }
       });
@@ -96,7 +97,7 @@ export async function registerUser(
         emailVerified: false, // Sempre falso até confirmação
         passwordHash,
         supabaseId: data.user?.id,
-        userType: "client",
+        userType: userType,
         termsAccepted: true,
         termsAcceptedAt: new Date()
       });
@@ -126,7 +127,7 @@ export async function registerUser(
         phone,
         emailVerified: true, // Auto-verificado em desenvolvimento
         passwordHash,
-        userType: "client",
+        userType: userType,
         termsAccepted: true,
         termsAcceptedAt: new Date()
       });

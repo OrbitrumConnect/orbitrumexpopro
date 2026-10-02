@@ -294,7 +294,12 @@ export default function Cadastro() {
             senha: formData.senha,
             telefone: formData.telefone,
             cpf: formData.cpf,
-            tipo: formData.tipo
+            tipo: formData.tipo,
+            categoria: formData.categoria,
+            especialidade: formData.especialidade,
+            descricaoServico: formData.descricaoServico,
+            precoBase: formData.precoBase,
+            pixChave: formData.pixChave
           }),
         });
 
