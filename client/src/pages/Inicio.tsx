@@ -7,6 +7,7 @@ import { ProfessionalModal } from '@/components/professional-modal';
 import ConversaModal from '@/components/ConversaModal';
 import { StarfieldBackground } from '@/components/starfield-background';
 import { LoginModal } from '@/components/login-modal';
+import OpportunityPost from '@/components/OpportunityPost';
 
 // HOME no design alvo — "Sua rede em movimento".
 // Coração da tese: necessidade → OrbitMatch → recomendação COM MOTIVO.
@@ -381,7 +382,10 @@ export default function Inicio() {
                   </div>
                 ))}
                 {!carregando && resultados.length === 0 && (
-                  <p style={{ color: C.ink3, fontSize: 13 }}>Ninguém na sua rede ainda para isso. Conforme experiências reais forem confirmadas, os resultados ganham contexto.</p>
+                  <div>
+                    <p style={{ color: C.ink3, fontSize: 13, marginBottom: 12 }}>Ninguém na sua rede ainda para isso. Conforme experiências reais forem confirmadas, os resultados ganham contexto.</p>
+                    {user && <OpportunityPost necessidade={necessidade} onPosted={() => {}} />}
+                  </div>
                 )}
               </div>
             )}

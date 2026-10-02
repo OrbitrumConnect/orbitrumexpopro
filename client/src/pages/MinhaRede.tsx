@@ -3,6 +3,8 @@ import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import Sidebar from '@/components/Sidebar';
 import NetworkAside from '@/components/NetworkAside';
+import OpportunityFeed from '@/components/OpportunityFeed';
+import OpportunityPost from '@/components/OpportunityPost';
 
 const C = {
   bg: '#020914', bg2: '#061A2D', card: 'rgba(3,18,32,0.9)',
@@ -21,13 +23,14 @@ const ESTADO_COR: Record<string, string> = {
   conversando: '#00AEEF', combinado: '#F59E0B', concluido: '#10B981', validado: '#00E5FF',
 };
 
-type Tab = 'visao' | 'pessoas' | 'conversas' | 'indicacoes' | 'experiencias';
+type Tab = 'visao' | 'pessoas' | 'conversas' | 'indicacoes' | 'experiencias' | 'oportunidades';
 const TABS: Array<[Tab, string]> = [
   ['visao', 'Visão geral'],
   ['pessoas', 'Pessoas'],
   ['conversas', 'Conversas'],
   ['indicacoes', 'Indicações'],
   ['experiencias', 'Experiências'],
+  ['oportunidades', 'Necessidades'],
 ];
 
 function Avatar({ src, name, size = 42 }: { src?: string; name: string; size?: number }) {
@@ -411,6 +414,14 @@ export default function MinhaRede() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* TAB: Necessidades (Opportunity Layer §48) */}
+            {tab === 'oportunidades' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <OpportunityPost />
+                <OpportunityFeed />
               </div>
             )}
           </>

@@ -3172,6 +3172,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
 
+  // ── Opportunity Layer (§48) — postar necessidade → rede indica ──────
+  interface Opportunity {
+    id: string;
+    userId: number;
+    userName: string;
+    descricao: string;
+    categoria: string;
+    cidade?: string;
+    createdAt: string;
+    status: 'aberta' | 'atendida' | 'expirada';
+    recomendacoes: Array<{ profId: number; profName: string; byUserId: number; byUserName: string; timestamp: string }>;
+  }
+  const opportunityStore: Opportunity[] = [];
+
+  app.post("/api/opportunities", async (req, res) => {
+    const { userId, userName, descricao, categoria, cidade } = req.body;
+    if (!userId || !descricao) return res.status(400).json({ error: "userId e descricao obrigatórios" });
+    const opp: Opportunity = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      userId, userName: userName || 'Usuário',
+      descricao, categoria: categoria || '',
+      cidade: cidade || undefined,
+      createdAt: new Date().toISOString(),
+      status: 'aberta',
+      recomendacoes: [],
+    };
+    opportunityStore.unshift(opp);
+    res.json({ success: true, opportunity: opp });
+  });
+
+  app.get("/api/opportunities", async (_req, res) => {
+    const abertas = opportunityStore.filter(o => o.status === 'aberta');
+    res.json(abertas.slice(0, 30));
+  });
+
+  app.post("/api/opportunities/:id/recommend", async (req, res) => {
+    const opp = opportunityStore.find(o => o.id === req.params.id);
+    if (!opp) return res.status(404).json({ error: "Oportunidade não encontrada" });
+    const { profId, profName, byUserId, byUserName } = req.body;
+    if (!profId) return res.status(400).json({ error: "profId obrigatório" });
+    opp.recomendacoes.push({
+      profId, profName: profName || 'Profissional',
+      byUserId: byUserId || 0, byUserName: byUserName || 'Alguém',
+      timestamp: new Date().toISOString(),
+    });
+    res.json({ success: true, recomendacoes: opp.recomendacoes });
+  });
+
   // Atividade recente da rede do usuário (design-alvo, faixa inferior). Vem dos fatos, §35.
   app.get("/api/orbitmatch/atividade", async (req, res) => {
     try {
