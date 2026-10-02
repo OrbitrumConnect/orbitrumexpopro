@@ -16,6 +16,7 @@ import {
   Users,
   Star,
   Image,
+  Rocket,
 } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +26,7 @@ import ProfileEditor from "@/components/profile/ProfileEditor";
 import { DocumentUpload } from "@/components/dashboard/DocumentUpload";
 import Sidebar from "@/components/Sidebar";
 import NetworkAside from "@/components/NetworkAside";
+import BoostPerfil from "@/components/BoostPerfil";
 
 const C = {
   bg: '#020914', bg2: '#061A2D', card: 'rgba(3,18,32,0.9)',
@@ -37,7 +39,7 @@ interface ProfessionalDashboardProps {
   user: any;
 }
 
-type TabId = 'overview' | 'requests' | 'portfolio' | 'profile' | 'documents' | 'calendar' | 'team';
+type TabId = 'overview' | 'requests' | 'portfolio' | 'profile' | 'documents' | 'calendar' | 'team' | 'boost';
 
 const TABS: Array<{ id: TabId; icon: typeof Home; label: string }> = [
   { id: 'overview', icon: Home, label: 'Visão Geral' },
@@ -47,6 +49,7 @@ const TABS: Array<{ id: TabId; icon: typeof Home; label: string }> = [
   { id: 'documents', icon: FileText, label: 'Documentos' },
   { id: 'calendar', icon: Calendar, label: 'Agenda' },
   { id: 'team', icon: Users, label: 'Meu Time' },
+  { id: 'boost', icon: Rocket, label: 'Impulsionar' },
 ];
 
 export function CleanProfessionalDashboard({ user }: ProfessionalDashboardProps) {
@@ -141,6 +144,7 @@ export function CleanProfessionalDashboard({ user }: ProfessionalDashboardProps)
             )}
             {activeTab === 'calendar' && <InteractiveCalendar userType="professional" userId={user?.id || 1} />}
             {activeTab === 'team' && <TeamTab />}
+            {activeTab === 'boost' && <BoostPerfil profId={user?.id || 1} />}
           </motion.div>
         </div>
         {!mobile && <NetworkAside />}

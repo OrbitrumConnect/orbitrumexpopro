@@ -3034,12 +3034,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const resultado = await comporBusca(factStore, quemProcura, candidatos, { categoria, nomePorId });
 
+      // Boost: separação clara — destaques vêm em campo próprio, NUNCA misturam
+      // com o ranking orgânico. Legislação BR exige identificação de publicidade.
+      const agora = new Date();
+      const boostsAtivos = boostStore.filter(b => new Date(b.expiraEm) > agora);
+      const boostedIds = new Set(boostsAtivos.map(b => b.profId));
+      const destaques = resultado
+        .filter(r => boostedIds.has((r.profissional as any).id))
+        .map(r => ({ ...r, promovido: true }))
+        .slice(0, 3);
+
       res.json({
         success: true,
         quemProcura,
         categoria,
         total: resultado.length,
         resultados: resultado.slice(0, 10),
+        destaques,
       });
     } catch (error) {
       console.error("Erro no OrbitMatch:", error);
@@ -3094,6 +3105,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Erro no perfil relacional:", error);
       res.status(500).json({ success: false, message: "Falha ao montar o perfil" });
     }
+  });
+
+  // ── Boost com créditos (§38 — crédito de uso interno) ───────────────
+  interface BoostEntry {
+    profId: number;
+    tipo: 'destaque' | 'categoria' | 'regiao';
+    categoria?: string;
+    ativadoEm: string;
+    expiraEm: string;
+    custoCreditos: number;
+  }
+  const boostStore: BoostEntry[] = [];
+  const BOOST_PRECOS = {
+    destaque: 50,
+    categoria: 30,
+    regiao: 40,
+  };
+
+  app.get("/api/boost/precos", (_req, res) => {
+    res.json({ success: true, precos: BOOST_PRECOS });
+  });
+
+  app.get("/api/boost/ativos/:profId", (req, res) => {
+    const profId = parseInt(req.params.profId);
+    const agora = new Date();
+    const ativos = boostStore.filter(b => b.profId === profId && new Date(b.expiraEm) > agora);
+    res.json({ success: true, boosts: ativos });
+  });
+
+  app.post("/api/boost/ativar", async (req, res) => {
+    const { profId, tipo, categoria, duracaoHoras } = req.body;
+    if (!profId || !tipo) return res.status(400).json({ error: "profId e tipo obrigatórios" });
+    const preco = BOOST_PRECOS[tipo as keyof typeof BOOST_PRECOS];
+    if (!preco) return res.status(400).json({ error: "Tipo inválido. Use: destaque, categoria, regiao" });
+
+    const horas = duracaoHoras || 24;
+    const agora = new Date();
+    const expira = new Date(agora.getTime() + horas * 3600000);
+
+    const entry: BoostEntry = {
+      profId, tipo: tipo as BoostEntry['tipo'],
+      categoria: categoria || undefined,
+      ativadoEm: agora.toISOString(),
+      expiraEm: expira.toISOString(),
+      custoCreditos: preco,
+    };
+    boostStore.push(entry);
+
+    res.json({ success: true, boost: entry, mensagem: `Perfil destacado por ${horas}h. Custo: ${preco} créditos.` });
+  });
+
+  app.get("/api/boost/destacados", (_req, res) => {
+    const agora = new Date();
+    const ativos = boostStore.filter(b => new Date(b.expiraEm) > agora);
+    const profIds = [...new Set(ativos.map(b => b.profId))];
+    res.json({ success: true, profIds });
   });
 
   // ── Portfólio persistente ──────────────────────────────────────────────

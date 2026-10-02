@@ -109,6 +109,7 @@ export default function Inicio() {
   const [profModalId, setProfModalId] = useState<number | null>(null);
   const [conversaId, setConversaId] = useState<number | null>(null);
   const [resultados, setResultados] = useState<Rec[]>([]);
+  const [destaques, setDestaques] = useState<(Rec & { promovido?: boolean })[]>([]);
   const [buscou, setBuscou] = useState(false);
   const [carregando, setCarregando] = useState(false);
   const [viewAtiva, setViewAtiva] = useState<'inicio' | 'rede' | 'profissionais' | 'indicacoes' | 'oportunidades' | 'conversas'>('inicio');
@@ -176,6 +177,7 @@ export default function Inicio() {
         if (v === 'rede') lista = lista.filter(r => r.sinalRelacional > 0);
         else if (v === 'indicacoes') lista = lista.filter(r => r.motivos.some(m => m.toLowerCase().includes('indic')));
         setResultados(lista);
+        setDestaques(j.destaques || []);
       })
       .catch(() => {})
       .finally(() => setCarregando(false));
@@ -352,6 +354,36 @@ export default function Inicio() {
                   </span>
                   <button onClick={() => { setBuscou(false); setResultados([]); }} style={{ background: 'none', border: 'none', color: C.ink3, fontSize: 12, cursor: 'pointer' }}>Limpar</button>
                 </div>
+                {/* Destaques — promovidos, claramente identificados */}
+                {destaques.length > 0 && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: C.ink3, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ color: C.amber }}>⭐</span> EM DESTAQUE · Perfil promovido pelo profissional
+                    </div>
+                    {destaques.map(r => (
+                      <div key={`dest-${r.profissional.id}`} onClick={() => setProfModalId(r.profissional.id)}
+                        style={{
+                          background: C.card, border: `1px solid ${C.amber}33`, borderRadius: mobile ? 10 : 12,
+                          padding: mobile ? 10 : 14, marginBottom: mobile ? 8 : 10, cursor: 'pointer',
+                          display: 'flex', gap: mobile ? 8 : 12,
+                        }}>
+                        <Avatar src={r.profissional.avatar} name={r.profissional.name} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <div style={{ fontWeight: 600, fontSize: 14 }}>{r.profissional.name}</div>
+                            <span style={{ fontSize: 9, color: C.amber, background: `${C.amber}15`, border: `1px solid ${C.amber}30`, borderRadius: 6, padding: '2px 6px' }}>DESTAQUE</span>
+                          </div>
+                          <div style={{ color: C.ink3, fontSize: 12 }}>{r.profissional.title}{r.profissional.city ? ` · ${r.profissional.city}` : ''}</div>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); setConversaId(r.profissional.id); }}
+                          style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '6px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>
+                          Conectar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Broadcast — solicitar para todos disponíveis */}
                 {!carregando && resultados.filter(r => !ocupados.has(r.profissional.id)).length >= 2 && user && (
                   <button onClick={async () => {
