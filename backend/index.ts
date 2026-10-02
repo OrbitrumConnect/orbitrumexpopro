@@ -106,6 +106,10 @@ export const ready = (async () => {
   const workerRoutes = await import('./routes/worker');
   app.use('/api/worker', workerRoutes.default);
 
+  // MCP Server — Orbitrum como tool provider para agentes MCP (§85-§88)
+  const mcpRoutes = await import('./mcp-server');
+  app.use('/api/mcp', mcpRoutes.default);
+
   const server = await registerRoutes(app);
 
   // Processos VIVOS (WebSocket, cron, sync) — só fora da Vercel (serverless não segura processo).

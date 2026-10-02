@@ -28,6 +28,7 @@ import {
 } from './relational-triggers';
 import { perfilRelacional, atividadeRecente } from './relational-facts';
 import { eq as _eq } from 'drizzle-orm';
+import { interpretNeed, explainMatches } from './orbit-ai';
 
 // Fallback: quando DATABASE_URL não existe, orbitmatch usa o MemStorage
 const hasDb = !!process.env.DATABASE_URL;
@@ -3047,6 +3048,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .map(r => ({ ...r, promovido: true }))
         .slice(0, 3);
 
+      // OrbitAI: interpreta a necessidade e explica os matches (§85-§88)
+      let necessidadeInterpretada = null;
+      let explicacoes: any[] = [];
+      if (categoria) {
+        try {
+          necessidadeInterpretada = await interpretNeed(categoria);
+          const matchCandidates = resultado.slice(0, 10).map((r: any) => ({
+            profId: (r.profissional as any).id,
+            nome: (r.profissional as any).name,
+            titulo: (r.profissional as any).title || '',
+            score: r.score || 0,
+            motivos: r.motivos || [],
+            experiencias: r.experiencias || 0,
+            validacoes: r.validacoes || 0,
+          }));
+          explicacoes = await explainMatches(matchCandidates, necessidadeInterpretada);
+        } catch {}
+      }
+
       res.json({
         success: true,
         quemProcura,
@@ -3054,6 +3074,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         total: resultado.length,
         resultados: resultado.slice(0, 10),
         destaques,
+        ai: necessidadeInterpretada ? {
+          interpretacao: necessidadeInterpretada,
+          explicacoes,
+          provider: 'deterministic',
+        } : undefined,
       });
     } catch (error) {
       console.error("Erro no OrbitMatch:", error);
