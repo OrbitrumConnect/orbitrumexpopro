@@ -1,565 +1,266 @@
-import { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Edit3, MapPin, Phone, Star, Upload, User, Briefcase } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Camera, X, Check, MapPin, Phone, Briefcase } from "lucide-react";
 
-// Schema para validação do perfil
-const profileSchema = z.object({
-  displayName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  bio: z.string().max(500, "Bio deve ter no máximo 500 caracteres").optional(),
-  phone: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  profession: z.string().optional(),
-  experience: z.string().optional(),
-  skills: z.array(z.string()).optional(),
-  hourlyRate: z.number().min(0).optional(),
-  availability: z.enum(['disponivel', 'ocupado', 'offline']).optional(),
-});
+const C = {
+  bg: '#020914', card: 'rgba(3,18,32,0.92)', surface: '#0A1929',
+  cyan: '#00E5FF', blue: '#00AEEF', ink: '#F4FAFF', ink2: '#91A9BD', ink3: '#5b7a90',
+  border: 'rgba(0,190,255,0.18)', borderHot: 'rgba(0,190,255,0.4)',
+  green: '#24F0C7', orange: '#FF9F43',
+};
 
-type ProfileFormData = z.infer<typeof profileSchema>;
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '10px 14px', borderRadius: 10,
+  background: C.surface, border: `1px solid ${C.border}`, color: C.ink,
+  fontSize: 14, outline: 'none', fontFamily: 'inherit',
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 12, fontWeight: 500, color: C.ink2, marginBottom: 4, display: 'block',
+};
+
+const CATEGORIAS = [
+  'Pedreiro', 'Pintor', 'Eletricista', 'Encanador', 'Marceneiro', 'Serralheiro',
+  'Diarista', 'Babá', 'Cuidadora de Idosos', 'Jardineiro', 'Passeador de Cães',
+  'Cabeleireira', 'Barbeiro', 'Manicure', 'Maquiador', 'Esteticista',
+  'Técnico em Informática', 'Técnico em Ar Condicionado', 'Técnico em Celulares',
+  'Personal Trainer', 'Nutricionista', 'Fisioterapeuta', 'Psicólogo',
+  'Dentista', 'Médico', 'Enfermeiro', 'Veterinário',
+  'Professor Particular', 'Músico', 'Fotógrafo', 'Designer Gráfico',
+  'Advogado', 'Contador', 'Consultor', 'Mecânico', 'Chaveiro', 'Dedetizador',
+  'Costureira', 'Chef de Cozinha', 'Motorista Particular', 'Segurança',
+];
 
 interface ProfileEditorProps {
   userType: 'client' | 'professional';
 }
 
-const PROFESSION_OPTIONS = [
-  // CASA E CONSTRUÇÃO
-  'Pedreiro', 'Pintor', 'Eletricista', 'Encanador', 'Marceneiro', 'Carpinteiro', 'Serralheiro', 'Soldador',
-  'Vidraceiro', 'Gesseiro', 'Azulejista', 'Telhadista', 'Tapeceiro', 'Piscineiro', 'Paisagista', 'Jardineiro',
-  'Arquiteto', 'Engenheiro Civil', 'Decorador', 'Designer de Interiores', 'Empreiteiro', 'Mestre de Obras',
-  
-  // TECNOLOGIA E DIGITAL
-  'Desenvolvedor Web', 'Desenvolvedor Mobile', 'Programador', 'Analista de Sistemas', 'DevOps', 'DBA',
-  'UI/UX Designer', 'Designer Gráfico', 'Webdesigner', 'Social Media', 'Copywriter', 'Editor de Vídeo',
-  'Fotógrafo Digital', 'Especialista em SEO', 'Consultor de TI', 'Suporte Técnico', 'Técnico em Informática',
-  
-  // SAÚDE E BEM-ESTAR
-  'Médico', 'Enfermeiro', 'Fisioterapeuta', 'Nutricionista', 'Psicólogo', 'Dentista', 'Veterinário',
-  'Farmacêutico', 'Terapeuta', 'Fonoaudiólogo', 'Terapia Ocupacional', 'Acupunturista', 'Quiropraxista',
-  'Personal Trainer', 'Instrutor de Yoga', 'Instrutor de Pilates', 'Massagista', 'Reflexologista',
-  
-  // EDUCAÇÃO E ENSINO
-  'Professor Particular', 'Tutor Acadêmico', 'Professor de Inglês', 'Professor de Espanhol', 'Professor de Música',
-  'Instrutor de Dança', 'Coach', 'Mentor', 'Palestrante', 'Instrutor de Informática', 'Professor de Matemática',
-  'Professor de Física', 'Professor de Química', 'Professor de Biologia', 'Professor de História',
-  
-  // BELEZA E ESTÉTICA
-  'Cabeleireiro', 'Barbeiro', 'Manicure', 'Pedicure', 'Esteticista', 'Maquiador', 'Depiladora',
-  'Massoterapeuta', 'Dermopigmentador', 'Extensionista de Cílios', 'Design de Sobrancelhas', 'Podólogo',
-  'Terapeuta Capilar', 'Visagista', 'Nail Designer', 'Micropigmentador',
-  
-  // GASTRONOMIA E ALIMENTAÇÃO
-  'Chef de Cozinha', 'Cozinheiro', 'Confeiteiro', 'Padeiro', 'Salgadeiro', 'Barista', 'Sommelier',
-  'Bartender', 'Garçom', 'Nutricionista Esportiva', 'Personal Chef', 'Doceira', 'Chocolateiro',
-  'Pizzaiolo', 'Churrasqueiro', 'Catering', 'Organizador de Eventos Gastronômicos',
-  
-  // JURÍDICO E CONSULTORIA
-  'Advogado', 'Contador', 'Consultor Empresarial', 'Consultor Financeiro', 'Analista Financeiro',
-  'Assessor de Investimentos', 'Consultor de Marketing', 'Consultor de RH', 'Auditor', 'Perito Judicial',
-  'Despachante', 'Corretor de Imóveis', 'Corretor de Seguros', 'Planejador Financeiro',
-  
-  // SERVIÇOS DOMÉSTICOS
-  'Diarista', 'Faxineira', 'Passadeira', 'Babá', 'Cuidadora de Idosos', 'Governanta', 'Copeira',
-  'Organizadora', 'Personal Organizer', 'Lavadeira', 'Arrumadeira', 'Zeladora', 'Porteiro',
-  
-  // TRANSPORTE E LOGÍSTICA
-  'Motorista Particular', 'Motorista de App', 'Entregador', 'Motoboy', 'Motorista de Caminhão',
-  'Despachante', 'Corretor de Fretes', 'Operador Logístico', 'Transportador', 'Mudanceiro',
-  
-  // ARTE E ENTRETENIMENTO
-  'Fotógrafo', 'Videomaker', 'Músico', 'DJ', 'Animador de Festas', 'Palhaço', 'Mágico',
-  'Ator', 'Locutor', 'Apresentador', 'Artista Plástico', 'Tatuador', 'Ilustrador', 'Cartunista',
-  
-  // MODA E VESTUÁRIO
-  'Costureiro', 'Alfaiate', 'Designer de Moda', 'Modelista', 'Sapateiro', 'Personal Stylist',
-  'Consultor de Imagem', 'Vendedor de Roupas', 'Comerciante de Moda', 'Estilista',
-  
-  // ESPORTES E FITNESS
-  'Personal Trainer', 'Professor de Educação Física', 'Instrutor de Natação', 'Técnico Esportivo',
-  'Preparador Físico', 'Fisioterapeuta Esportiva', 'Nutricionista Esportiva', 'Massoterapeuta Esportiva',
-  
-  // VENDAS E COMÉRCIO
-  'Vendedor', 'Representante Comercial', 'Consultor de Vendas', 'Promotor de Vendas', 'Atendente',
-  'Caixa', 'Gerente de Loja', 'Supervisor de Vendas', 'Demonstrador', 'Merchandiser',
-  
-  // MANUTENÇÃO E REPAROS
-  'Técnico em Eletrônicos', 'Técnico em Celulares', 'Técnico em Computadores', 'Chaveiro',
-  'Sapateiro', 'Relojoeiro', 'Técnico em Eletrodomésticos', 'Mecânico', 'Funileiro', 'Pintor Automotivo',
-  
-  // CUIDADOS COM ANIMAIS
-  'Veterinário', 'Tosador de Pets', 'Adestrador', 'Passeador de Cães', 'Pet Sitter', 'Banhista de Pets',
-  'Auxiliar Veterinário', 'Especialista em Comportamento Animal', 'Criador de Animais',
-  
-  // SEGURANÇA E PROTEÇÃO
-  'Segurança', 'Vigilante', 'Porteiro', 'Controlador de Acesso', 'Bombeiro Civil', 'Técnico em Segurança',
-  'Instrutor de Autodefesa', 'Guarda-Vidas', 'Segurança Eletrônica',
-  
-  // AGRICULTURA E MEIO AMBIENTE
-  'Agricultor', 'Jardineiro', 'Paisagista', 'Engenheiro Agrônomo', 'Técnico Agrícola', 'Floricultora',
-  'Especialista em Permacultura', 'Consultor Ambiental', 'Técnico em Meio Ambiente',
-  
-  // OUTROS SERVIÇOS
-  'Tradutor', 'Intérprete', 'Revisor de Textos', 'Redator', 'Jornalista', 'Editor', 'Bibliotecário',
-  'Arquivista', 'Recepcionista', 'Secretária', 'Assistente Virtual', 'Telefonista', 'Operador de Telemarketing'
-];
-
-const SKILLS_OPTIONS = [
-  'Programação', 'Design', 'Marketing', 'Vendas', 'Gestão', 'Educação',
-  'Construção Civil', 'Elétrica', 'Encanamento', 'Pintura', 'Jardinagem',
-  'Limpeza', 'Cozinha', 'Fotografia', 'Consultoria', 'Tradução'
-];
-
 export default function ProfileEditor({ userType }: ProfileEditorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [profileImage, setProfileImage] = useState<string>('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
   const { user } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Buscar perfil atual
-  const { data: profile, isLoading } = useQuery({
-    queryKey: [`/api/profile/${userType}`, user?.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/profile/${userType}/${user?.id}`);
-      if (!response.ok && response.status !== 404) throw new Error('Erro ao carregar perfil');
-      return response.ok ? response.json() : null;
-    },
-    enabled: !!user?.id
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [profileImage, setProfileImage] = useState('');
+  const [form, setForm] = useState({
+    displayName: '', bio: '', phone: '', city: '', state: '',
+    profession: '', hourlyRate: 0, availability: 'disponivel' as string,
+    skills: [] as string[], experience: '',
   });
+  const [newSkill, setNewSkill] = useState('');
 
-  const form = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      displayName: profile?.displayName || user?.username || '',
-      bio: profile?.bio || '',
-      phone: profile?.phone || '',
-      city: profile?.city || '',
-      state: profile?.state || '',
-      profession: profile?.profession || '',
-      experience: profile?.experience || '',
-      skills: profile?.skills || [],
-      hourlyRate: profile?.hourlyRate || 0,
-      availability: profile?.availability || 'disponivel',
-    },
-  });
+  useEffect(() => {
+    if (!user?.id) return;
+    fetch(`/api/profile/${userType}/${user.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(p => {
+        if (p) {
+          setForm({
+            displayName: p.displayName || user.fullName || user.username || '',
+            bio: p.bio || '', phone: p.phone || user.phone || '',
+            city: p.city || '', state: p.state || '',
+            profession: p.profession || '', hourlyRate: p.hourlyRate || 0,
+            availability: p.availability || 'disponivel',
+            skills: p.skills || [], experience: p.experience || '',
+          });
+          if (p.profileImage) setProfileImage(p.profileImage);
+        } else {
+          setForm(f => ({
+            ...f,
+            displayName: user.fullName || user.username || '',
+            phone: user.phone || '',
+          }));
+        }
+      })
+      .catch(() => {});
+  }, [user?.id, userType]);
 
-  // Mutation para salvar perfil
-  const saveProfileMutation = useMutation({
-    mutationFn: async (data: ProfileFormData) => {
-      const profileData = {
-        ...data,
-        skills: selectedSkills,
-        profileImage,
-        userType
-      };
-      
-      const response = await apiRequest('POST', `/api/profile/${userType}`, profileData);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/profile/${userType}`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/professionals'] });
-      setIsOpen(false);
-      toast({
-        title: "Perfil Atualizado",
-        description: "Suas informações foram salvas com sucesso",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erro ao Salvar",
-        description: "Não foi possível atualizar seu perfil",
-        variant: "destructive",
-      });
-    },
-  });
+  const handleImageUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => setProfileImage(e.target?.result as string);
+    reader.readAsDataURL(file);
+  };
 
-  // Upload de imagem
-  const handleImageUpload = async (file: File) => {
-    if (!file) return;
-    
-    setUploadingImage(true);
+  const handleSave = async () => {
+    if (!user?.id || !form.displayName.trim()) return;
+    setSaving(true);
     try {
-      // Converter para base64 para demo (em produção usar storage real)
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setProfileImage(result);
-        setUploadingImage(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      setUploadingImage(false);
-      toast({
-        title: "Erro no Upload",
-        description: "Não foi possível fazer upload da imagem",
-        variant: "destructive",
+      const res = await fetch(`/api/profile/${userType}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, userId: user.id, profileImage }),
       });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } catch {}
+    setSaving(false);
+  };
+
+  const addSkill = () => {
+    const s = newSkill.trim();
+    if (s && !form.skills.includes(s)) {
+      setForm({ ...form, skills: [...form.skills, s] });
+      setNewSkill('');
     }
   };
 
-  const addSkill = (skill: string) => {
-    if (!selectedSkills.includes(skill)) {
-      setSelectedSkills([...selectedSkills, skill]);
-    }
-  };
+  const completion = (() => {
+    const fields = [form.displayName, form.bio, form.phone, form.city, profileImage,
+      userType === 'professional' ? form.profession : 'ok',
+      userType === 'professional' ? (form.hourlyRate > 0 ? 'ok' : '') : 'ok'];
+    return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+  })();
 
-  const removeSkill = (skill: string) => {
-    setSelectedSkills(selectedSkills.filter(s => s !== skill));
-  };
-
-  const onSubmit = (data: ProfileFormData) => {
-    saveProfileMutation.mutate(data);
-  };
-
-  const completionPercentage = () => {
-    const fields = [
-      profile?.displayName,
-      profile?.bio,
-      profile?.phone,
-      profile?.city,
-      profileImage || profile?.profileImage,
-      userType === 'professional' ? profile?.profession : true,
-      userType === 'professional' ? profile?.hourlyRate : true,
-    ];
-    const completed = fields.filter(Boolean).length;
-    return Math.round((completed / fields.length) * 100);
-  };
-
-  if (isLoading) {
-    return <div className="animate-pulse bg-gray-700 h-20 rounded-lg"></div>;
-  }
+  const mobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Card className="glassmorphism border-cyan-500/30 cursor-pointer hover:border-cyan-400/50 transition-all">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={profileImage || profile?.profileImage} />
-                  <AvatarFallback className="bg-cyan-500/20 text-cyan-400">
-                    {(profile?.displayName || user?.username || 'U')[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-1 -right-1 bg-cyan-500 rounded-full w-6 h-6 flex items-center justify-center">
-                  <Edit3 className="w-3 h-3 text-white" />
-                </div>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: mobile ? 16 : 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <h2 style={{ color: C.cyan, fontSize: 18, fontWeight: 600, margin: 0 }}>
+            {userType === 'professional' ? 'Perfil Profissional' : 'Meu Perfil'}
+          </h2>
+          <p style={{ color: C.ink3, fontSize: 12, margin: '4px 0 0' }}>
+            {completion}% completo — {completion < 100 ? 'complete para aparecer melhor nas buscas' : 'perfil completo'}
+          </p>
+        </div>
+        <div style={{ width: 48, height: 48, borderRadius: '50%', background: `conic-gradient(${C.cyan} ${completion * 3.6}deg, ${C.surface} 0deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: C.cyan }}>{completion}%</div>
+        </div>
+      </div>
+
+      {/* Barra de progresso */}
+      <div style={{ height: 3, background: C.surface, borderRadius: 2, marginBottom: 24 }}>
+        <div style={{ height: 3, borderRadius: 2, background: `linear-gradient(90deg, ${C.cyan}, ${C.blue})`, width: `${completion}%`, transition: 'width 0.3s' }} />
+      </div>
+
+      {/* Foto */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
+        <div style={{ position: 'relative' }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: C.surface, border: `2px solid ${C.border}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {profileImage
+              ? <img src={profileImage} alt="Foto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontSize: 28, color: C.ink3 }}>{(form.displayName || 'U')[0].toUpperCase()}</span>
+            }
+          </div>
+          <button onClick={() => fileInputRef.current?.click()}
+            style={{ position: 'absolute', bottom: -4, right: -4, width: 28, height: 28, borderRadius: '50%', background: C.cyan, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Camera size={14} color="#020914" />
+          </button>
+        </div>
+        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+        <p style={{ fontSize: 11, color: C.ink3, marginTop: 8 }}>
+          {userType === 'professional' ? 'Foto profissional aumenta suas chances' : 'Adicione uma foto'}
+        </p>
+      </div>
+
+      {/* Nome + Telefone */}
+      <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div>
+          <label style={labelStyle}>Nome Completo *</label>
+          <input style={inputStyle} value={form.displayName} onChange={e => setForm({ ...form, displayName: e.target.value })} />
+        </div>
+        <div>
+          <label style={labelStyle}><Phone size={12} style={{ display: 'inline', marginRight: 4 }} />Telefone</label>
+          <input style={inputStyle} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="(21) 99999-9999" />
+        </div>
+      </div>
+
+      {/* Cidade + Estado */}
+      <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div>
+          <label style={labelStyle}><MapPin size={12} style={{ display: 'inline', marginRight: 4 }} />Cidade</label>
+          <input style={inputStyle} value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+        </div>
+        <div>
+          <label style={labelStyle}>Estado</label>
+          <input style={inputStyle} value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} placeholder="RJ" />
+        </div>
+      </div>
+
+      {/* Bio */}
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>{userType === 'professional' ? 'Apresentação Profissional' : 'Sobre Você'}</label>
+        <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }} value={form.bio}
+          onChange={e => setForm({ ...form, bio: e.target.value })}
+          placeholder={userType === 'professional' ? 'Descreva sua experiência e especialidades...' : 'Conte um pouco sobre você...'} />
+        <p style={{ fontSize: 10, color: C.ink3, marginTop: 2, textAlign: 'right' }}>{form.bio.length}/500</p>
+      </div>
+
+      {/* Campos profissionais */}
+      {userType === 'professional' && (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}><Briefcase size={12} style={{ display: 'inline', marginRight: 4 }} />Categoria *</label>
+              <select style={{ ...inputStyle, cursor: 'pointer' }} value={form.profession}
+                onChange={e => setForm({ ...form, profession: e.target.value })}>
+                <option value="">Selecione...</option>
+                {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Valor/hora (R$)</label>
+              <input style={inputStyle} type="number" min="0" value={form.hourlyRate}
+                onChange={e => setForm({ ...form, hourlyRate: parseInt(e.target.value) || 0 })} />
+            </div>
+          </div>
+
+          {/* Disponibilidade */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Status</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {(['disponivel', 'ocupado', 'offline'] as const).map(s => (
+                <button key={s} onClick={() => setForm({ ...form, availability: s })}
+                  style={{ flex: 1, padding: '8px 12px', borderRadius: 10, border: `1px solid ${form.availability === s ? C.borderHot : C.border}`,
+                    background: form.availability === s ? `${C.cyan}15` : 'transparent', color: form.availability === s ? C.cyan : C.ink3,
+                    cursor: 'pointer', fontSize: 13, fontWeight: form.availability === s ? 600 : 400, fontFamily: 'inherit' }}>
+                  {s === 'disponivel' ? '● Disponível' : s === 'ocupado' ? '● Ocupado' : '○ Offline'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Serviços / Habilidades</label>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input style={{ ...inputStyle, flex: 1 }} value={newSkill} placeholder="Ex: Pintura residencial"
+                onChange={e => setNewSkill(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); }}} />
+              <button onClick={addSkill} style={{ padding: '8px 16px', borderRadius: 10, background: C.cyan, border: 'none', color: C.bg, fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>+</button>
+            </div>
+            {form.skills.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {form.skills.map(s => (
+                  <span key={s} onClick={() => setForm({ ...form, skills: form.skills.filter(x => x !== s) })}
+                    style={{ padding: '4px 10px', borderRadius: 16, background: `${C.cyan}18`, border: `1px solid ${C.border}`,
+                      color: C.cyan, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {s} <X size={10} />
+                  </span>
+                ))}
               </div>
-              
-              <div className="flex-1">
-                <h3 className="text-white font-medium">
-                  {profile?.displayName || user?.username || 'Completar Perfil'}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <div className="w-16 bg-gray-600 rounded-full h-1.5">
-                    <div 
-                      className="bg-gradient-to-r from-cyan-400 to-blue-500 h-1.5 rounded-full transition-all"
-                      style={{ width: `${completionPercentage()}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-gray-400">{completionPercentage()}%</span>
-                </div>
-              </div>
-              
-              {userType === 'professional' && profile?.profession && (
-                <Badge variant="outline" className="text-xs border-cyan-500/30 text-cyan-400">
-                  {profile.profession}
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </DialogTrigger>
-
-      <DialogContent className="glassmorphism max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: 'rgba(2,9,20,0.96)', border: '1px solid rgba(0,174,255,0.25)', color: '#F4FAFF' }}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2" style={{ color: '#00E5FF' }}>
-            <User className="w-5 h-5" />
-            {userType === 'professional' ? 'Perfil Profissional' : 'Perfil do Cliente'}
-          </DialogTitle>
-          <DialogDescription style={{ color: '#91A9BD' }}>
-            Complete seu perfil para {userType === 'professional' ? 'aparecer nas buscas e receber mais solicitações' : 'uma melhor experiência na plataforma'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Upload de Foto */}
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={profileImage || profile?.profileImage} />
-                  <AvatarFallback className="bg-cyan-500/20 text-cyan-400 text-2xl">
-                    {(profile?.displayName || user?.username || 'U')[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingImage}
-                >
-                  <Camera className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImageUpload(file);
-                }}
-              />
-              
-              <p className="text-xs text-center" style={{ color: '#91A9BD' }}>
-                {userType === 'professional'
-                  ? 'Foto profissional aumenta suas chances de ser contratado'
-                  : 'Adicione uma foto para personalizar seu perfil'
-                }
-              </p>
-            </div>
-
-            {/* Informações Básicas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="displayName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome Completo *</FormLabel>
-                    <FormControl>
-                      <Input {...field} className="glassmorphism" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Telefone</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="(11) 99999-9999" className="glassmorphism" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Localização */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cidade</FormLabel>
-                    <FormControl>
-                      <Input {...field} className="glassmorphism" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
-                    <FormControl>
-                      <Input {...field} className="glassmorphism" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Bio */}
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {userType === 'professional' ? 'Apresentação Profissional' : 'Sobre Você'}
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      className="glassmorphism min-h-20" 
-                      placeholder={
-                        userType === 'professional' 
-                          ? 'Descreva sua experiência e especialidades...'
-                          : 'Conte um pouco sobre você...'
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campos específicos do profissional */}
-            {userType === 'professional' && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="profession"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Categoria Profissional *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="glassmorphism">
-                              <SelectValue placeholder="Selecione sua área" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[300px] overflow-y-auto">
-                            {PROFESSION_OPTIONS.map(profession => (
-                              <SelectItem key={profession} value={profession}>{profession}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="hourlyRate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Valor por Hora (R$)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="number" 
-                            min="0" 
-                            step="0.01"
-                            onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
-                            className="glassmorphism" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Habilidades */}
-                <div>
-                  <Label className="text-sm font-medium">Habilidades</Label>
-                  <div className="mt-2 space-y-3">
-                    <Select onValueChange={(value) => addSkill(value)}>
-                      <SelectTrigger className="glassmorphism">
-                        <SelectValue placeholder="Adicionar habilidade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SKILLS_OPTIONS.filter(skill => !selectedSkills.includes(skill)).map(skill => (
-                          <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    {selectedSkills.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {selectedSkills.map(skill => (
-                          <Badge 
-                            key={skill} 
-                            variant="secondary" 
-                            className="cursor-pointer hover:bg-red-500/20"
-                            onClick={() => removeSkill(skill)}
-                          >
-                            {skill} ×
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="availability"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status de Disponibilidade</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="glassmorphism">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="disponivel">Disponível</SelectItem>
-                          <SelectItem value="ocupado">Ocupado</SelectItem>
-                          <SelectItem value="offline">Offline</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
             )}
+          </div>
 
-            {/* Botões */}
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsOpen(false)}
-                className="flex-1"
-                style={{ color: '#91A9BD', borderColor: 'rgba(0,174,255,0.25)' }}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={saveProfileMutation.isPending}
-                className="flex-1 neon-button"
-              >
-                {saveProfileMutation.isPending ? 'Salvando...' : 'Salvar Perfil'}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          {/* Experiência */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Anos de Experiência</label>
+            <input style={inputStyle} value={form.experience} onChange={e => setForm({ ...form, experience: e.target.value })} placeholder="Ex: 8 anos em pintura residencial" />
+          </div>
+        </>
+      )}
+
+      {/* Botão salvar */}
+      <button onClick={handleSave} disabled={saving || !form.displayName.trim()}
+        style={{ width: '100%', padding: '12px 0', borderRadius: 12, border: 'none', fontFamily: 'inherit',
+          background: saved ? C.green : `linear-gradient(135deg, ${C.cyan}, ${C.blue})`,
+          color: C.bg, fontSize: 15, fontWeight: 600, cursor: saving ? 'wait' : 'pointer',
+          opacity: !form.displayName.trim() ? 0.4 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        {saved ? <><Check size={16} /> Salvo</> : saving ? 'Salvando...' : 'Salvar Perfil'}
+      </button>
+    </div>
   );
 }

@@ -51,18 +51,19 @@ export async function getProfile(req: Request, res: Response) {
 export async function saveProfile(req: Request, res: Response) {
   try {
     const { userType } = req.params;
+    const userId = req.body.userId;
     const userEmail = req.headers['user-email'] as string;
-    
-    if (!userEmail) {
-      return res.status(401).json({ error: 'Email do usuário é obrigatório' });
-    }
 
     if (!userType || !['client', 'professional'].includes(userType)) {
       return res.status(400).json({ error: 'UserType deve ser client ou professional' });
     }
 
-    // Buscar usuário pelo email
-    const user = await storage.getUserByEmail(userEmail);
+    let user;
+    if (userId) {
+      user = await storage.getUser(userId);
+    } else if (userEmail) {
+      user = await storage.getUserByEmail(userEmail);
+    }
     if (!user) {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
