@@ -63,6 +63,9 @@ export default function MapaDisponiveis() {
   const [overlayFechado, setOverlayFechado] = useState(false);
   const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
   const [ocupados, setOcupados] = useState<Set<number>>(new Set());
+  const [bloqueados, setBloqueados] = useState<Set<number>>(new Set());
+  const [menuAberto, setMenuAberto] = useState<number | null>(null);
+  const [confirmBloquear, setConfirmBloquear] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     const onR = () => setMobile(window.innerWidth < 900);
@@ -195,8 +198,45 @@ export default function MapaDisponiveis() {
     addMarkersToMap(list, mapRef.current, ocupados);
   }, [tab, profs, redeProfs, todosProfs, ocupados]);
 
-  const activeList = tab === 'disponiveis' ? profs : tab === 'rede' ? redeProfs : todosProfs;
+  const activeList = (tab === 'disponiveis' ? profs : tab === 'rede' ? redeProfs : todosProfs)
+    .filter(p => !bloqueados.has(p.id));
   const tabLabel = { disponiveis: 'Disponíveis agora', rede: 'Minha Rede', todos: 'Todos' };
+
+  const indicarProfissional = (prof: Prof) => {
+    if (navigator.share) {
+      navigator.share({
+        title: `${prof.name} — Orbitrum`,
+        text: `Conheça ${prof.name}${prof.title ? ` (${prof.title})` : ''} no Orbitrum`,
+        url: `${window.location.origin}/p/${prof.id}`,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(`${window.location.origin}/p/${prof.id}`).then(() => {
+        alert(`Link do perfil de ${prof.name} copiado!`);
+      }).catch(() => {});
+    }
+    if (user?.id_interno) {
+      fetch('/api/orbitmatch/indicar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ indicadorUserId: user.id_interno, profissionalId: prof.id }),
+      }).catch(() => {});
+    }
+    setMenuAberto(null);
+  };
+
+  const bloquearProfissional = async (profId: number) => {
+    if (!user?.id_interno) return;
+    try {
+      await fetch('/api/bloquear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id_interno, profId, motivo: 'bloqueio pelo usuario' }),
+      });
+      setBloqueados(prev => new Set([...prev, profId]));
+    } catch {}
+    setConfirmBloquear(null);
+    setMenuAberto(null);
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: `radial-gradient(circle at 50% -10%, #06223B, #020D18 55%, #00060F)`, color: C.ink, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
@@ -329,8 +369,30 @@ export default function MapaDisponiveis() {
                           </div>
                         )}
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); if (!ocupados.has(p.id)) setConversaId(p.id); }}
-                        style={{ border: 'none', cursor: ocupados.has(p.id) ? 'not-allowed' : 'pointer', borderRadius: 16, padding: '7px 16px', background: ocupados.has(p.id) ? 'rgba(255,152,0,0.2)' : `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: ocupados.has(p.id) ? '#FF9800' : '#012', fontWeight: 600, fontSize: 12, flexShrink: 0, opacity: ocupados.has(p.id) ? 0.7 : 1 }}>{ocupados.has(p.id) ? 'Ocupado' : 'Conectar'}</button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        <button onClick={(e) => { e.stopPropagation(); if (!ocupados.has(p.id)) setConversaId(p.id); }}
+                          style={{ border: 'none', cursor: ocupados.has(p.id) ? 'not-allowed' : 'pointer', borderRadius: 16, padding: '7px 16px', background: ocupados.has(p.id) ? 'rgba(255,152,0,0.2)' : `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: ocupados.has(p.id) ? '#FF9800' : '#012', fontWeight: 600, fontSize: 12, opacity: ocupados.has(p.id) ? 0.7 : 1 }}>{ocupados.has(p.id) ? 'Ocupado' : 'Conectar'}</button>
+                        <div style={{ position: 'relative' }}>
+                          <button onClick={(e) => { e.stopPropagation(); setMenuAberto(menuAberto === p.id ? null : p.id); }}
+                            style={{ border: 'none', background: 'transparent', color: C.ink2, cursor: 'pointer', fontSize: 18, padding: '4px 6px', lineHeight: 1 }}>⋮</button>
+                          {menuAberto === p.id && (
+                            <div style={{ position: 'absolute', right: 0, top: '100%', background: '#0A1929', border: `1px solid ${C.border}`, borderRadius: 10, padding: 4, zIndex: 50, minWidth: 150, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+                              <button onClick={(e) => { e.stopPropagation(); indicarProfissional(p); }}
+                                style={{ display: 'block', width: '100%', border: 'none', background: 'transparent', color: C.ink, padding: '8px 12px', fontSize: 13, textAlign: 'left', cursor: 'pointer', borderRadius: 6 }}
+                                onMouseEnter={e => (e.currentTarget.style.background = `${C.cyan}15`)}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                🔗 Indicar
+                              </button>
+                              <button onClick={(e) => { e.stopPropagation(); setConfirmBloquear({ id: p.id, name: p.name }); setMenuAberto(null); }}
+                                style={{ display: 'block', width: '100%', border: 'none', background: 'transparent', color: '#EF4444', padding: '8px 12px', fontSize: 13, textAlign: 'left', cursor: 'pointer', borderRadius: 6 }}
+                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                🚫 Remover da rede
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -360,6 +422,33 @@ export default function MapaDisponiveis() {
           )}
           {conversaId != null && (
             <ConversaModal profId={conversaId} onClose={() => setConversaId(null)} />
+          )}
+
+          {confirmBloquear && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              onClick={() => setConfirmBloquear(null)}>
+              <div onClick={e => e.stopPropagation()}
+                style={{ background: '#0A1929', border: `1px solid ${C.border}`, borderRadius: 16, padding: 24, maxWidth: 360, width: '90%', textAlign: 'center' }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>🚫</div>
+                <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Remover da sua rede?</div>
+                <div style={{ color: C.ink2, fontSize: 13, marginBottom: 6 }}>
+                  <b>{confirmBloquear.name}</b> não aparecerá mais no seu mapa, busca ou recomendações.
+                </div>
+                <div style={{ color: C.ink3, fontSize: 12, marginBottom: 20 }}>
+                  A pessoa continua no app normalmente — só fica invisível pra você. Você pode desfazer depois.
+                </div>
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+                  <button onClick={() => setConfirmBloquear(null)}
+                    style={{ border: `1px solid ${C.border}`, background: 'transparent', color: C.ink, borderRadius: 10, padding: '8px 20px', fontSize: 13, cursor: 'pointer' }}>
+                    Cancelar
+                  </button>
+                  <button onClick={() => bloquearProfissional(confirmBloquear.id)}
+                    style={{ border: 'none', background: '#EF4444', color: '#fff', borderRadius: 10, padding: '8px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    Remover
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 

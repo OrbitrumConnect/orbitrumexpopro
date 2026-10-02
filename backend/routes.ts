@@ -3026,11 +3026,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return u?.fullName || u?.username;
       };
 
-      const candidatos = (profissionais as any[]).map((p: any) => ({
-        profissional: { id: p.id, name: p.name, title: p.title, city: p.city, avatar: p.avatar },
-        profissionalUserId: p.userId ?? p.id,
-        aiMatchScore: Math.round((p.rating ?? 0) * 20), // score de atributo existente, intocado
-      }));
+      const bloqueados = getBlockedByUser(quemProcura);
+      const candidatos = (profissionais as any[])
+        .filter((p: any) => !bloqueados.has(p.id))
+        .map((p: any) => ({
+          profissional: { id: p.id, name: p.name, title: p.title, city: p.city, avatar: p.avatar },
+          profissionalUserId: p.userId ?? p.id,
+          aiMatchScore: Math.round((p.rating ?? 0) * 20),
+        }));
 
       const resultado = await comporBusca(factStore, quemProcura, candidatos, { categoria, nomePorId });
 
@@ -3161,6 +3164,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const ativos = boostStore.filter(b => new Date(b.expiraEm) > agora);
     const profIds = [...new Set(ativos.map(b => b.profId))];
     res.json({ success: true, profIds });
+  });
+
+  // ── Bloqueio / Remoção da rede (segurança) ─────────────────────────────
+  // userId bloqueia profId → profissional some do mapa/busca/recomendações do bloqueador
+  const blockStore = new Map<number, Set<number>>();
+
+  function getBlockedByUser(userId: number): Set<number> {
+    return blockStore.get(userId) || new Set();
+  }
+
+  app.post("/api/bloquear", async (req, res) => {
+    const { userId, profId, motivo } = req.body;
+    if (!userId || !profId) return res.status(400).json({ success: false, error: "userId e profId obrigatórios" });
+    const uid = Number(userId);
+    const pid = Number(profId);
+    if (!blockStore.has(uid)) blockStore.set(uid, new Set());
+    blockStore.get(uid)!.add(pid);
+
+    if (motivo) {
+      try {
+        await registrarFatoIdempotente(factStore, {
+          subjectId: uid,
+          predicate: 'bloqueou_usuario',
+          objectValue: `Bloqueou profissional ${pid}`,
+          origin: 'usuario',
+          originRef: `block:${uid}:${pid}:${Date.now()}`,
+          confidence: 'declarado',
+          visibility: 'privado',
+          occurredAt: new Date(),
+          contextDetail: String(motivo).slice(0, 200),
+        });
+      } catch {}
+    }
+
+    res.json({ success: true, mensagem: "Profissional removido da sua rede. Não aparecerá mais nas buscas, mapa ou recomendações." });
+  });
+
+  app.delete("/api/desbloquear", async (req, res) => {
+    const { userId, profId } = req.body;
+    if (!userId || !profId) return res.status(400).json({ success: false, error: "userId e profId obrigatórios" });
+    const blocked = blockStore.get(Number(userId));
+    if (blocked) blocked.delete(Number(profId));
+    res.json({ success: true, mensagem: "Profissional desbloqueado." });
+  });
+
+  app.get("/api/bloqueados/:userId", (req, res) => {
+    const uid = parseInt(req.params.userId);
+    const blocked = blockStore.get(uid);
+    res.json({ success: true, bloqueados: blocked ? [...blocked] : [] });
   });
 
   // ── Portfólio persistente ──────────────────────────────────────────────
@@ -3308,6 +3360,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Disponíveis no MAPA — só quem tem disponivel_em VIGENTE + coordenada. Estado real/temporal.
   app.get("/api/orbitmatch/disponiveis", async (req, res) => {
     try {
+      const quemProcura = parseInt(String(req.query.userId || '0'));
+      const bloqueados = quemProcura ? getBlockedByUser(quemProcura) : new Set<number>();
       const agora = new Date();
       const facts = await factStore.listFacts();
       const disp = new Set<number>();
@@ -3319,7 +3373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const profissionais = await queryProfessionals();
       const itens = (profissionais as any[])
-        .filter(p => p.latitude != null && p.longitude != null && disp.has(p.userId ?? p.id))
+        .filter(p => p.latitude != null && p.longitude != null && disp.has(p.userId ?? p.id) && !bloqueados.has(p.id))
         .map(p => ({ id: p.id, name: p.name, title: p.title, avatar: p.avatar, latitude: p.latitude, longitude: p.longitude, available: true }));
       res.json({ success: true, itens });
     } catch (error) {

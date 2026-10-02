@@ -118,6 +118,9 @@ export default function Inicio() {
   const [ocupados, setOcupados] = useState<Set<number>>(new Set());
   const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
   const [menuAberto, setMenuAberto] = useState(false);
+  const [cardMenu, setCardMenu] = useState<number | null>(null);
+  const [confirmBloquear, setConfirmBloquear] = useState<{ id: number; name: string } | null>(null);
+  const [bloqueados, setBloqueados] = useState<Set<number>>(new Set());
   useEffect(() => {
     const onR = () => setMobile(window.innerWidth < 900);
     window.addEventListener('resize', onR);
@@ -162,6 +165,26 @@ export default function Inicio() {
         .catch(() => {});
     }
   }, [userId]);
+
+  const indicarProf = (prof: { id: number; name: string; title?: string }) => {
+    if (navigator.share) {
+      navigator.share({ title: `${prof.name} — Orbitrum`, text: `Conheça ${prof.name}${prof.title ? ` (${prof.title})` : ''} no Orbitrum`, url: `${window.location.origin}/p/${prof.id}` }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(`${window.location.origin}/p/${prof.id}`).then(() => alert(`Link copiado!`)).catch(() => {});
+    }
+    if (user?.id_interno) {
+      fetch('/api/orbitmatch/indicar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ indicadorUserId: user.id_interno, profissionalId: prof.id }) }).catch(() => {});
+    }
+    setCardMenu(null);
+  };
+
+  const bloquearProf = async (profId: number) => {
+    if (!user?.id_interno) return;
+    await fetch('/api/bloquear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id_interno, profId, motivo: 'bloqueio pelo usuario' }) }).catch(() => {});
+    setBloqueados(prev => new Set([...prev, profId]));
+    setConfirmBloquear(null);
+    setCardMenu(null);
+  };
 
   const buscar = (view?: 'rede' | 'profissionais' | 'indicacoes' | 'oportunidades' | 'conversas', catOverride?: string) => {
     const v = view || viewAtiva;
@@ -411,7 +434,7 @@ export default function Inicio() {
                     Solicitar para {resultados.filter(r => !ocupados.has(r.profissional.id)).length} disponíveis
                   </button>
                 )}
-                {resultados.map(r => (
+                {resultados.filter(r => !bloqueados.has(r.profissional.id)).map(r => (
                   <div key={r.profissional.id} onClick={() => setProfModalId(r.profissional.id)}
                     style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: mobile ? 10 : 12, padding: mobile ? 10 : 14, marginBottom: mobile ? 8 : 10, cursor: 'pointer', display: 'flex', gap: mobile ? 8 : 12 }}>
                     <Avatar src={r.profissional.avatar} name={r.profissional.name} />
@@ -421,11 +444,33 @@ export default function Inicio() {
                           <div style={{ fontWeight: 600, fontSize: 14 }}>{r.profissional.name}</div>
                           <div style={{ color: C.ink3, fontSize: 12 }}>{r.profissional.title}{r.profissional.city ? ` · ${r.profissional.city}` : ''}</div>
                         </div>
-                        {ocupados.has(r.profissional.id) ? (
-                          <span style={{ fontSize: 11, color: '#FF9800', background: 'rgba(255,152,0,0.12)', border: '1px solid rgba(255,152,0,0.25)', borderRadius: 16, padding: '5px 12px', flexShrink: 0 }}>Ocupado</span>
-                        ) : (
-                          <button onClick={(e) => { e.stopPropagation(); setConversaId(r.profissional.id); }} style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '6px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                          {ocupados.has(r.profissional.id) ? (
+                            <span style={{ fontSize: 11, color: '#FF9800', background: 'rgba(255,152,0,0.12)', border: '1px solid rgba(255,152,0,0.25)', borderRadius: 16, padding: '5px 12px' }}>Ocupado</span>
+                          ) : (
+                            <button onClick={(e) => { e.stopPropagation(); setConversaId(r.profissional.id); }} style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '6px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12 }}>Conectar</button>
+                          )}
+                          <div style={{ position: 'relative' }}>
+                            <button onClick={(e) => { e.stopPropagation(); setCardMenu(cardMenu === r.profissional.id ? null : r.profissional.id); }}
+                              style={{ border: 'none', background: 'transparent', color: C.ink3, cursor: 'pointer', fontSize: 18, padding: '4px 6px', lineHeight: 1 }}>⋮</button>
+                            {cardMenu === r.profissional.id && (
+                              <div style={{ position: 'absolute', right: 0, top: '100%', background: '#0A1929', border: `1px solid ${C.border}`, borderRadius: 10, padding: 4, zIndex: 50, minWidth: 150, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+                                <button onClick={(e) => { e.stopPropagation(); indicarProf(r.profissional); }}
+                                  style={{ display: 'block', width: '100%', border: 'none', background: 'transparent', color: C.ink, padding: '8px 12px', fontSize: 13, textAlign: 'left', cursor: 'pointer', borderRadius: 6 }}
+                                  onMouseEnter={e => (e.currentTarget.style.background = `${C.cyan}15`)}
+                                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                  🔗 Indicar
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); setConfirmBloquear({ id: r.profissional.id, name: r.profissional.name }); setCardMenu(null); }}
+                                  style={{ display: 'block', width: '100%', border: 'none', background: 'transparent', color: '#EF4444', padding: '8px 12px', fontSize: 13, textAlign: 'left', cursor: 'pointer', borderRadius: 6 }}
+                                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
+                                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                  🚫 Remover da rede
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       {r.motivos.length > 0 && (
                         <div style={{ color: C.ink2, fontSize: 12, marginTop: 6, display: 'flex', gap: 6 }}>
@@ -580,6 +625,33 @@ export default function Inicio() {
           Supabase mas o app não loga ("nada acontece"). */}
       <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)}
         onSuccess={(u: any, remember?: boolean) => { login(u, remember ?? false); setShowLoginModal(false); }} />
+
+      {confirmBloquear && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setConfirmBloquear(null)}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ background: '#0A1929', border: `1px solid ${C.border}`, borderRadius: 16, padding: 24, maxWidth: 360, width: '90%', textAlign: 'center' }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>🚫</div>
+            <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Remover da sua rede?</div>
+            <div style={{ color: '#91A9BD', fontSize: 13, marginBottom: 6 }}>
+              <b>{confirmBloquear.name}</b> não aparecerá mais no seu mapa, busca ou recomendações.
+            </div>
+            <div style={{ color: '#607A91', fontSize: 12, marginBottom: 20 }}>
+              A pessoa continua no app normalmente — só fica invisível pra você. Você pode desfazer depois.
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button onClick={() => setConfirmBloquear(null)}
+                style={{ border: `1px solid ${C.border}`, background: 'transparent', color: C.ink, borderRadius: 10, padding: '8px 20px', fontSize: 13, cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button onClick={() => bloquearProf(confirmBloquear.id)}
+                style={{ border: 'none', background: '#EF4444', color: '#fff', borderRadius: 10, padding: '8px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                Remover
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
