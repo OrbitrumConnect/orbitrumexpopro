@@ -4,7 +4,9 @@
   "buildCommand": "npx esbuild backend/api-entry.ts --bundle --platform=node --outfile=api/handler.js --packages=external --format=cjs && cd client && npm install --legacy-peer-deps && npm run build:no-check",
   "outputDirectory": "client/dist",
   "functions": {
-    "api/handler.js": {}
+    "api/handler.js": {
+      "maxDuration": 30
+    }
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/handler.js" },
