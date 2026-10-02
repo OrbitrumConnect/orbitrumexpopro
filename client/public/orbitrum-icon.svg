@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0a1628"/>
+  <circle cx="256" cy="256" r="80" fill="none" stroke="#00E5FF" stroke-width="8"/>
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#00AEEF" stroke-width="4" opacity="0.5"/>
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#00AEEF" stroke-width="2" opacity="0.25"/>
+  <circle cx="256" cy="256" r="36" fill="#00E5FF"/>
+  <text x="256" y="268" text-anchor="middle" fill="#0a1628" font-size="28" font-weight="800" font-family="system-ui">O</text>
+</svg>

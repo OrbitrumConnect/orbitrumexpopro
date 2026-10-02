@@ -87,6 +87,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setShowLoginModal(false);
   }, []);
 
+  // Escutar mudanças de auth do Supabase (Google OAuth callback, etc.)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const u = {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email,
+          username: session.user.user_metadata?.preferred_username || session.user.email?.split('@')[0],
+          profilePhoto: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
+          provider: session.user.app_metadata?.provider || 'google',
+        };
+        const enriched = await enriquecerComPerfil(u);
+        setUser(enriched);
+        setIsAuthenticated(true);
+        setShowLoginModal(false);
+        localStorage.setItem("orbtrum_auth", JSON.stringify({
+          user: enriched,
+          timestamp: Date.now(),
+          rememberMe: true,
+          expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+        }));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   // Funções memoizadas para performance
   const login = useCallback((userData: any, rememberMe: boolean = false) => {
     setUser(userData);
