@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, Upload, FileText, Camera, MapPin, Clock, Plus, Edit3, Trash2, Save, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,29 @@ const InteractiveCalendar: React.FC<InteractiveCalendarProps> = ({ userType, use
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/service-flow/agenda/${userId}`)
+      .then(r => r.json())
+      .then(j => {
+        if (!j.success || !j.eventos?.length) return;
+        const mapped: CalendarEvent[] = j.eventos.map((e: any) => ({
+          id: e.chatId,
+          date: e.updatedAt?.slice(0, 10) || e.createdAt?.slice(0, 10),
+          title: `Serviço #${e.chatId.slice(0, 6)}`,
+          description: `Estado: ${e.estado}`,
+          type: 'service' as const,
+          documents: [],
+          status: ['concluido', 'validado'].includes(e.estado) ? 'completed' as const : 'planned' as const,
+        }));
+        setEvents(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          return [...prev, ...mapped.filter(m => !existingIds.has(m.id))];
+        });
+      })
+      .catch(() => {});
+  }, [userId]);
 
   // Obter eventos para um dia específico
   const getEventsForDate = (date: string): CalendarEvent[] => {

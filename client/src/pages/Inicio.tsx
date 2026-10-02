@@ -352,6 +352,33 @@ export default function Inicio() {
                   </span>
                   <button onClick={() => { setBuscou(false); setResultados([]); }} style={{ background: 'none', border: 'none', color: C.ink3, fontSize: 12, cursor: 'pointer' }}>Limpar</button>
                 </div>
+                {/* Broadcast — solicitar para todos disponíveis */}
+                {!carregando && resultados.filter(r => !ocupados.has(r.profissional.id)).length >= 2 && user && (
+                  <button onClick={async () => {
+                    const disponiveis = resultados.filter(r => !ocupados.has(r.profissional.id));
+                    const userId = (user as any).id_interno || (user as any).id;
+                    const userName = (user as any).fullName || (user as any).username || 'Cliente';
+                    let count = 0;
+                    for (const r of disponiveis) {
+                      try {
+                        const resp = await fetch('/api/chats', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ clientId: userId, clientName: userName, professionalId: r.profissional.id }),
+                        });
+                        if (resp.ok) count++;
+                      } catch {}
+                    }
+                    if (count > 0) alert(`Solicitação enviada para ${count} profissional${count > 1 ? 'is' : ''}!`);
+                  }}
+                  style={{
+                    width: '100%', border: `1px solid ${C.borderHot}`, borderRadius: 10, padding: '10px',
+                    background: `${C.cyan}0a`, color: C.cyan, fontWeight: 600, fontSize: 13,
+                    cursor: 'pointer', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  }}>
+                    Solicitar para {resultados.filter(r => !ocupados.has(r.profissional.id)).length} disponíveis
+                  </button>
+                )}
                 {resultados.map(r => (
                   <div key={r.profissional.id} onClick={() => setProfModalId(r.profissional.id)}
                     style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: mobile ? 10 : 12, padding: mobile ? 10 : 14, marginBottom: mobile ? 8 : 10, cursor: 'pointer', display: 'flex', gap: mobile ? 8 : 12 }}>

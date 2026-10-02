@@ -54,6 +54,27 @@ function getOrCreate(chatId: string, clientId: number, professionalId: number): 
   return s;
 }
 
+// GET /api/service-flow/agenda/:profId — serviços do profissional para a agenda
+router.get('/agenda/:profId', (req: Request, res: Response) => {
+  const profId = parseInt(req.params.profId);
+  const eventos: Array<{
+    chatId: string; clientId: number; estado: string;
+    createdAt: string; updatedAt: string;
+    transitions: Array<{ estado: string; at: string }>;
+  }> = [];
+  sessions.forEach(s => {
+    if (s.professionalId === profId) {
+      eventos.push({
+        chatId: s.chatId, clientId: s.clientId, estado: s.estado,
+        createdAt: s.createdAt, updatedAt: s.updatedAt,
+        transitions: s.transitions.map(t => ({ estado: t.estado, at: t.at })),
+      });
+    }
+  });
+  eventos.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  res.json({ success: true, eventos });
+});
+
 // GET /api/service-flow/status/ocupados — lista IDs de profissionais em serviço ativo
 router.get('/status/ocupados', (_req: Request, res: Response) => {
   const ocupados: number[] = [];
