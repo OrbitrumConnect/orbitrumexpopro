@@ -8,6 +8,8 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "baseUrl": ".",
+    "strict": false,
+    "noImplicitAny": false,
     "paths": {
       "@shared/*": ["backend/shared/*"]
     }
