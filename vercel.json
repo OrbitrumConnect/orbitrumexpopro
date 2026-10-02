@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npx esbuild api/index.ts --bundle --platform=node --outfile=api/handler.js --packages=external --format=cjs && cd client && npm install --legacy-peer-deps && npm run build:no-check",
+  "buildCommand": "npx esbuild backend/api-entry.ts --bundle --platform=node --outfile=api/handler.js --packages=external --format=cjs && cd client && npm install --legacy-peer-deps && npm run build:no-check",
   "outputDirectory": "client/dist",
   "functions": {
     "api/handler.js": {}
