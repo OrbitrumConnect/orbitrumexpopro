@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,11 +14,13 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (userData?: any, rememberMe?: boolean) => void;
+  defaultMode?: 'login' | 'register';
 }
 
-export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
+export function LoginModal({ isOpen, onClose, onSuccess, defaultMode = 'login' }: LoginModalProps) {
   const [, setLocation] = useLocation();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(defaultMode === 'login');
+  useEffect(() => { setIsLogin(defaultMode === 'login'); }, [defaultMode]);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isAdminMode, setIsAdminMode] = useState(false);
