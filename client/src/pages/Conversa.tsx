@@ -3,6 +3,7 @@ import { useLocation, useRoute } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import MiniMapa from '@/components/MiniMapa';
+import RelatorioExperiencia from '@/components/RelatorioExperiencia';
 
 const C = {
   bg: '#000915', bg2: '#011527', card: 'rgba(3,18,32,0.9)',
@@ -414,6 +415,19 @@ export default function Conversa() {
           <div style={{ color: C.cyan, fontSize: 13, fontWeight: 600 }}>✓ Experiência validada — a rede aprendeu</div>
         )}
       </div>
+
+      {estado === 'validado' && chatIdRef.current && (
+        <RelatorioExperiencia
+          chatId={chatIdRef.current}
+          profName={prof?.name ?? 'Profissional'}
+          profTitle={prof?.title}
+          profAvatar={prof?.avatar}
+          clientName={meuNome}
+          clienteUserId={clienteUserId!}
+          profUserId={prof?.userId ?? prof?.id}
+          onClose={() => setLocation('/')}
+        />
+      )}
 
       {/* input */}
       <div style={{ display: 'flex', gap: 8, padding: 14, borderTop: `1px solid ${C.border}` }}>

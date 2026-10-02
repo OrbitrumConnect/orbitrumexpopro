@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import MiniMapa from '@/components/MiniMapa';
 import Continuar from '@/components/Continuar';
+import RelatorioExperiencia from '@/components/RelatorioExperiencia';
 
 // CONVERSA INLINE — o ciclo acontece na MESMA tela (não muda de aba).
 // Overlay sobre a home: conversa → serviço combinado → concluído → os dois
@@ -487,23 +488,17 @@ export default function ConversaModal({ profId, onClose }: Props) {
           )}
         </div>
 
-        {estado === 'validado' && (
-          <div style={{ padding: '0 18px 14px' }}>
-            <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 14, padding: 16, marginBottom: 10 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#4ADE80', marginBottom: 8 }}>Experiência registrada na rede</div>
-              <div style={{ display: 'flex', gap: 12, fontSize: 12, color: C.ink2, flexWrap: 'wrap' }}>
-                <span>Profissional: <b style={{ color: C.ink }}>{prof?.name}</b></span>
-                {prof?.title && <span>Serviço: <b style={{ color: C.ink }}>{prof.title}</b></span>}
-                <span>Validação: <b style={{ color: '#4ADE80' }}>bilateral</b></span>
-              </div>
-              <div style={{ fontSize: 11, color: C.ink3, marginTop: 6 }}>
-                Este fato relacional agora fortalece a confiança da rede. Futuras buscas considerarão esta experiência.
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-              <button onClick={onClose} style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 16, padding: '8px 16px', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Voltar à rede</button>
-            </div>
-          </div>
+        {estado === 'validado' && chatIdRef.current && (
+          <RelatorioExperiencia
+            chatId={chatIdRef.current}
+            profName={prof?.name ?? 'Profissional'}
+            profTitle={prof?.title}
+            profAvatar={prof?.avatar}
+            clientName={meuNome}
+            clienteUserId={clienteUserId!}
+            profUserId={profUserId!}
+            onClose={onClose}
+          />
         )}
 
         {/* input */}

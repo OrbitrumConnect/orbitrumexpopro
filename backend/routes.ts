@@ -2918,6 +2918,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  /** Relatório de experiência com consentimento LGPD (§14, §35, §44).
+   *  Registra o fato relacional TRABALHOU_COM com evidência das transições e flag de consentimento.
+   *  Só registra se ambos já confirmaram (estado=validado). */
+  app.post("/api/relational-facts/relatorio", async (req, res) => {
+    try {
+      const { chatId, clientId, professionalId, consentimento, transitions } = req.body;
+      if (!chatId || !clientId || !professionalId) {
+        return res.status(400).json({ success: false, message: "chatId, clientId, professionalId obrigatórios" });
+      }
+      if (!consentimento) {
+        return res.status(400).json({ success: false, message: "Consentimento LGPD é obrigatório para registrar o relatório" });
+      }
+
+      const inicio = transitions?.[0]?.at;
+      const fim = transitions?.[transitions.length - 1]?.at;
+
+      const fato = await factStore.insertFact({
+        subjectId: professionalId,
+        predicate: 'trabalhou_com',
+        objectId: clientId,
+        confidence: 'validado',
+        origin: 'relatorio_experiencia',
+        evidence: JSON.stringify({
+          chatId,
+          consentimento: true,
+          consentimentoAt: new Date().toISOString(),
+          transitionsCount: transitions?.length ?? 0,
+          inicio,
+          fim,
+          lgpdBase: 'consentimento_art7_I',
+        }),
+        validUntil: new Date(Date.now() + 540 * 24 * 60 * 60 * 1000),
+      } as any);
+
+      res.json({ success: true, factId: fato.id, message: "Relatório registrado com consentimento" });
+    } catch (error: any) {
+      console.error("Erro ao registrar relatório:", error);
+      res.status(500).json({ success: false, message: error?.message || "Falha ao registrar relatório" });
+    }
+  });
+
   /** Profissional declara disponibilidade. Não edita o fato anterior: substitui. */
   // Estado atual de presença de um usuário (pro toggle iniciar certo). disponivel_em vigente?
   app.get("/api/facts/availability/:userId", async (req, res) => {
