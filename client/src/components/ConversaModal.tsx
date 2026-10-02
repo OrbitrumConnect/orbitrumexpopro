@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase';
 import MiniMapa from '@/components/MiniMapa';
 import Continuar from '@/components/Continuar';
 import RelatorioExperiencia from '@/components/RelatorioExperiencia';
+import ContextoServicoStep from '@/components/ContextoServicoStep';
+import SugestoesDuranteEspera from '@/components/SugestoesDuranteEspera';
 import { notify } from '@/lib/notify';
 
 // CONVERSA INLINE — o ciclo acontece na MESMA tela (não muda de aba).
@@ -57,6 +59,8 @@ export default function ConversaModal({ profId, onClose }: Props) {
   const [esperaSeg, setEsperaSeg] = useState(0);
   const [proRespondeu, setProRespondeu] = useState(false);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
+  const [fase, setFase] = useState<'contexto' | 'chat'>('contexto');
+  const [contextoEnviado, setContextoEnviado] = useState<string | null>(null);
 
   const [aceite, setAceite] = useState({ aceiteCliente: true, aceiteProfissional: false });
   const [confirmacao, setConfirmacao] = useState({ confirmacaoCliente: false, confirmacaoProfissional: false });
@@ -70,9 +74,32 @@ export default function ConversaModal({ profId, onClose }: Props) {
     if (!profId) return;
     fetch(`/api/orbitmatch/profile/${profId}?userId=${clienteUserId ?? 1}`)
       .then(r => r.json())
-      .then(j => { if (j.success) setProf(j.profissional); })
+      .then(j => {
+        if (j.success) {
+          setProf(j.profissional);
+          if (j.profissional.userId === clienteUserId) setFase('chat');
+        }
+      })
       .catch(() => {});
   }, [profId, clienteUserId]);
+
+  useEffect(() => {
+    if (!prof || !clienteUserId || souOPro) return;
+    const id = `chat-${Math.min(clienteUserId, prof.userId ?? prof.id)}-${Math.max(clienteUserId, prof.userId ?? prof.id)}`;
+    fetch(`/api/chats/${id}`)
+      .then(r => { if (r.ok) return r.json(); throw new Error('no chat'); })
+      .then(j => { if (j.messages?.length) setFase('chat'); })
+      .catch(() => {});
+  }, [prof, clienteUserId, souOPro]);
+
+  const handleContextoSubmit = (ctx: { servicos: string[]; quando: string; urgencia: string; detalhe: string }) => {
+    const partes = [`Serviço: ${ctx.servicos.join(', ')}`, `Quando: ${ctx.quando}`, `Urgência: ${ctx.urgencia}`];
+    if (ctx.detalhe.trim()) partes.push(`Detalhe: ${ctx.detalhe.trim()}`);
+    setContextoEnviado(partes.join(' | '));
+    setFase('chat');
+  };
+
+  const handleContextoSkip = () => setFase('chat');
 
   // Carregar estado do backend ao abrir
   useEffect(() => {
@@ -115,10 +142,19 @@ export default function ConversaModal({ profId, onClose }: Props) {
           isActive: true, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         }}),
       });
+      if (contextoEnviado) {
+        fetch(`/api/chats/${id}/messages`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senderId: clienteUserId, senderName: meuNome, message: `📋 ${contextoEnviado}` }),
+        }).catch(() => {});
+        setMsgs(m => [...m, { de: 'eu', texto: `📋 ${contextoEnviado}`, timestamp: new Date().toISOString() }]);
+      }
     } catch {}
-  }, [prof, clienteUserId, meuNome]);
+  }, [prof, clienteUserId, meuNome, contextoEnviado]);
 
-  useEffect(() => { criarOuCarregarChat(); }, [criarOuCarregarChat]);
+  useEffect(() => {
+    if (fase === 'chat') criarOuCarregarChat();
+  }, [criarOuCarregarChat, fase]);
   useEffect(() => { msgsEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
   useEffect(() => {
@@ -345,9 +381,22 @@ export default function ConversaModal({ profId, onClose }: Props) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.ink2, fontSize: 22, cursor: 'pointer' }}>×</button>
         </header>
 
+        {/* FASE CONTEXTO — chips de serviço antes do chat (Fase B) */}
+        {fase === 'contexto' && prof && (
+          <ContextoServicoStep
+            profName={prof.name}
+            profTitle={prof.title}
+            profAvatar={prof.avatar}
+            onSubmit={handleContextoSubmit}
+            onSkip={handleContextoSkip}
+          />
+        )}
+
+        {fase === 'contexto' && <div style={{ padding: 18 }} />}
+
         {/* BARRA OPERACIONAL 0–100% — estado real da relação (não gamificação). Cada etapa é um
             evento registrado; o Orbitrum diz o que aconteceu, não que executou o serviço. */}
-        <div style={{ padding: '12px 18px', borderBottom: `1px solid ${C.border}` }}>
+        {fase === 'chat' && <div style={{ padding: '12px 18px', borderBottom: `1px solid ${C.border}` }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{FLUXO[idx]?.[1]}</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: C.cyan }}>{FLUXO[idx]?.[2] ?? 0}%</span>
@@ -362,10 +411,10 @@ export default function ConversaModal({ profId, onClose }: Props) {
               </span>
             ))}
           </div>
-        </div>
+        </div>}
 
         {/* conversa */}
-        <div style={{ flex: 1, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', minHeight: 160 }}>
+        {fase === 'chat' && <div style={{ flex: 1, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', minHeight: 160 }}>
           {/* MINI-MAPA no próprio card quando o profissional aceita e está a caminho.
               Toda a imersão acontece aqui — não abre outra tela. */}
           {(estado === 'a_caminho' || estado === 'chegou') && (
@@ -436,12 +485,20 @@ export default function ConversaModal({ profId, onClose }: Props) {
               )}
             </div>
           ))}
+          {/* Sugestões durante espera — outros profissionais similares */}
+          {!proRespondeu && !souOPro && estado === 'conversando' && esperaSeg > 30 && prof && (
+            <SugestoesDuranteEspera
+              profAtualId={profId}
+              profTitle={prof.title}
+              onSelecionarOutro={(id) => { onClose(); setTimeout(() => window.dispatchEvent(new CustomEvent('orbitrum:abrir-conversa', { detail: { profId: id } })), 100); }}
+            />
+          )}
           <div ref={msgsEndRef} />
-        </div>
+        </div>}
 
         {/* ação de ciclo — trilha bilateral real */}
-        {aviso && <div style={{ padding: '8px 18px', color: C.cyan, fontSize: 12, textAlign: 'center' }}>{aviso}</div>}
-        <div style={{ padding: '0 18px 10px', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        {fase === 'chat' && aviso && <div style={{ padding: '8px 18px', color: C.cyan, fontSize: 12, textAlign: 'center' }}>{aviso}</div>}
+        {fase === 'chat' && <div style={{ padding: '0 18px 10px', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
           {estado === 'conversando' && !aceite.aceiteProfissional && souOPro && (
             <button onClick={aceitarSolicitacao} style={botao(C)}>Aceitar solicitação</button>
           )}
@@ -487,9 +544,9 @@ export default function ConversaModal({ profId, onClose }: Props) {
           {estado === 'validado' && (
             <div style={{ color: C.cyan, fontSize: 13, fontWeight: 600 }}>✓ Experiência validada — a rede aprendeu</div>
           )}
-        </div>
+        </div>}
 
-        {estado === 'validado' && chatIdRef.current && (
+        {fase === 'chat' && estado === 'validado' && chatIdRef.current && (
           <RelatorioExperiencia
             chatId={chatIdRef.current}
             profName={prof?.name ?? 'Profissional'}
@@ -503,12 +560,12 @@ export default function ConversaModal({ profId, onClose }: Props) {
         )}
 
         {/* input */}
-        <div style={{ display: 'flex', gap: 8, padding: 14, borderTop: `1px solid ${C.border}` }}>
+        {fase === 'chat' && <div style={{ display: 'flex', gap: 8, padding: 14, borderTop: `1px solid ${C.border}` }}>
           <input value={texto} onChange={e => setTexto(e.target.value)} onKeyDown={e => e.key === 'Enter' && enviar()}
             placeholder="Digite uma mensagem..."
             style={{ flex: 1, background: '#00080F', border: `1px solid ${C.border}`, borderRadius: 22, padding: '11px 16px', color: C.ink, fontSize: 14, outline: 'none' }} />
           <button onClick={enviar} style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 700 }}>↑</button>
-        </div>
+        </div>}
       </div>
     </div>
   );
