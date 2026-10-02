@@ -126,7 +126,7 @@ export default function PerfilProfissional() {
                       method: 'POST', headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ indicadorUserId: userId, profissionalId: p.id }),
                     });
-                    const url = `${window.location.origin}/perfil/${p.id}`;
+                    const url = `${window.location.origin}/p/${p.id}`;
                     if (navigator.share) {
                       navigator.share({ title: `${p.name} no Orbitrum`, text: `Conheça ${p.name} — ${p.title}`, url });
                     } else {

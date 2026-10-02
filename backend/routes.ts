@@ -3096,6 +3096,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  /** Orbit Link — perfil público do profissional, acessível sem login.
+   *  Retorna APENAS dados públicos (nome, título, cidade, serviços, placar).
+   *  Sem phone, sem userId, sem latitude/longitude — LGPD §44. */
+  app.get("/api/public/profile/:profId", async (req, res) => {
+    try {
+      const profId = parseInt(req.params.profId);
+      const prof: any = await queryProfessionalById(profId);
+      if (!prof) return res.status(404).json({ success: false, message: "Profissional não encontrado" });
+
+      const profUserId = prof.userId ?? prof.id;
+      const facts = await factStore.listFacts();
+      const agora = new Date();
+      const fatos = (facts as any[]).filter(f =>
+        (f.subjectId === profUserId || f.objectId === profUserId) &&
+        (!f.validUntil || new Date(f.validUntil) > agora)
+      );
+      const experiencias = fatos.filter(f => f.predicate === 'trabalhou_com' && f.confidence === 'validado').length;
+      const indicacoes = fatos.filter(f => f.predicate === 'indicou').length;
+
+      res.json({
+        success: true,
+        profissional: {
+          id: prof.id,
+          name: prof.name,
+          title: prof.title,
+          city: prof.city,
+          state: prof.state,
+          avatar: prof.avatar,
+          services: prof.services ?? [],
+          available: prof.available,
+          description: prof.description ?? null,
+        },
+        placar: { experiencias, indicacoes },
+      });
+    } catch (error) {
+      console.error("Erro no perfil público:", error);
+      res.status(500).json({ success: false, message: "Falha ao carregar perfil" });
+    }
+  });
+
   // Atividade recente da rede do usuário (design-alvo, faixa inferior). Vem dos fatos, §35.
   app.get("/api/orbitmatch/atividade", async (req, res) => {
     try {
