@@ -1,3 +1,6 @@
+# Build artifacts (gerado pelo esbuild no deploy)
+api/handler.js
+
 # Dependencies
 node_modules/
 npm-debug.log*

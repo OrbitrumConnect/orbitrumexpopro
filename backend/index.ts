@@ -157,7 +157,7 @@ export const ready = (async () => {
 
   // Vite/estático — só fora da Vercel (na Vercel o frontend é servido pelo próprio Vercel).
   if (!IS_VERCEL) {
-    const { setupVite, serveStatic } = await import("./vite");
+    const { setupVite, serveStatic } = await import("./vite-dev");
     if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
