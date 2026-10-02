@@ -33,7 +33,7 @@ export default function Sidebar() {
     ...(ehAdmin ? [['Admin', '/admin'] as [string, string]] : []),
   ];
   const conta: Array<[string, string]> = [
-    ['Orbit Credits', '/tokens'], ['Recompensas', '/tokens'], ['Assinatura', '/planos'],
+    ['Planos', '/planos'],
   ];
 
   const ir = (rota: string) => { setLocation(rota); setAberta(false); };

@@ -20,7 +20,7 @@ const C = {
 };
 
 const MENU_ECON: Array<[string, string]> = [
-  ['Orbit Credits', '/tokens'], ['Recompensas', '/tokens'], ['Assinatura', '/planos'],
+  ['Planos', '/planos'],
 ];
 
 const CONF_LABEL: Record<string, string> = {
@@ -113,6 +113,7 @@ export default function Inicio() {
   const [viewAtiva, setViewAtiva] = useState<'inicio' | 'rede' | 'profissionais' | 'indicacoes' | 'oportunidades' | 'conversas'>('inicio');
   const [atividade, setAtividade] = useState<Array<{ texto: string; quando: string; avatar?: string | null }>>([]);
   const [disponivel, setDisponivel] = useState(false);
+  const [ocupados, setOcupados] = useState<Set<number>>(new Set());
   const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
   const [menuAberto, setMenuAberto] = useState(false);
   useEffect(() => {
@@ -148,7 +149,10 @@ export default function Inicio() {
       .then(r => r.json())
       .then(j => { if (j.success && Array.isArray(j.itens)) setAtividade(j.itens); })
       .catch(() => {});
-    // Estado real de presença (toggle começa certo, não sempre "Indisponível")
+    fetch('/api/service-flow/status/ocupados')
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j?.success) setOcupados(new Set(j.ocupados as number[])); })
+      .catch(() => {});
     if (user?.id_interno) {
       fetch(`/api/facts/availability/${user.id_interno}`)
         .then(r => r.json())
@@ -347,7 +351,11 @@ export default function Inicio() {
                           <div style={{ fontWeight: 600, fontSize: 14 }}>{r.profissional.name}</div>
                           <div style={{ color: C.ink3, fontSize: 12 }}>{r.profissional.title}{r.profissional.city ? ` · ${r.profissional.city}` : ''}</div>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); setConversaId(r.profissional.id); }} style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '6px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
+                        {ocupados.has(r.profissional.id) ? (
+                          <span style={{ fontSize: 11, color: '#FF9800', background: 'rgba(255,152,0,0.12)', border: '1px solid rgba(255,152,0,0.25)', borderRadius: 16, padding: '5px 12px', flexShrink: 0 }}>Ocupado</span>
+                        ) : (
+                          <button onClick={(e) => { e.stopPropagation(); setConversaId(r.profissional.id); }} style={{ border: 'none', cursor: 'pointer', borderRadius: 16, padding: '6px 16px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>Conectar</button>
+                        )}
                       </div>
                       {r.motivos.length > 0 && (
                         <div style={{ color: C.ink2, fontSize: 12, marginTop: 6, display: 'flex', gap: 6 }}>

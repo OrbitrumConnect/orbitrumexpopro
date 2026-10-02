@@ -95,7 +95,7 @@ function AppContent() {
         <Route path="/dashboard-professional" component={ProfessionalDashboard} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/planos" component={PlanosPagamento} />
-        <Route path="/pagamento" component={Pagamento} />
+        <Route path="/pagamento"><Redirect to="/planos" /></Route>
         <Route path="/jogo" component={GamePage} />
         <Route path="/termos" component={Termos} />
         <Route path="/privacidade" component={Privacidade} />

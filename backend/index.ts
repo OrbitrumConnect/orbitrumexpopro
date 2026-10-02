@@ -100,7 +100,15 @@ export const ready = (async () => {
   // REGISTRAR ROTAS SERVICE FLOW (trilha bilateral §10)
   const serviceFlowRoutes = await import('./routes/service-flow');
   app.use('/api/service-flow', serviceFlowRoutes.default);
-  
+
+  // REGISTRAR ROTAS AGENT API (Fase F — IAs externas consultam a rede)
+  const agentRoutes = await import('./routes/agents');
+  app.use('/api/agents', agentRoutes.default);
+
+  // REGISTRAR ROTAS WORKER (cron jobs / manutenção da rede)
+  const workerRoutes = await import('./routes/worker');
+  app.use('/api/worker', workerRoutes.default);
+
   const server = await registerRoutes(app);
 
   // Processos VIVOS (WebSocket, cron, sync) — só fora da Vercel (serverless não segura processo).
@@ -118,6 +126,15 @@ export const ready = (async () => {
 
     // Inicializar sistema de notificações em tempo real
     const { notificationSystem } = await import("./notification-system");
+
+    // Worker: decay de fatos expirados a cada hora (determinístico, sem IA)
+    const cron = await import('node-cron');
+    const { runWorker } = await import('./worker');
+    cron.schedule('0 * * * *', async () => {
+      const results = await runWorker();
+      const total = results.reduce((s, r) => s + r.processados, 0);
+      if (total > 0) console.error(`[Worker] ${total} fatos processados`);
+    });
   }
 
   // 🤖 Telegram Bot TEMPORARIAMENTE DESABILITADO para estabilizar servidor

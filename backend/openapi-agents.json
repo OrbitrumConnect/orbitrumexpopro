@@ -1,0 +1,223 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Orbitrum Agent API",
+    "description": "API para IAs e agentes externos consultarem a rede relacional do Orbitrum. Busque profissionais com contexto real (experiências validadas, indicações, conexões), veja perfis completos e registre resultados de interações.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://orbitrum.com.br",
+      "description": "Produção"
+    }
+  ],
+  "paths": {
+    "/api/agents/buscar_contexto": {
+      "get": {
+        "operationId": "buscarContexto",
+        "summary": "Buscar profissionais com contexto relacional",
+        "description": "Busca profissionais na rede do Orbitrum. Retorna nome, título, cidade, score de relevância, motivos relacionais (por que apareceu), experiências validadas e validações bilaterais. Use quando o usuário pedir um profissional ou serviço.",
+        "parameters": [
+          {
+            "name": "categoria",
+            "in": "query",
+            "description": "Categoria de serviço (ex: eletricista, encanador, diarista). Use /categorias para ver todas disponíveis.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "cidade",
+            "in": "query",
+            "description": "Filtrar por cidade (ex: São Paulo, Rio de Janeiro)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "description": "Máximo de resultados (default 5, max 20)",
+            "schema": { "type": "integer", "default": 5, "maximum": 20 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de profissionais com contexto relacional",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "fonte": { "type": "string", "enum": ["orbitrum"] },
+                    "categoria": { "type": "string", "nullable": true },
+                    "cidade": { "type": "string", "nullable": true },
+                    "total": { "type": "integer" },
+                    "profissionais": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "nome": { "type": "string" },
+                          "titulo": { "type": "string" },
+                          "cidade": { "type": "string" },
+                          "score": { "type": "integer" },
+                          "motivos": { "type": "array", "items": { "type": "string" } },
+                          "experiencias": { "type": "integer" },
+                          "validacoes": { "type": "integer" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/perfil/{profId}": {
+      "get": {
+        "operationId": "perfilProfissional",
+        "summary": "Perfil completo com contexto relacional",
+        "description": "Retorna perfil detalhado de um profissional: dados básicos, serviços, disponibilidade, placar (experiências/validações/indicações), caminho relacional e qualificações. Use após buscar_contexto para mostrar detalhes ao usuário.",
+        "parameters": [
+          {
+            "name": "profId",
+            "in": "path",
+            "required": true,
+            "description": "ID do profissional (obtido via buscar_contexto)",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil completo com contexto relacional",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "fonte": { "type": "string" },
+                    "profissional": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "nome": { "type": "string" },
+                        "titulo": { "type": "string" },
+                        "cidade": { "type": "string" },
+                        "estado": { "type": "string" },
+                        "servicos": { "type": "array", "items": { "type": "string" } },
+                        "disponivel": { "type": "boolean" },
+                        "telefone": { "type": "string", "nullable": true }
+                      }
+                    },
+                    "contexto_relacional": {
+                      "type": "object",
+                      "properties": {
+                        "contexto": { "type": "object" },
+                        "placar": {
+                          "type": "object",
+                          "properties": {
+                            "experiencias": { "type": "integer" },
+                            "experienciasValidadas": { "type": "integer" },
+                            "indicacoes": { "type": "integer" },
+                            "validacoes": { "type": "integer" }
+                          }
+                        },
+                        "experienciasRelevantes": { "type": "array" },
+                        "qualificacoes": { "type": "array" },
+                        "conexoesEmComum": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profissional não encontrado"
+          }
+        }
+      }
+    },
+    "/api/agents/registrar_resultado": {
+      "post": {
+        "operationId": "registrarResultado",
+        "summary": "Registrar resultado de interação via agente",
+        "description": "Agentes externos registram que uma indicação do Orbitrum resultou em contratação/interação real. Cria um fato relacional na rede. Idempotente.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["profissionalId", "agente"],
+                "properties": {
+                  "profissionalId": { "type": "integer", "description": "ID do profissional" },
+                  "agente": { "type": "string", "description": "Nome do agente (ex: gpt-4, claude, meu-bot)" },
+                  "descricao": { "type": "string", "description": "Descrição do que aconteceu" },
+                  "resultado": { "type": "string", "enum": ["positivo", "neutro", "negativo"], "description": "Resultado da interação" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado registrado na rede",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "fonte": { "type": "string" },
+                    "fato_id": { "type": "integer" },
+                    "criado": { "type": "boolean" },
+                    "mensagem": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/categorias": {
+      "get": {
+        "operationId": "listarCategorias",
+        "summary": "Listar categorias de serviço disponíveis",
+        "description": "Lista todas as categorias de serviço na rede. Use para saber quais termos passar no buscar_contexto. Exemplo: eletricista, encanador, diarista, cabeleireira.",
+        "responses": {
+          "200": {
+            "description": "Lista de categorias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "fonte": { "type": "string" },
+                    "categorias": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/health": {
+      "get": {
+        "operationId": "healthCheck",
+        "summary": "Health check da API",
+        "description": "Verifica se a API está ativa e lista endpoints disponíveis.",
+        "responses": {
+          "200": {
+            "description": "API ativa"
+          }
+        }
+      }
+    }
+  }
+}

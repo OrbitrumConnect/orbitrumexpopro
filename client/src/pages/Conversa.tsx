@@ -64,6 +64,15 @@ export default function Conversa() {
       .catch(() => {});
   }, [profId, clienteUserId]);
 
+  useEffect(() => {
+    if (!profId || !clienteUserId) return;
+    const chatId = `chat-${Math.min(clienteUserId, Number(profId))}-${Math.max(clienteUserId, Number(profId))}`;
+    fetch(`/api/service-flow/${chatId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j?.success && j.exists && j.estado) setEstado(j.estado); })
+      .catch(() => {});
+  }, [profId, clienteUserId]);
+
   const criarOuCarregarChat = useCallback(async () => {
     if (!prof || !clienteUserId) return;
     const id = `chat-${Math.min(clienteUserId, prof.userId ?? prof.id)}-${Math.max(clienteUserId, prof.userId ?? prof.id)}`;
@@ -202,6 +211,24 @@ export default function Conversa() {
     } catch { setAviso('Não foi possível confirmar agora.'); }
   }
 
+  function avancar(novoEstado: Estado) {
+    setEstado(novoEstado);
+    if (!chatIdRef.current || !clienteUserId || !prof) return;
+    const profUserId = prof.userId ?? prof.id;
+    const cId = Math.min(clienteUserId, profUserId);
+    const pId = Math.max(clienteUserId, profUserId);
+    if (souOPro && novoEstado === 'combinado') {
+      fetch(`/api/service-flow/${chatIdRef.current}/aceitar`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: clienteUserId, clientId: cId, professionalId: pId }),
+      }).catch(() => {});
+    }
+    fetch(`/api/service-flow/${chatIdRef.current}/transicao`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: clienteUserId, clientId: cId, professionalId: pId, novoEstado }),
+    }).catch(() => {});
+  }
+
   const idx = FLUXO.findIndex(([e]) => e === estado);
 
   return (
@@ -214,7 +241,9 @@ export default function Conversa() {
           : <div style={{ width: 38, height: 38, borderRadius: '50%', background: `${C.blue}33`, border: `1px solid ${C.border}` }} />}
         <div>
           <div style={{ fontWeight: 600, fontSize: 15 }}>{prof?.name ?? 'Profissional'}</div>
-          <div style={{ fontSize: 11, color: C.cyan }}>Online</div>
+          <div style={{ fontSize: 11, color: estado === 'validado' ? '#4ADE80' : estado === 'em_servico' ? '#FF9800' : C.cyan }}>
+            {estado === 'validado' ? '✓ Concluído' : estado === 'em_servico' ? 'Em serviço' : estado === 'a_caminho' ? 'A caminho' : estado === 'chegou' ? 'No local' : 'Online'}
+          </div>
         </div>
       </header>
 
@@ -307,22 +336,22 @@ export default function Conversa() {
       {aviso && <div style={{ padding: '8px 18px', color: C.cyan, fontSize: 12, textAlign: 'center' }}>{aviso}</div>}
       <div style={{ padding: '0 18px 10px', display: 'flex', gap: 8, justifyContent: 'center' }}>
         {estado === 'conversando' && (
-          <button onClick={() => setEstado('combinado')} style={botao(C)}>
+          <button onClick={() => avancar('combinado')} style={botao(C)}>
             {souOPro ? 'Aceitar serviço' : 'Combinamos o serviço'}
           </button>
         )}
         {estado === 'combinado' && (
-          <button onClick={() => setEstado('a_caminho')} style={botao(C)}>
+          <button onClick={() => avancar('a_caminho')} style={botao(C)}>
             {souOPro ? 'Estou a caminho' : 'Profissional a caminho'}
           </button>
         )}
         {estado === 'a_caminho' && (
-          <button onClick={() => setEstado('chegou')} style={botao(C)}>
+          <button onClick={() => avancar('chegou')} style={botao(C)}>
             {souOPro ? 'Cheguei ao local' : 'Profissional chegou'}
           </button>
         )}
         {estado === 'chegou' && (
-          <button onClick={() => setEstado('em_servico')} style={botao(C)}>
+          <button onClick={() => avancar('em_servico')} style={botao(C)}>
             Iniciar serviço
           </button>
         )}

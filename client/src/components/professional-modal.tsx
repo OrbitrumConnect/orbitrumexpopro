@@ -134,7 +134,7 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
                   {/* onde + disponibilidade (só o que o banco tem; sem distância fabricada) */}
                   <div style={{ color: C.ink3, fontSize: 12, marginTop: 2 }}>
                     {p.city ? `${p.city}${p.state ? '/' + p.state : ''}` : 'Região a combinar'}
-                    {p.available ? <span style={{ color: C.cyan }}> · Disponível</span> : ''}
+                    {proOcupado ? <span style={{ color: '#FF9800' }}> · Ocupado</span> : p.available ? <span style={{ color: C.cyan }}> · Disponível</span> : ''}
                   </div>
                 </div>
               </div>

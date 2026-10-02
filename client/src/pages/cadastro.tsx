@@ -397,13 +397,13 @@ export default function Cadastro() {
                 <User className="w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4 text-blue-400" />
                 <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-4">Sou Usuário</h3>
                 <p className="text-gray-400 mb-3 sm:mb-6 text-sm sm:text-base">
-                  Quero encontrar profissionais, jogar e acumular tokens
+                  Quero encontrar profissionais e conectar pela rede
                 </p>
                 <ul className="text-xs sm:text-sm text-gray-300 space-y-1 sm:space-y-2 text-left">
                   <li>• Buscar profissionais qualificados</li>
-                  <li>• Jogar mini-games e ganhar tokens</li>
+                  <li>• Conectar e conversar diretamente</li>
                   <li>• Formar equipes de profissionais</li>
-                  <li>• Acesso a todas as funcionalidades</li>
+                  <li>• Construir seu histórico relacional</li>
                 </ul>
               </CardContent>
             </Card>
@@ -416,13 +416,13 @@ export default function Cadastro() {
                 <Briefcase className="w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4 text-green-400" />
                 <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-4">Sou Profissional</h3>
                 <p className="text-gray-400 mb-3 sm:mb-6 text-sm sm:text-base">
-                  Quero oferecer meus serviços e receber pagamentos
+                  Quero oferecer meus serviços e crescer na rede
                 </p>
                 <ul className="text-xs sm:text-sm text-gray-300 space-y-1 sm:space-y-2 text-left">
                   <li>• Criar perfil profissional completo</li>
-                  <li>• Receber tokens por serviços prestados</li>
-                  <li>• Sacar tokens via PIX</li>
-                  <li>• Validação de documentos obrigatória</li>
+                  <li>• Receber clientes pela rede</li>
+                  <li>• Construir reputação com experiências reais</li>
+                  <li>• Ferramentas de gestão e produtividade</li>
                 </ul>
               </CardContent>
             </Card>

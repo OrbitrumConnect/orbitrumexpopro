@@ -25,6 +25,15 @@ export default function PerfilProfissional() {
   const [perfil, setPerfil] = useState<any>(null);
   const [carregando, setCarregando] = useState(true);
   const [conversaId, setConversaId] = useState<number | null>(null);
+  const [proOcupado, setProOcupado] = useState(false);
+
+  useEffect(() => {
+    if (!profId) return;
+    fetch('/api/service-flow/status/ocupados')
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j?.success) setProOcupado(j.ocupados.includes(profId)); })
+      .catch(() => {});
+  }, [profId]);
 
   useEffect(() => {
     if (!profId) return;
@@ -86,11 +95,15 @@ export default function PerfilProfissional() {
                   <div style={{ color: C.ink3, fontSize: 13, marginTop: 4 }}>
                     {p.city ? `${p.city}${p.state ? '/' + p.state : ''}` : 'Região a combinar'}
                   </div>
-                  {p.available && (
+                  {proOcupado ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#FF9800', background: 'rgba(255,152,0,0.1)', border: '1px solid rgba(255,152,0,0.2)', borderRadius: 10, padding: '4px 12px', marginTop: 8 }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF9800' }} /> Em atendimento
+                    </span>
+                  ) : p.available ? (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#5BF5A0', background: 'rgba(91,245,160,0.1)', border: '1px solid rgba(91,245,160,0.2)', borderRadius: 10, padding: '4px 12px', marginTop: 8 }}>
                       <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#5BF5A0' }} /> Disponível agora
                     </span>
-                  )}
+                  ) : null}
                   {p.description && (
                     <p style={{ color: C.ink2, fontSize: 13, lineHeight: 1.6, marginTop: 12, margin: '12px 0 0' }}>{p.description}</p>
                   )}
@@ -99,9 +112,9 @@ export default function PerfilProfissional() {
 
               {/* CTA */}
               <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-                <button onClick={() => setConversaId(p.id)}
-                  style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 14, padding: '13px', background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: '#012', fontWeight: 600, fontSize: 15 }}>
-                  Chamar
+                <button onClick={() => !proOcupado && setConversaId(p.id)} disabled={proOcupado}
+                  style={{ flex: 1, border: 'none', cursor: proOcupado ? 'not-allowed' : 'pointer', borderRadius: 14, padding: '13px', background: proOcupado ? 'rgba(255,152,0,0.3)' : `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, color: proOcupado ? '#FF9800' : '#012', fontWeight: 600, fontSize: 15, opacity: proOcupado ? 0.7 : 1 }}>
+                  {proOcupado ? 'Ocupado' : 'Chamar'}
                 </button>
                 <button onClick={() => setLocation('/mapa')}
                   style={{ border: `1px solid ${C.border}`, cursor: 'pointer', borderRadius: 14, padding: '13px 20px', background: 'transparent', color: C.ink2, fontWeight: 500, fontSize: 13 }}>
