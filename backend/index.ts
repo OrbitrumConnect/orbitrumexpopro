@@ -2,16 +2,13 @@ import 'dotenv/config'; // DEVE ser o primeiro import: carrega .env (DATABASE_UR
 import express, { type Request, Response, NextFunction } from "express";
 import session from 'express-session';
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { log } from "./log";
 import { setupSecurity, secureErrorHandler } from "./security-middleware";
-import { initializeWebSocket } from "./websocket";
 import { SSLDetector } from "./ssl-detector";
 import { customDomainHandler } from "./custom-domain-handler";
 import { configureDomainAcceptance, forceCustomDomainRecognition } from "./domain-config";
-import { startTelegramBot } from "./telegram-integration";
 import { setupCreditRoutes } from "./credit-tokens";
 import { ensureHealthEndpoint, protectHealthRoute } from "./health-protection";
-import { startHealthMonitoring } from "./health-monitor";
 
 
 export const app = express();
@@ -52,7 +49,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-key',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 horas
+  cookie: { secure: IS_VERCEL || process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 }
 }));
 
 app.use((req, res, next) => {
@@ -114,6 +111,7 @@ export const ready = (async () => {
   // Processos VIVOS (WebSocket, cron, sync) — só fora da Vercel (serverless não segura processo).
   if (!IS_VERCEL) {
     // Inicializar WebSocket para comunicação em tempo real
+    const { initializeWebSocket } = await import("./websocket");
     const dashboardWS = initializeWebSocket(server);
 
     // Importar e inicializar sistema de expiração de planos
@@ -151,6 +149,7 @@ export const ready = (async () => {
 
   // Vite/estático — só fora da Vercel (na Vercel o frontend é servido pelo próprio Vercel).
   if (!IS_VERCEL) {
+    const { setupVite, serveStatic } = await import("./vite");
     if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
@@ -200,6 +199,7 @@ export const ready = (async () => {
       host: "0.0.0.0",
     }, async () => {
       log(`serving on port ${port}`);
+      const { startHealthMonitoring } = await import("./health-monitor");
       startHealthMonitoring();
     });
   }
