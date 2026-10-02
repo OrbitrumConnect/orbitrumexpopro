@@ -1,0 +1,15 @@
+export const C = {
+  bg: '#020914',
+  bg2: '#061A2D',
+  card: 'rgba(3,18,32,0.9)',
+  surface: '#0A1929',
+  cyan: '#00E5FF',
+  blue: '#00AEEF',
+  green: '#4ADE80',
+  amber: '#F59E0B',
+  ink: '#F4FAFF',
+  ink2: '#91A9BD',
+  ink3: '#607A91',
+  border: 'rgba(0,174,255,0.18)',
+  borderHot: 'rgba(0,220,255,0.5)',
+} as const;
