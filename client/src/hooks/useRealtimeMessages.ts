@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { notify } from '@/lib/notify';
 
 interface Msg { de: 'eu' | 'ele' | 'sistema'; texto: string; timestamp?: string }
 
@@ -33,8 +34,8 @@ export function useRealtimeMessages({ chatId, userId, profName, profAvatar, onNe
       if (novas.length > lastCountRef.current) {
         const diff = novas.slice(lastCountRef.current);
         const temNova = diff.some(m => m.de === 'ele');
-        if (temNova && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-          new Notification('Orbitrum — Nova mensagem', {
+        if (temNova && document.hidden) {
+          notify('Orbitrum — Nova mensagem', {
             body: `${profName ?? 'Profissional'}: ${diff.filter(m => m.de === 'ele').pop()?.texto ?? ''}`,
             icon: profAvatar || undefined,
           });
@@ -78,8 +79,8 @@ export function useRealtimeMessages({ chatId, userId, profName, profAvatar, onNe
           });
           if (msg.de === 'ele') {
             onNewMessage?.(msg);
-            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-              new Notification('Orbitrum — Nova mensagem', {
+            if (document.hidden) {
+              notify('Orbitrum — Nova mensagem', {
                 body: `${profName ?? 'Profissional'}: ${msg.texto}`,
                 icon: profAvatar || undefined,
               });

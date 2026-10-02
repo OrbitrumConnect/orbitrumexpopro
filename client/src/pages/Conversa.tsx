@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import MiniMapa from '@/components/MiniMapa';
 import RelatorioExperiencia from '@/components/RelatorioExperiencia';
+import { notify } from '@/lib/notify';
 
 const C = {
   bg: '#000915', bg2: '#011527', card: 'rgba(3,18,32,0.9)',
@@ -159,8 +160,8 @@ export default function Conversa() {
         if (novas.length > lastMsgCountRef.current) {
           const diff = novas.slice(lastMsgCountRef.current);
           const temNova = diff.some(m => m.de === 'ele');
-          if (temNova && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('Orbitrum — Nova mensagem', {
+          if (temNova && document.hidden) {
+            notify('Orbitrum — Nova mensagem', {
               body: `${prof?.name ?? 'Profissional'}: ${diff.filter(m => m.de === 'ele').pop()?.texto ?? ''}`,
               icon: prof?.avatar || undefined,
             });
@@ -189,8 +190,8 @@ export default function Conversa() {
             lastMsgCountRef.current = prev.length + 1;
             return [...prev, msg];
           });
-          if (msg.de === 'ele' && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('Orbitrum — Nova mensagem', {
+          if (msg.de === 'ele' && document.hidden) {
+            notify('Orbitrum — Nova mensagem', {
               body: `${prof?.name ?? 'Profissional'}: ${msg.texto}`,
               icon: prof?.avatar || undefined,
             });

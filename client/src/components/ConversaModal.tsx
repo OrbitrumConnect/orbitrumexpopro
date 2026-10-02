@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import MiniMapa from '@/components/MiniMapa';
 import Continuar from '@/components/Continuar';
 import RelatorioExperiencia from '@/components/RelatorioExperiencia';
+import { notify } from '@/lib/notify';
 
 // CONVERSA INLINE — o ciclo acontece na MESMA tela (não muda de aba).
 // Overlay sobre a home: conversa → serviço combinado → concluído → os dois
@@ -171,8 +172,8 @@ export default function ConversaModal({ profId, onClose }: Props) {
         if (novas.length > lastMsgCountRef.current) {
           const diff = novas.slice(lastMsgCountRef.current);
           const temNova = diff.some(m => m.de === 'ele');
-          if (temNova && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('Orbitrum — Nova mensagem', {
+          if (temNova && document.hidden) {
+            notify('Orbitrum — Nova mensagem', {
               body: `${prof?.name ?? 'Profissional'}: ${diff.filter(m => m.de === 'ele').pop()?.texto ?? ''}`,
               icon: prof?.avatar || undefined,
             });
@@ -201,8 +202,8 @@ export default function ConversaModal({ profId, onClose }: Props) {
             lastMsgCountRef.current = prev.length + 1;
             return [...prev, msg];
           });
-          if (msg.de === 'ele' && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('Orbitrum — Nova mensagem', {
+          if (msg.de === 'ele' && document.hidden) {
+            notify('Orbitrum — Nova mensagem', {
               body: `${prof?.name ?? 'Profissional'}: ${msg.texto}`,
               icon: prof?.avatar || undefined,
             });

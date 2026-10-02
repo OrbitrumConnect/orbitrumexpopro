@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { notify } from '@/lib/notify';
 
 interface Chamada {
   chatId: string;
@@ -36,11 +37,9 @@ export function useRealtimeNotification(userId: number | null) {
         };
         chamadaRef.current = nova;
         setChamada(nova);
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Orbitrum — Novo cliente!', {
-            body: `${nova.clientName} quer se conectar com você.`,
-          });
-        }
+        notify('Orbitrum — Novo cliente!', {
+          body: `${nova.clientName} quer se conectar com você.`,
+        });
       }
     } catch {}
   }, [userId]);
@@ -70,11 +69,9 @@ export function useRealtimeNotification(userId: number | null) {
           if (!chamadaRef.current || chamadaRef.current.chatId !== nova.chatId) {
             chamadaRef.current = nova;
             setChamada(nova);
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification('Orbitrum — Novo cliente!', {
-                body: `${nova.clientName} quer se conectar com você.`,
-              });
-            }
+            notify('Orbitrum — Novo cliente!', {
+              body: `${nova.clientName} quer se conectar com você.`,
+            });
           }
         })
         .subscribe((status: string) => {

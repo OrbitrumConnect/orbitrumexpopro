@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
+import { useWebPush } from '@/hooks/useWebPush';
 
 const C = {
   cyan: '#00E5FF', blue: '#00AEEF',
@@ -22,7 +23,9 @@ export default function NotificacaoServico() {
   const [chamada, setChamada] = useState<Chamada | null>(null);
   const [visible, setVisible] = useState(false);
   const [segsAtras, setSegsAtras] = useState(0);
+  const [showPushPrompt, setShowPushPrompt] = useState(false);
   const userId = (user as any)?.id_interno;
+  const { state: pushState, requestPermission, showLocalNotification } = useWebPush();
 
   const checar = useCallback(async () => {
     if (!userId) return;
@@ -46,11 +49,10 @@ export default function NotificacaoServico() {
         });
         setVisible(true);
         setSegsAtras(0);
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Orbitrum — Novo cliente!', {
-            body: `${paraEu.clientName || 'Um cliente'} quer se conectar com você.`,
-          });
-        }
+        showLocalNotification('Orbitrum — Novo cliente!', {
+          body: `${paraEu.clientName || 'Um cliente'} quer se conectar com você.`,
+          url: `/conversa/${paraEu.clientId}`,
+        });
       }
     } catch {}
   }, [userId, chamada]);
@@ -79,11 +81,10 @@ export default function NotificacaoServico() {
             });
             setVisible(true);
             setSegsAtras(0);
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification('Orbitrum — Novo cliente!', {
-                body: `${row.client_name || 'Um cliente'} quer se conectar com você.`,
-              });
-            }
+            showLocalNotification('Orbitrum — Novo cliente!', {
+              body: `${row.client_name || 'Um cliente'} quer se conectar com você.`,
+              url: `/conversa/${row.client_id}`,
+            });
           }
         })
         .subscribe((status: string) => {
@@ -108,10 +109,50 @@ export default function NotificacaoServico() {
     return () => clearInterval(t);
   }, [visible]);
 
+  useEffect(() => {
+    if (!userId || pushState !== 'prompt') return;
+    const timer = setTimeout(() => setShowPushPrompt(true), 8000);
+    return () => clearTimeout(timer);
+  }, [userId, pushState]);
+
+  async function handlePermission(accept: boolean) {
+    setShowPushPrompt(false);
+    if (accept) await requestPermission();
+  }
+
   function atender() {
     if (!chamada) return;
     setVisible(false);
     setLocation(`/conversa/${chamada.professionalId}`);
+  }
+
+  if (!visible && !chamada && showPushPrompt) {
+    return (
+      <div style={{
+        position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 9998,
+        width: 'min(400px, 90vw)',
+        background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 14,
+        padding: '14px 18px', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, marginBottom: 6 }}>
+          🔔 Quer receber notificações?
+        </div>
+        <div style={{ fontSize: 12, color: C.ink2, marginBottom: 12 }}>
+          Saiba na hora quando um cliente te procurar, mesmo fora do app.
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => handlePermission(true)} style={{
+            flex: 1, border: 'none', borderRadius: 8, padding: '8px 0',
+            background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`,
+            color: '#012', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+          }}>Ativar</button>
+          <button onClick={() => handlePermission(false)} style={{
+            border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 14px',
+            background: 'transparent', color: C.ink2, fontSize: 12, cursor: 'pointer',
+          }}>Agora não</button>
+        </div>
+      </div>
+    );
   }
 
   if (!visible || !chamada) return null;
