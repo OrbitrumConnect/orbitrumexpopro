@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import Sidebar from '@/components/Sidebar';
 import ConversaModal from '@/components/ConversaModal';
-import Continuar from '@/components/Continuar';
 import { DEMO_PROS, CONF_LABEL } from '@/data/demo-professionals';
 
 const C = {
@@ -257,10 +256,6 @@ export default function PerfilProfissional() {
               </div>
             )}
 
-            {/* Continuidade */}
-            <div style={{ marginTop: 16 }}>
-              <Continuar prof={p} />
-            </div>
           </div>
         )}
 

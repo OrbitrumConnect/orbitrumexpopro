@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
-import Continuar from '@/components/Continuar';
 import { DEMO_PROS, CONF_LABEL } from '@/data/demo-professionals';
 
 interface ProfessionalModalProps {
@@ -305,8 +304,6 @@ export function ProfessionalModal({ isOpen, onClose, professionalId, onConectar 
               Chamar = iniciar conversa. Indicar = compartilhar este profissional com quem precisa.
             </p>
 
-            {/* Camada de Continuidade: deep-links pro ecossistema (só o que o banco tem) */}
-            <Continuar prof={p} />
           </>
         )}
       </div>

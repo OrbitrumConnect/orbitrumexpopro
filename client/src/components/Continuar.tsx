@@ -1,8 +1,11 @@
 // CAMADA DE CONTINUIDADE ("Continuar") — Documento Mestre.
 // "Orbitrum conecta. O ecossistema executa. O usuário escolhe. A rede aprende."
-// Depois de conectar, mostra "Como deseja continuar?" e faz DEEP-LINK para os apps que a
-// pessoa já usa (WhatsApp/Maps/Uber/LinkedIn) — NÃO reconstrói esses serviços.
-// Honesto: só mostra o que existe no banco (telefone, coordenadas, linkedin). Nada fabricado.
+// Aparece APENAS durante o deslocamento (a_caminho/chegou) na conversa.
+// Deep-links para apps que a pessoa já usa (WhatsApp/Uber/99) — NÃO reconstrói esses serviços.
+// "Ver no mapa" abre o /mapa do app (não Google Maps).
+// Se em 5-10 min não usou, progride naturalmente — são OPÇÕES, não obrigação.
+
+import { useLocation } from 'wouter';
 
 const C = {
   cyan: '#00D9FF', blue: '#00AEEF', ink: '#EAF8FF', ink2: '#7FA9C2', ink3: '#5b7a90',
@@ -33,15 +36,15 @@ function Acao({ label, icon, href, onClick }: { label: string; icon: string; hre
 }
 
 export default function Continuar({ prof, onIndicar, onNovaBusca, onSolicitar }: Props) {
+  const [, setLocation] = useLocation();
   const temGeo = prof.latitude != null && prof.longitude != null;
-  const destino = temGeo ? `${prof.latitude},${prof.longitude}` : (prof.address || [prof.city, prof.state].filter(Boolean).join(', '));
   const whats = prof.phone ? prof.phone.replace(/\D/g, '') : '';
 
   const acoes: Array<{ label: string; icon: string; href?: string; onClick?: () => void }> = [];
   if (whats) acoes.push({ label: 'Conversar no WhatsApp', icon: '💬', href: `https://wa.me/55${whats}` });
   if (temGeo) acoes.push({ label: 'Chamar via Uber', icon: '🚗', href: `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${prof.latitude}&dropoff[longitude]=${prof.longitude}&dropoff[nickname]=${encodeURIComponent(prof.name)}` });
   if (temGeo) acoes.push({ label: 'Chamar via 99', icon: '🚕', href: `https://99app.com/` });
-  if (destino) acoes.push({ label: 'Ver rota no mapa', icon: '📍', href: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}` });
+  if (temGeo) acoes.push({ label: 'Ver no mapa', icon: '📍', onClick: () => setLocation('/mapa') });
   if (prof.linkedinUrl) acoes.push({ label: 'Ver LinkedIn', icon: '💼', href: prof.linkedinUrl });
   if (onIndicar) acoes.push({ label: 'Indicar para alguém', icon: '🔗', onClick: onIndicar });
   if (onSolicitar) acoes.push({ label: 'Solicitar novamente', icon: '↻', onClick: onSolicitar });
@@ -51,12 +54,12 @@ export default function Continuar({ prof, onIndicar, onNovaBusca, onSolicitar }:
 
   return (
     <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 16, paddingTop: 16 }}>
-      <div style={{ fontSize: 12, color: C.ink3, letterSpacing: 1, marginBottom: 10 }}>COMO O PROFISSIONAL CHEGA ATÉ VOCÊ?</div>
+      <div style={{ fontSize: 12, color: C.ink3, letterSpacing: 1, marginBottom: 10 }}>COMO CHEGAR?</div>
+      <div style={{ fontSize: 10, color: C.ink3, marginBottom: 8 }}>
+        Opcional — combinem no chat. Se preferirem, usem um app abaixo.
+      </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {acoes.map((a, i) => <Acao key={i} {...a} />)}
-      </div>
-      <div style={{ fontSize: 10, color: C.ink3, marginTop: 10 }}>
-        O Orbitrum conecta e registra a experiência. O transporte é combinado entre vocês — pedir, ir por conta ou combinar o ponto.
       </div>
     </div>
   );
