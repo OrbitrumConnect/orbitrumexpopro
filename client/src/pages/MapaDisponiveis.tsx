@@ -156,7 +156,7 @@ export default function MapaDisponiveis() {
       })
       .catch(() => setCarregou(true));
 
-    const userId = (user as any)?.id_interno ?? 0;
+    const userId = (user as any)?.id_interno ?? (user as any)?.id ?? 0;
     if (userId) {
       fetch(`/api/orbitmatch/search?userId=${userId}`)
         .then(r => { if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) return null; return r.json(); })
@@ -243,7 +243,7 @@ export default function MapaDisponiveis() {
       <Sidebar />
       <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '4px 8px' : '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', gap: mobile ? 4 : 8 }}>
+          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '4px 8px 4px 56px' : '14px 24px 14px clamp(18px, 14vw, 56px)', borderBottom: `1px solid ${C.border}`, background: 'rgba(4,17,31,0.82)', gap: mobile ? 4 : 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 6 : 10 }}>
               <div style={{ fontWeight: 700, fontSize: mobile ? 13 : 17, letterSpacing: 0.5 }}>Mapa</div>
               {!mobile && <div style={{ fontSize: 13, color: C.ink2 }}>Terminal operacional — a rede na geografia</div>}
@@ -261,7 +261,7 @@ export default function MapaDisponiveis() {
           </header>
 
           {/* TABS — terminal do mapa */}
-          <div style={{ display: 'flex', gap: 0, padding: mobile ? '0 6px' : '10px 24px 0 clamp(18px, 14vw, 56px)', background: 'rgba(4,17,31,0.5)' }}>
+          <div style={{ display: 'flex', gap: 0, padding: mobile ? '0 6px 0 56px' : '10px 24px 0 clamp(18px, 14vw, 56px)', background: 'rgba(4,17,31,0.5)' }}>
             {(['disponiveis', 'rede', 'todos'] as TabMapa[]).map(t => {
               const on = tab === t;
               const mobileLabel = { disponiveis: 'Agora', rede: 'Rede', todos: 'Todos' };
