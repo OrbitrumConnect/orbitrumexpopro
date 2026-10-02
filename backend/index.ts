@@ -110,6 +110,10 @@ export const ready = (async () => {
   const mcpRoutes = await import('./mcp-server');
   app.use('/api/mcp', mcpRoutes.default);
 
+  // Equipes pro — composição sobre OrbitMatch + Trust Graph + Indicação
+  const equipesRoutes = await import('./routes/equipes');
+  app.use('/api/equipes', equipesRoutes.default);
+
   const server = await registerRoutes(app);
 
   // Processos VIVOS (WebSocket, cron, sync) — só fora da Vercel (serverless não segura processo).

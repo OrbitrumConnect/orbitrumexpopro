@@ -27,6 +27,7 @@ import { DocumentUpload } from "@/components/dashboard/DocumentUpload";
 import Sidebar from "@/components/Sidebar";
 import NetworkAside from "@/components/NetworkAside";
 import BoostPerfil from "@/components/BoostPerfil";
+import EquipesTab from "@/components/EquipesTab";
 
 const C = {
   bg: '#020914', bg2: '#061A2D', card: 'rgba(3,18,32,0.9)',
@@ -39,7 +40,7 @@ interface ProfessionalDashboardProps {
   user: any;
 }
 
-type TabId = 'overview' | 'requests' | 'portfolio' | 'profile' | 'documents' | 'calendar' | 'team' | 'boost';
+type TabId = 'overview' | 'requests' | 'portfolio' | 'profile' | 'documents' | 'calendar' | 'team' | 'equipes' | 'boost';
 
 const TABS: Array<{ id: TabId; icon: typeof Home; label: string }> = [
   { id: 'overview', icon: Home, label: 'Visão Geral' },
@@ -49,6 +50,7 @@ const TABS: Array<{ id: TabId; icon: typeof Home; label: string }> = [
   { id: 'documents', icon: FileText, label: 'Documentos' },
   { id: 'calendar', icon: Calendar, label: 'Agenda' },
   { id: 'team', icon: Users, label: 'Meu Time' },
+  { id: 'equipes', icon: Users, label: 'Equipes' },
   { id: 'boost', icon: Rocket, label: 'Impulsionar' },
 ];
 
@@ -144,6 +146,7 @@ export function CleanProfessionalDashboard({ user }: ProfessionalDashboardProps)
             )}
             {activeTab === 'calendar' && <InteractiveCalendar userType="professional" userId={user?.id || 1} />}
             {activeTab === 'team' && <TeamTab />}
+            {activeTab === 'equipes' && <EquipesTab />}
             {activeTab === 'boost' && <BoostPerfil profId={user?.id || 1} />}
           </motion.div>
         </div>
