@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 
 const C = {
   cyan: '#00E5FF', blue: '#00AEEF',
@@ -57,8 +58,48 @@ export default function NotificacaoServico() {
   useEffect(() => {
     if (!userId) return;
     checar();
-    const t = setInterval(checar, 5000);
-    return () => clearInterval(t);
+    let usingRealtime = false;
+    let channel: any = null;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+    try {
+      channel = supabase
+        .channel(`notif:pro:${userId}`)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'chat_sessions',
+          filter: `professional_id=eq.${userId}`,
+        }, (payload: any) => {
+          const row = payload.new;
+          if (!chamada || chamada.chatId !== row.id) {
+            setChamada({
+              chatId: row.id,
+              clientName: row.client_name || 'Cliente',
+              professionalId: row.client_id,
+              timestamp: row.created_at || new Date().toISOString(),
+            });
+            setVisible(true);
+            setSegsAtras(0);
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Orbitrum — Novo cliente!', {
+                body: `${row.client_name || 'Um cliente'} quer se conectar com você.`,
+              });
+            }
+          }
+        })
+        .subscribe((status: string) => {
+          if (status === 'SUBSCRIBED') {
+            usingRealtime = true;
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+          }
+        });
+    } catch {}
+
+    pollTimer = setInterval(() => { if (!usingRealtime) checar(); }, 5000);
+
+    return () => {
+      if (pollTimer) clearInterval(pollTimer);
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [userId, checar]);
 
   useEffect(() => {

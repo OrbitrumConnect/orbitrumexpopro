@@ -8,6 +8,7 @@ import { Send, Clock, X, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
 
 interface ChatWindowProps {
   chatId: string;
@@ -19,12 +20,35 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [userName] = useState("João Eduardo"); // Mock user name
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [realtimeActive, setRealtimeActive] = useState(false);
 
-  // Load chat session and messages
+  // Load chat session and messages — polling desliga quando Realtime conecta
   const { data: chatData, isLoading, error } = useQuery({
     queryKey: ['/api/chats', chatId],
-    refetchInterval: 5000, // Poll for new messages every 5 seconds
+    refetchInterval: realtimeActive ? false : 5000,
   });
+
+  // Supabase Realtime: invalida query ao receber nova mensagem
+  useEffect(() => {
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel(`chatwin:${chatId}`)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'chat_messages',
+          filter: `chat_id=eq.${chatId}`,
+        }, () => {
+          queryClient.invalidateQueries({ queryKey: ['/api/chats', chatId] });
+        })
+        .subscribe((status: string) => {
+          if (status === 'SUBSCRIBED') setRealtimeActive(true);
+        });
+    } catch {}
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+      setRealtimeActive(false);
+    };
+  }, [chatId]);
 
   // Send message mutation
   const sendMessageMutation = useMutation({

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 import MiniMapa from '@/components/MiniMapa';
 
 const C = {
@@ -135,11 +136,18 @@ export default function Conversa() {
   }, [estado]);
 
   const lastMsgCountRef = useRef(0);
+
+  // Supabase Realtime para mensagens (fallback: polling 3s se Realtime não conectar)
   useEffect(() => {
     if (!chatIdRef.current || !clienteUserId) return;
-    const poll = setInterval(async () => {
+    const cid = chatIdRef.current;
+    let usingRealtime = false;
+    let channel: any = null;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+    const fetchMsgs = async () => {
       try {
-        const r = await fetch(`/api/chats/${chatIdRef.current}`);
+        const r = await fetch(`/api/chats/${cid}`);
         if (!r.ok) return;
         const j = await r.json();
         if (!j.messages?.length) return;
@@ -160,8 +168,47 @@ export default function Conversa() {
           lastMsgCountRef.current = novas.length;
         }
       } catch {}
-    }, 3000);
-    return () => clearInterval(poll);
+    };
+
+    try {
+      channel = supabase
+        .channel(`chat:${cid}`)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'chat_messages',
+          filter: `chat_id=eq.${cid}`,
+        }, (payload: any) => {
+          const row = payload.new;
+          const msg: Msg = {
+            de: row.sender_id === clienteUserId ? 'eu' : 'ele',
+            texto: row.message,
+            timestamp: row.created_at,
+          };
+          setMsgs(prev => {
+            if (prev.some(m => m.texto === msg.texto && m.timestamp === msg.timestamp)) return prev;
+            lastMsgCountRef.current = prev.length + 1;
+            return [...prev, msg];
+          });
+          if (msg.de === 'ele' && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification('Orbitrum — Nova mensagem', {
+              body: `${prof?.name ?? 'Profissional'}: ${msg.texto}`,
+              icon: prof?.avatar || undefined,
+            });
+          }
+        })
+        .subscribe((status: string) => {
+          if (status === 'SUBSCRIBED') {
+            usingRealtime = true;
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+          }
+        });
+    } catch {}
+
+    pollTimer = setInterval(() => { if (!usingRealtime) fetchMsgs(); }, 3000);
+
+    return () => {
+      if (pollTimer) clearInterval(pollTimer);
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [clienteUserId, prof]);
 
   async function enviar() {
