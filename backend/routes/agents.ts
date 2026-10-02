@@ -6,8 +6,15 @@ import { factStore } from '../relational-store';
 import { comporBusca } from '../relational-triggers';
 import { perfilRelacional, registrarFatoIdempotente } from '../relational-facts';
 import { eq as _eq } from 'drizzle-orm';
+import { rateLimit } from '../error-handler';
 
 const router = Router();
+
+// Rate limit: 60 req/min para leitura, 10 req/min para escrita
+router.use('/buscar_contexto', rateLimit(60, 60000));
+router.use('/perfil', rateLimit(60, 60000));
+router.use('/categorias', rateLimit(60, 60000));
+router.use('/registrar_resultado', rateLimit(10, 60000));
 
 const hasDb = !!process.env.DATABASE_URL;
 
@@ -179,22 +186,31 @@ router.post('/registrar_resultado', async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'profissionalId e agente são obrigatórios' });
     }
 
-    const prof: any = await queryProfessionalById(Number(profissionalId));
+    const pId = Number(profissionalId);
+    if (!Number.isInteger(pId) || pId < 1 || pId > 999999) {
+      return res.status(400).json({ success: false, error: 'profissionalId inválido' });
+    }
+    const ag = String(agente).slice(0, 100).replace(/[^\w\-.:]/g, '');
+    if (!ag) return res.status(400).json({ success: false, error: 'agente inválido' });
+    const desc = descricao ? String(descricao).slice(0, 500) : '';
+    const res_ = ['positivo', 'neutro', 'negativo'].includes(resultado) ? resultado : 'neutro';
+
+    const prof: any = await queryProfessionalById(pId);
     if (!prof) return res.status(404).json({ success: false, error: 'Profissional não encontrado' });
 
     const profUserId = prof.userId ?? prof.id;
-    const originRef = `agent:${agente}:${profissionalId}:${Date.now()}`;
+    const originRef = `agent:${ag}:${pId}:${Date.now()}`;
     const { fato, criado } = await registrarFatoIdempotente(factStore, {
       subjectId: profUserId,
       predicate: 'referencia_agente',
-      objectValue: descricao || `Referência via ${agente}`,
+      objectValue: desc || `Referência via ${ag}`,
       origin: 'agente_externo',
       originRef,
-      agentId: String(agente),
-      confidence: resultado === 'positivo' ? 'indicado' : 'declarado',
+      agentId: ag,
+      confidence: res_ === 'positivo' ? 'indicado' : 'declarado',
       visibility: 'agentes',
       occurredAt: new Date(),
-      contextDetail: resultado || 'neutro',
+      contextDetail: res_,
     });
 
     res.json({
@@ -256,6 +272,137 @@ router.get('/openapi.json', async (_req: Request, res: Response) => {
   }
 });
 
+// --- Grupo B: conexões com escrita controlada ---
+
+const connectionRequests = new Map<string, { from: string; toProfId: number; agente: string; motivo: string; criadoEm: string; status: 'pendente' | 'aceita' | 'recusada' }>();
+
+/**
+ * POST /api/agents/request_connection
+ *
+ * Agente solicita conexão com um profissional em nome de um usuário.
+ * Body: { profissionalId, agente, motivo }
+ */
+router.post('/request_connection', rateLimit(10, 60000), async (req: Request, res: Response) => {
+  if (!authAgent(req, res)) return;
+
+  try {
+    const { profissionalId, agente, motivo } = req.body;
+    if (!profissionalId || !agente) {
+      return res.status(400).json({ success: false, error: 'profissionalId e agente são obrigatórios' });
+    }
+
+    const pId = Number(profissionalId);
+    if (!Number.isInteger(pId) || pId < 1 || pId > 999999) {
+      return res.status(400).json({ success: false, error: 'profissionalId inválido' });
+    }
+    const ag = String(agente).slice(0, 100).replace(/[^\w\-.:]/g, '');
+    if (!ag) return res.status(400).json({ success: false, error: 'agente inválido' });
+    const mot = motivo ? String(motivo).slice(0, 300) : '';
+
+    const prof: any = await queryProfessionalById(pId);
+    if (!prof) return res.status(404).json({ success: false, error: 'Profissional não encontrado' });
+
+    const reqId = `conn_${ag}_${pId}_${Date.now()}`;
+    connectionRequests.set(reqId, {
+      from: ag,
+      toProfId: pId,
+      agente: ag,
+      motivo: mot,
+      criadoEm: new Date().toISOString(),
+      status: 'pendente',
+    });
+
+    res.json({
+      success: true,
+      fonte: 'orbitrum',
+      connectionId: reqId,
+      status: 'pendente',
+      mensagem: `Solicitação de conexão enviada para ${prof.name}`,
+    });
+  } catch (error) {
+    console.error('Agent API request_connection:', error);
+    res.status(500).json({ success: false, error: 'Falha ao solicitar conexão' });
+  }
+});
+
+/**
+ * POST /api/agents/accept_connection
+ *
+ * Profissional aceita ou recusa uma solicitação de conexão.
+ * Body: { connectionId, aceitar: true|false }
+ */
+router.post('/accept_connection', rateLimit(20, 60000), async (req: Request, res: Response) => {
+  if (!authAgent(req, res)) return;
+
+  try {
+    const { connectionId, aceitar } = req.body;
+    if (!connectionId) {
+      return res.status(400).json({ success: false, error: 'connectionId obrigatório' });
+    }
+
+    const conn = connectionRequests.get(String(connectionId));
+    if (!conn) {
+      return res.status(404).json({ success: false, error: 'Solicitação não encontrada' });
+    }
+    if (conn.status !== 'pendente') {
+      return res.status(400).json({ success: false, error: `Solicitação já ${conn.status}` });
+    }
+
+    conn.status = aceitar ? 'aceita' : 'recusada';
+
+    if (aceitar) {
+      const prof: any = await queryProfessionalById(conn.toProfId);
+      const profUserId = prof?.userId ?? conn.toProfId;
+      await registrarFatoIdempotente(factStore, {
+        subjectId: profUserId,
+        predicate: 'conexao_agente',
+        objectValue: `Conexão aceita via ${conn.agente}`,
+        origin: 'agente_externo',
+        originRef: connectionId,
+        agentId: conn.agente,
+        confidence: 'confirmado',
+        visibility: 'rede',
+        occurredAt: new Date(),
+        contextDetail: conn.motivo || 'conexão aceita',
+      });
+    }
+
+    res.json({
+      success: true,
+      fonte: 'orbitrum',
+      connectionId,
+      status: conn.status,
+      mensagem: aceitar ? 'Conexão aceita — fato registrado na rede' : 'Conexão recusada',
+    });
+  } catch (error) {
+    console.error('Agent API accept_connection:', error);
+    res.status(500).json({ success: false, error: 'Falha ao processar conexão' });
+  }
+});
+
+/**
+ * GET /api/agents/connections/:profId
+ *
+ * Lista solicitações de conexão pendentes para um profissional.
+ */
+router.get('/connections/:profId', rateLimit(30, 60000), async (req: Request, res: Response) => {
+  if (!authAgent(req, res)) return;
+
+  const profId = parseInt(req.params.profId);
+  const status = req.query.status ? String(req.query.status) : undefined;
+
+  const conns = [...connectionRequests.values()]
+    .filter(c => c.toProfId === profId && (!status || c.status === status))
+    .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
+
+  res.json({
+    success: true,
+    fonte: 'orbitrum',
+    total: conns.length,
+    conexoes: conns,
+  });
+});
+
 /**
  * GET /api/agents/health
  *
@@ -271,6 +418,9 @@ router.get('/health', (_req: Request, res: Response) => {
       'GET /api/agents/perfil/:profId',
       'POST /api/agents/registrar_resultado',
       'GET /api/agents/categorias',
+      'POST /api/agents/request_connection',
+      'POST /api/agents/accept_connection',
+      'GET /api/agents/connections/:profId',
       'GET /api/agents/health',
     ],
   });
