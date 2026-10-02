@@ -302,8 +302,10 @@ export default function Inicio() {
                 <button onClick={() => { logout(); setLocation('/'); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '5px 12px', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Sair</button>
               </>
             ) : (
-              <button onClick={() => { setLoginMode('register'); setShowLoginModal(true); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '8px 14px', color: C.cyan, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Cadastre-se grátis</button>
-              <button onClick={() => { setLoginMode('login'); setShowLoginModal(true); }} style={{ background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, border: 'none', borderRadius: 16, padding: '8px 18px', color: '#012', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Entrar</button>
+              <>
+                <button onClick={() => { setLoginMode('register'); setShowLoginModal(true); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 16, padding: '8px 14px', color: C.cyan, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Cadastre-se grátis</button>
+                <button onClick={() => { setLoginMode('login'); setShowLoginModal(true); }} style={{ background: `linear-gradient(135deg, ${C.cyan}, ${C.blue})`, border: 'none', borderRadius: 16, padding: '8px 18px', color: '#012', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Entrar</button>
+              </>
             )}
           </div>
         </header>
